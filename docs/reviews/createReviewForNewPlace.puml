@@ -1,0 +1,55 @@
+@startuml Add Review
+
+participant addReview [
+    =reviewsHandler
+    ----
+    addReview()
+]
+
+participant doesPlaceExist [
+    =placesUtils
+    ----
+    doesPlaceExist()
+]
+
+participant addReviewForNewPlace [
+    =reviewsHandler
+    ----
+    addReviewForNewPlace()
+]
+
+participant createNewPlaceFromReview [
+    =placesUtils
+    ----
+    createNewPlaceFromReview()
+]
+
+participant findAverageOf [
+    =placesUtils
+    ----
+    findAverageOf()
+]
+
+participant addPlace [
+    =placesDatabaseAccess
+    ----
+    addPlace()
+]
+
+participant addReviewToDatabase [
+    =reviewsDatabaseAccess
+    ----
+    addReview()
+]
+
+== Add Review For New Place ==
+addReview -> doesPlaceExist: does place exist?
+doesPlaceExist -> addReview: no
+addReview -> addReviewForNewPlace
+addReviewForNewPlace -> createNewPlaceFromReview
+createNewPlaceFromReview -> createNewPlaceFromReview: extract place data from review
+createNewPlaceFromReview -> findAverageOf: calculate overallRating
+findAverageOf -> createNewPlaceFromReview : calculate overallRating
+createNewPlaceFromReview -> addReviewForNewPlace: returns place
+addReviewForNewPlace -> addPlace: add place to database
+addReviewForNewPlace -> addReviewToDatabase: add review to database
