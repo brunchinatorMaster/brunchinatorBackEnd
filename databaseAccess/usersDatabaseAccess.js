@@ -6,7 +6,7 @@ const users = require('../mockDataBase/users');
  * @returns {object[]}
  */
 const getAllUsers = () => {
-  // TODO this will be replaced with a call to the database to get all places
+  // TODO this will be replaced with a call to the database to get all users
   // at some point i may introduce pagination, not sure yet
   const mockUsers = JSON.parse(JSON.stringify(users));
   return mockUsers;
@@ -33,7 +33,7 @@ const getUserByUserId = (userId) => {
  */
 const getUserByUsername = (userName) => {
   // TODO this will be replaced with either a call to the database to specifically
-  // grab one user by id, or some filtering of allUsers
+  // grab one user by userName, or some filtering of allUsers
   const mockUsers = JSON.parse(JSON.stringify(users));
   return mockUsers.filter((user) => user.userName == userName)?.[0] ?? null;
 }
@@ -46,7 +46,7 @@ const getUserByUsername = (userName) => {
  */
 const getUserByEmail = (email) => {
   // TODO this will be replaced with either a call to the database to specifically
-  // grab one user by id, or some filtering of allUsers
+  // grab one user by email, or some filtering of allUsers
   const mockUsers = JSON.parse(JSON.stringify(users));
   return mockUsers.filter((user) => user.email == email)?.[0] ?? null;
 }
