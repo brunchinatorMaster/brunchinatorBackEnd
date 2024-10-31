@@ -74,7 +74,6 @@ const removeFromAverage = (elementToRemove, originalAverage, originalNumberOfEle
     return originalAverage;
   }
   const numerator = (originalAverage * originalNumberOfElements) - elementToRemove;
-  console.log('numerator: ' + numerator);
   const denominator = originalNumberOfElements - 1;
   return +(numerator /  denominator).toFixed(2);
 };

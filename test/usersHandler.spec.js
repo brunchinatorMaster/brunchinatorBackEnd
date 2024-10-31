@@ -2,6 +2,7 @@ const { expect, assert } = require('chai');
 const UsersHandler = require('../handlers/usersHandler');
 const usersHandler = new UsersHandler();
 const users = require('../mockDataBase/users');
+const { SchemaError } = require('../errors/SchemaError');
 
 describe('usersHandler', () => {
   describe('getUsers', () => {
@@ -56,6 +57,20 @@ describe('usersHandler', () => {
       };
       const response = usersHandler.addUser(toAdd);
       expect(response).to.contain(toAdd);
+    });
+
+    it('throws SchemaError is request is invalid', () => {
+      const toAdd = {
+        userName: 'some username',
+        password: 'somePassword',
+      };
+      try {
+        usersHandler.addUser(toAdd);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.errorInField[0]).to.equal('email');
+        expect(error.reasonForError).to.equal('"email" is required');
+      }
     });
   });
 });
