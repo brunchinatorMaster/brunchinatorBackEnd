@@ -43,3 +43,53 @@ describe('POST /createUser', () => {
   });
 });
 
+describe('GET /byEmail/:email', () => {
+  it('returns correct user', async () => {
+    const response = await supertest(app)
+      .get('/users/byEmail/tohearstories@gmail.com')
+      .expect(200);
+      
+    assert.deepEqual(response.body, users[0]);
+  });
+
+  it('returns error if email is invalid', async () => {
+    const response = await supertest(app)
+      .get('/users/byEmail/tohearstories@gmail')
+      .expect(400);
+      
+      expect(response.body.reasonForError).to.equal('"value" must be a valid email');
+      expect(response.body.originatingRequest).to.equal('tohearstories@gmail');
+  });
+});
+
+describe('GET /byUsername/:userName', () => {
+  it('returns correct user', async () => {
+    const response = await supertest(app)
+      .get('/users/byUsername/geo')
+      .expect(200);
+      
+    assert.deepEqual(response.body, users[0]);
+  });
+
+  it('returns 404 if userName is missing', async () => {
+    await supertest(app)
+      .get('/users/byUsername/')
+      .expect(404);
+  });
+});
+
+describe('GET /byUserId/:userId', () => {
+  it('returns correct user', async () => {
+    const response = await supertest(app)
+      .get('/users/byUserId/user1')
+      .expect(200);
+      
+    assert.deepEqual(response.body, users[0]);
+  });
+
+  it('returns 404 if userName is missing', async () => {
+    await supertest(app)
+      .get('/users/byUserId/')
+      .expect(404);
+  });
+});
