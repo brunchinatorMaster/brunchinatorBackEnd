@@ -1,32 +1,33 @@
-const users = require('../mockDataBase/users');
+const {
+	getAllUsers,
+	getUserByUserId,
+	getUserByUsername,
+	getUserByEmail
+ } = require('../databaseAccess/usersDatabaseAccess');
 
 class ReviewsHandler {
-	getUsers() { // useless comment for branchTest
-		return users;
+	getUsers() {
+		const allUsers = getAllUsers();
+		// TODO business logic, if any
+		return allUsers;
 	}
 
 	getUserByUserId(userId) {
-		if (typeof userId !== 'string') {
-			return [];
-		}
-		const allUsers = this.getUsers();
-		return allUsers.filter((user) => user.userId == userId);
+		const userToReturn = getUserByUserId(userId);
+		// TODO do business logic, if any
+		return userToReturn;
 	}
 
   getUserByUsername(userName) {
-		if (typeof userName !== 'string') {
-			return [];
-		}
-		const allUsers = this.getUsers();
-		return allUsers.filter((user) => user.userName == userName);
+		const userToReturn = getUserByUsername(userName);
+		// TODO do business logic, if any
+		return userToReturn;
 	}
 
   getUserByEmail(email) {
-		if (typeof email !== 'string') {
-			return [];
-		}
-		const allUsers = this.getUsers();
-		return allUsers.filter((user) => user.email == email);
+		const userToReturn = getUserByEmail(email);
+		// TODO do business logic, if any
+		return userToReturn;
 	}
 }
 
