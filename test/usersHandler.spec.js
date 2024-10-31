@@ -46,4 +46,4 @@ describe('usersHandler', () => {
       expect(response).contains(users[1]);
     });
   });
-})
+});
