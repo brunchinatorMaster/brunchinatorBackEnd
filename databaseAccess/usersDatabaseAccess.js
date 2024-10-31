@@ -51,9 +51,18 @@ const getUserByEmail = (email) => {
   return mockUsers.filter((user) => user.email == email)?.[0] ?? null;
 }
 
+const addUser = (user) => {
+  // TODO this will be replaced with a call to add a new record to the
+  // users table in the database
+  const mockUsers = JSON.parse(JSON.stringify(users));
+  mockUsers.push(user);
+  return mockUsers;
+}
+
 module.exports = {
   getAllUsers,
   getUserByUserId,
   getUserByUsername,
-  getUserByEmail
+  getUserByEmail,
+  addUser,
 }
