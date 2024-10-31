@@ -46,4 +46,16 @@ describe('usersHandler', () => {
       expect(response).contains(users[1]);
     });
   });
+
+  describe('addUser', () => {
+    it('adds a user to users', () => {
+      const toAdd = {
+        email: 'address@domain.com',
+        userName: 'some username',
+        password: 'somePassword',
+      };
+      const response = usersHandler.addUser(toAdd);
+      expect(response).to.contain(toAdd);
+    });
+  });
 });

@@ -62,6 +62,6 @@ describe('placesHandler', () => {
       };
       const response = placesHandler.addPlace(toAdd);
       expect(response).to.contain(toAdd);
-    })
-  })
-})
+    });
+  });
+});
