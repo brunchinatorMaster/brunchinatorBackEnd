@@ -1,7 +1,7 @@
 const users = require('../mockDataBase/users');
 
 class ReviewsHandler {
-	getUsers() {
+	getUsers() { // useless comment for branchTest
 		return users;
 	}
 
