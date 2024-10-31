@@ -4,26 +4,55 @@ const UsersHandler = require('../handlers/usersHandler');
 const usersHandler = new UsersHandler();
 
 app.get('/all', (req, res, next) => {
-	const users = usersHandler.getUsers();
-	res.status(200).json(users);
+	let error;
+	try {
+		const users = usersHandler.getUsers();
+		res.status(200).json(users);
+	} catch (err) {
+		error = err;
+	} finally {
+		res.status(400).json(error);
+	}
 });
 
 app.get('/byUserId/:userId', (req, res) => {
 	const userId = req.params.userId ?? null;
-	const toReturn = usersHandler.getUserByUserId(userId);
-	res.status(200).json(toReturn);
+	let error;
+	try {
+		const toReturn = usersHandler.getUserByUserId(userId);
+		res.status(200).json(toReturn);
+	} catch (err) {
+		error = err;
+	} finally {
+		res.status(400).json(error);
+	}
 });
 
 app.get('/byUsername/:userName', (req, res) => {
 	const userName = req.params.userName ?? null;
-	const toReturn = usersHandler.getUserByUsername(userName);
-	res.status(200).json(toReturn);
+	let error;
+	try {
+		const toReturn = usersHandler.getUserByUsername(userName);
+		res.status(200).json(toReturn);
+	} catch (err) {
+		error = err;
+	} finally {
+		res.status(400).json(error);
+	}
 });
 
 app.get('/byEmail/:email', (req, res) => {
 	const email = req.params.email ?? null;
-	const toReturn = usersHandler.getUserByEmail(email);
-	res.status(200).json(toReturn);
+	let error;
+	try {
+		const toReturn = usersHandler.getUserByEmail(email);
+		res.status(200).json(toReturn);
+	} catch (err) {
+		error = err;
+	} finally {
+		res.status(400).json(error);
+	}
+	
 });
 
 app.post('/createUser', (req, res) => {
@@ -37,7 +66,6 @@ app.post('/createUser', (req, res) => {
 	} finally {
 		res.status(400).json(error);
 	}
-	
 });
 
 module.exports = app;

@@ -22,6 +22,16 @@ describe('usersHandler', () => {
       expect(response).not.contains(users[0]);
       expect(response).contains(users[1]);
     });
+
+    it('throws SchemaError is userId is invalid', () => {
+      try {
+        usersHandler.getUserByUserId(12345);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.reasonForError).to.equal('"value" must be a string');
+        expect(error.originatingRequest).to.equal(12345);
+      }
+    });
   });
 
   describe('getUserByUsername', () => {
@@ -34,6 +44,16 @@ describe('usersHandler', () => {
       expect(response).not.contains(users[0]);
       expect(response).contains(users[1]);
     });
+
+    it('throws SchemaError is userName is invalid', () => {
+      try {
+        usersHandler.getUserByUsername(12345);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.reasonForError).to.equal('"value" must be a string');
+        expect(error.originatingRequest).to.equal(12345);
+      }
+    });
   });
 
   describe('getUserByEmail', () => {
@@ -45,6 +65,16 @@ describe('usersHandler', () => {
       response = usersHandler.getUserByEmail('zombiestyle@gmail.com');
       expect(response).not.contains(users[0]);
       expect(response).contains(users[1]);
+    });
+
+    it('throws SchemaError is email is invalid', () => {
+      try {
+        usersHandler.getUserByEmail('tohearstories@gmail');
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.reasonForError).to.equal('"value" must be a valid email');
+        expect(error.originatingRequest).to.equal('tohearstories@gmail');
+      }
     });
   });
 
