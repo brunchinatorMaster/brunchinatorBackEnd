@@ -2,7 +2,8 @@ const {
 	getAllUsers,
 	getUserByUserId,
 	getUserByUsername,
-	getUserByEmail
+	getUserByEmail,
+	addUser,
  } = require('../databaseAccess/usersDatabaseAccess');
 
 class ReviewsHandler {
@@ -28,6 +29,12 @@ class ReviewsHandler {
 		const userToReturn = getUserByEmail(email);
 		// TODO do business logic, if any
 		return userToReturn;
+	}
+
+	addUser(user) {
+		const response = addUser(user);
+		// TODO do business logic, if any
+		return response;
 	}
 }
 
