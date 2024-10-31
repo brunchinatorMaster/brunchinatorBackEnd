@@ -23,7 +23,7 @@ describe('usersHandler', () => {
       expect(response).contains(users[1]);
     });
 
-    it('throws SchemaError is userName is invalid', () => {
+    it('throws SchemaError is userId is invalid', () => {
       try {
         usersHandler.getUserByUserId(12345);
       } catch (error) {
