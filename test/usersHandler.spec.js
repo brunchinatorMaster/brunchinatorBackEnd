@@ -3,24 +3,33 @@ const UsersHandler = require('../handlers/usersHandler');
 const usersHandler = new UsersHandler();
 const users = require('../mockDataBase/users');
 const { SchemaError } = require('../errors/SchemaError');
+const { removePassswordFromArrayOfUsers } = require('../utils/usersUtils');
 
 describe('usersHandler', () => {
+
+  let mockUsersWithoutPasswords;
+  beforeEach(() => {
+    const mockUsers = JSON.parse(JSON.stringify(users));
+    mockUsersWithoutPasswords = removePassswordFromArrayOfUsers(mockUsers);
+  });
+
   describe('getUsers', () => {
     it('returns users', () => {
       const response = usersHandler.getUsers();
-      assert.deepEqual(response, users);
+      assert.deepEqual(response, mockUsersWithoutPasswords);
     });
   });
 
   describe('getUserByUserId', () => {
     it('returns only the user that matches userId', () => {
       let response = usersHandler.getUserByUserId('user1');
-      expect(response).contains(users[0]);
-      expect(response).not.contains(users[1]);
+      
+      expect(response).contains(mockUsersWithoutPasswords[0]);
+      expect(response).not.contains(mockUsersWithoutPasswords[1]);
 
       response = usersHandler.getUserByUserId('user2');
-      expect(response).not.contains(users[0]);
-      expect(response).contains(users[1]);
+      expect(response).not.contains(mockUsersWithoutPasswords[0]);
+      expect(response).contains(mockUsersWithoutPasswords[1]);
     });
 
     it('throws SchemaError is userId is invalid', () => {
@@ -37,12 +46,12 @@ describe('usersHandler', () => {
   describe('getUserByUsername', () => {
     it('returns only the user that matches userName', () => {
       let response = usersHandler.getUserByUsername('geo');
-      expect(response).contains(users[0]);
-      expect(response).not.contains(users[1]);
+      expect(response).contains(mockUsersWithoutPasswords[0]);
+      expect(response).not.contains(mockUsersWithoutPasswords[1]);
 
       response = usersHandler.getUserByUsername('bex');
-      expect(response).not.contains(users[0]);
-      expect(response).contains(users[1]);
+      expect(response).not.contains(mockUsersWithoutPasswords[0]);
+      expect(response).contains(mockUsersWithoutPasswords[1]);
     });
 
     it('throws SchemaError is userName is invalid', () => {
@@ -59,12 +68,12 @@ describe('usersHandler', () => {
   describe('getUserByEmail', () => {
     it('returns only the user that matches email', () => {
       let response = usersHandler.getUserByEmail('tohearstories@gmail.com');
-      expect(response).contains(users[0]);
-      expect(response).not.contains(users[1]);
+      expect(response).contains(mockUsersWithoutPasswords[0]);
+      expect(response).not.contains(mockUsersWithoutPasswords[1]);
 
       response = usersHandler.getUserByEmail('zombiestyle@gmail.com');
-      expect(response).not.contains(users[0]);
-      expect(response).contains(users[1]);
+      expect(response).not.contains(mockUsersWithoutPasswords[0]);
+      expect(response).contains(mockUsersWithoutPasswords[1]);
     });
 
     it('throws SchemaError is email is invalid', () => {
@@ -86,7 +95,9 @@ describe('usersHandler', () => {
         password: 'somePassword',
       };
       const response = usersHandler.addUser(toAdd);
-      expect(response).to.contain(toAdd);
+      assert.deepEqual(response, {
+        success: true
+      });
     });
 
     it('throws SchemaError is request is invalid', () => {

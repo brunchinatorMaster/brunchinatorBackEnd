@@ -12,13 +12,15 @@ const {
 	USERNAME_SCHEMA,
 	USER_ID_SCHEMA
  } = require('../schemas/usersSchemas');
+const { removePassswordFromArrayOfUsers, removePassswordFromUser } = require('../utils/usersUtils');
 const { validateBySchema } = require('../utils/utils');
 
 class ReviewsHandler {
 	getUsers() {
 		const allUsers = getAllUsers();
 		// TODO business logic, if any
-		return allUsers;
+		const toReturn = removePassswordFromArrayOfUsers(allUsers);
+		return toReturn;
 	}
 
 	getUserByUserId(userId) {
@@ -30,7 +32,8 @@ class ReviewsHandler {
 
 		const userToReturn = getUserByUserId(userId);
 		// TODO do business logic, if any
-		return userToReturn;
+		const toReturn = removePassswordFromUser(userToReturn);
+		return toReturn;
 	}
 
   getUserByUsername(userName) {
@@ -42,7 +45,8 @@ class ReviewsHandler {
 
 		const userToReturn = getUserByUsername(userName);
 		// TODO do business logic, if any
-		return userToReturn;
+		const toReturn = removePassswordFromUser(userToReturn);
+		return toReturn;
 	}
 
   getUserByEmail(email) {
@@ -54,7 +58,8 @@ class ReviewsHandler {
 
 		const userToReturn = getUserByEmail(email);
 		// TODO do business logic, if any
-		return userToReturn;
+		const toReturn = removePassswordFromUser(userToReturn);
+		return toReturn;
 	}
 
 	addUser(user) {
@@ -64,9 +69,11 @@ class ReviewsHandler {
 			throw new SchemaError(validateResponse.error);
 		}
 
-		const response = addUser(user);
+		addUser(user);
 		// TODO do business logic, if any
-		return response;
+		return {
+			success: true
+		};
 	}
 }
 
