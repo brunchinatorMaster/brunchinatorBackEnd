@@ -1,27 +1,28 @@
 const supertest = require('supertest');
 const { assert, expect } = require('chai');
-const users = require('../mockDataBase/users');
-
 const app = require('../app');
 
+const { removePassswordFromArrayOfUsers } = require('../utils/usersUtils');
+const users = require('../mockDataBase/users');
+const mockUsers = JSON.parse(JSON.stringify(users));
+const mockUsersWithoutPasswords = removePassswordFromArrayOfUsers(mockUsers);
 
 describe('POST /createUser', () => {
-  it('returns all users', async () => {
-    const mockUsers = JSON.parse(JSON.stringify(users));
-
+  it('returns success upon adding user', async () => {
     const toSend = {
       email: 'address@domain.com',
       userName: 'some username',
       password: 'somePassword'
     };
 
-    mockUsers.push(toSend);
     const response = await supertest(app)
       .post('/users/createUser')
       .send(toSend)
       .expect(200);
       
-    assert.deepEqual(response.body, mockUsers);
+    assert.deepEqual(response.body, {
+      success: true
+    });
   });
 
   it('returns error if request is invalid', async () => {
@@ -49,7 +50,7 @@ describe('GET /byEmail/:email', () => {
       .get('/users/byEmail/tohearstories@gmail.com')
       .expect(200);
       
-    assert.deepEqual(response.body, users[0]);
+    assert.deepEqual(response.body, mockUsersWithoutPasswords[0]);
   });
 
   it('returns error if email is invalid', async () => {
@@ -68,7 +69,7 @@ describe('GET /byUsername/:userName', () => {
       .get('/users/byUsername/geo')
       .expect(200);
       
-    assert.deepEqual(response.body, users[0]);
+    assert.deepEqual(response.body, mockUsersWithoutPasswords[0]);
   });
 
   it('returns 404 if userName is missing', async () => {
@@ -84,7 +85,7 @@ describe('GET /byUserId/:userId', () => {
       .get('/users/byUserId/user1')
       .expect(200);
       
-    assert.deepEqual(response.body, users[0]);
+    assert.deepEqual(response.body, mockUsersWithoutPasswords[0]);
   });
 
   it('returns 404 if userName is missing', async () => {
