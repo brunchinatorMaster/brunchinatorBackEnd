@@ -59,10 +59,16 @@ const addUser = (user) => {
   return mockUsers;
 }
 
+const login = (userName, password) => {
+  const user = getUserByUsername(userName);
+  return user;
+}
+
 module.exports = {
   getAllUsers,
   getUserByUserId,
   getUserByUsername,
   getUserByEmail,
   addUser,
+  login,
 }

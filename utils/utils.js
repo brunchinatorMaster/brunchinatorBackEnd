@@ -1,3 +1,6 @@
+
+const JWT_SECRET = 'brunchinator5698kjsg87dsfgkj34';
+
 const validateBySchema = (toValidate, schema) => {
   const { error } = schema.validate(toValidate);
   let isValid = false;
@@ -11,5 +14,6 @@ const validateBySchema = (toValidate, schema) => {
 };
 
 module.exports = {
-  validateBySchema
+  validateBySchema,
+  JWT_SECRET,
 }

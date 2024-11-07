@@ -68,4 +68,19 @@ app.post('/createUser', (req, res) => {
 	}
 });
 
+app.post('/login', (req, res) => {
+	const userName = req.body?.userName ?? null;
+	const password = req.body?.password ?? null;
+	let error;
+	try {
+		const response = usersHandler.login(userName, password);
+		res.status(200).json(response);
+	} catch (err) {
+		error = err;
+	} finally {
+		res.status(400).json(error);
+	}
+
+});
+
 module.exports = app;
