@@ -20,67 +20,67 @@ const { validateBySchema, JWT_SECRET } = require('../utils/utils');
 const jwt = require('jsonwebtoken');
 
 class ReviewsHandler {
-	getUsers() {
-		const allUsers = getAllUsers();
+	async getUsers() {
+		const allUsers = await getAllUsers();
 		// TODO business logic, if any
 		const toReturn = removePassswordFromArrayOfUsers(allUsers);
 		return toReturn;
 	}
 
-	getUserByUserId(userId) {
+	async getUserByUserId(userId) {
 		const validateResponse = validateBySchema(userId, USER_ID_SCHEMA);
 
 		if (!validateResponse.isValid) {
 			throw new SchemaError(validateResponse.error);
 		}
 
-		const userToReturn = getUserByUserId(userId);
+		const userToReturn = await getUserByUserId(userId);
 		// TODO do business logic, if any
 		const toReturn = removePassswordFromUser(userToReturn);
 		return toReturn;
 	}
 
-  getUserByUsername(userName) {
+  async getUserByUsername(userName) {
 		const validateResponse = validateBySchema(userName, USERNAME_SCHEMA);
 
 		if (!validateResponse.isValid) {
 			throw new SchemaError(validateResponse.error);
 		}
 
-		const userToReturn = getUserByUsername(userName);
+		const userToReturn = await getUserByUsername(userName);
 		// TODO do business logic, if any
 		const toReturn = removePassswordFromUser(userToReturn);
 		return toReturn;
 	}
 
-  getUserByEmail(email) {
+  async getUserByEmail(email) {
 		const validateResponse = validateBySchema(email, EMAIL_SCHEMA);
 
 		if (!validateResponse.isValid) {
 			throw new SchemaError(validateResponse.error);
 		}
 
-		const userToReturn = getUserByEmail(email);
+		const userToReturn = await getUserByEmail(email);
 		// TODO do business logic, if any
-		const toReturn = removePassswordFromUser(userToReturn);
+		const toReturn = removePassswordFromUser(userToReturn); 
 		return toReturn;
 	}
 
-	addUser(user) {
+	async addUser(user) {
 		const validateResponse = validateBySchema(user, VALIDATE_CREATE_USER_SCHEMA);
 
 		if (!validateResponse.isValid) {
 			throw new SchemaError(validateResponse.error);
 		}
 
-		addUser(user);
+		await addUser(user);
 		// TODO do business logic, if any
 		return {
 			success: true
 		};
 	}
 
-	login(userName, password){
+	async login(userName, password){
 		const userNameIsValid = validateBySchema(userName, USERNAME_SCHEMA);
 
 		if (!userNameIsValid.isValid) {
@@ -93,7 +93,7 @@ class ReviewsHandler {
 			throw new SchemaError(passwordIsValid.error);
 		}
 
-		const user = login(userName, password);
+		const user = await login(userName, password);
 
 		if(!user) {
 			throw new LoginError('No User Found');
