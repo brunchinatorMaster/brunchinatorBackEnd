@@ -4,16 +4,20 @@ const {
 	getUserByUsername,
 	getUserByEmail,
 	addUser,
+	login,
  } = require('../databaseAccess/usersDatabaseAccess');
 const { SchemaError } = require('../errors/SchemaError');
+const { LoginError } = require('../errors/LoginError');
 const { 
 	VALIDATE_CREATE_USER_SCHEMA,
 	EMAIL_SCHEMA,
+	USER_ID_SCHEMA,
 	USERNAME_SCHEMA,
-	USER_ID_SCHEMA
+	PASSWORD_SCHEMA,
  } = require('../schemas/usersSchemas');
 const { removePassswordFromArrayOfUsers, removePassswordFromUser } = require('../utils/usersUtils');
-const { validateBySchema } = require('../utils/utils');
+const { validateBySchema, JWT_SECRET } = require('../utils/utils');
+const jwt = require('jsonwebtoken');
 
 class ReviewsHandler {
 	getUsers() {
@@ -73,6 +77,38 @@ class ReviewsHandler {
 		// TODO do business logic, if any
 		return {
 			success: true
+		};
+	}
+
+	login(userName, password){
+		const userNameIsValid = validateBySchema(userName, USERNAME_SCHEMA);
+
+		if (!userNameIsValid.isValid) {
+			throw new SchemaError(userNameIsValid.error);
+		}
+
+		const passwordIsValid = validateBySchema(password, PASSWORD_SCHEMA);
+
+		if (!passwordIsValid.isValid) {
+			throw new SchemaError(passwordIsValid.error);
+		}
+
+		const user = login(userName, password);
+
+		if(!user) {
+			throw new LoginError('No User Found');
+		}
+
+		if(user.password !== password) {
+			throw new LoginError('Wrong Password');
+		}
+		
+		const cleanUser = removePassswordFromUser(user);
+
+		const token = jwt.sign(cleanUser, JWT_SECRET);
+		return {
+			user: cleanUser,
+			token
 		};
 	}
 }

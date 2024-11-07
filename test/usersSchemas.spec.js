@@ -42,7 +42,7 @@ describe('VALIDATE_CREATE_USER_SCHEMA', () => {
         password: 'somePassword'
       };
       const { error } = VALIDATE_CREATE_USER_SCHEMA.validate(toValidate);
-      expect(error.details[0].message).to.equal('"userName" is required');
+      expect(error.details[0].message).to.equal('"userName" is a required field');
     });
 
     it('rejects if userName is not a string', () => {
@@ -63,7 +63,7 @@ describe('VALIDATE_CREATE_USER_SCHEMA', () => {
         userName: 'some username'
       };
       const { error } = VALIDATE_CREATE_USER_SCHEMA.validate(toValidate);
-      expect(error.details[0].message).to.equal('"password" is required');
+      expect(error.details[0].message).to.equal('"password" is a required field');
     });
 
     it('rejects if password is not a string', () => {

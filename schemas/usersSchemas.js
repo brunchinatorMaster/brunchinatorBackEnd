@@ -2,8 +2,16 @@ const Joi = require('joi');
 
 const EMAIL_SCHEMA = Joi.string().email();
 const USER_ID_SCHEMA = Joi.string();
-const USERNAME_SCHEMA = Joi.string();
-const PASSWORD_SCHEMA = Joi.string();
+const USERNAME_SCHEMA = Joi.string().messages({
+  'string.base': `"userName" must be a string`,
+  'string.empty': `"userName" cannot be an empty string`,
+  'any.required': `"userName" is a required field`
+});
+const PASSWORD_SCHEMA = Joi.string().messages({
+  'string.base': `"password" must be a string`,
+  'string.empty': `"password" cannot be an empty string`,
+  'any.required': `"password" is a required field`
+});
 
 const VALIDATE_CREATE_USER_SCHEMA = Joi.object({
   email: EMAIL_SCHEMA.required(),
