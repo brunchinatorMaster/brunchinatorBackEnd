@@ -3,10 +3,10 @@ const app = express();
 const UsersHandler = require('../handlers/usersHandler');
 const usersHandler = new UsersHandler();
 
-app.get('/all', (req, res, next) => {
+app.get('/all', async (req, res, next) => {
 	let error;
 	try {
-		const users = usersHandler.getUsers();
+		const users = await usersHandler.getUsers();
 		res.status(200).json(users);
 	} catch (err) {
 		error = err;
@@ -15,11 +15,11 @@ app.get('/all', (req, res, next) => {
 	}
 });
 
-app.get('/byUserId/:userId', (req, res) => {
+app.get('/byUserId/:userId', async (req, res) => {
 	const userId = req.params.userId ?? null;
 	let error;
 	try {
-		const toReturn = usersHandler.getUserByUserId(userId);
+		const toReturn = await usersHandler.getUserByUserId(userId);
 		res.status(200).json(toReturn);
 	} catch (err) {
 		error = err;
@@ -28,11 +28,11 @@ app.get('/byUserId/:userId', (req, res) => {
 	}
 });
 
-app.get('/byUsername/:userName', (req, res) => {
+app.get('/byUsername/:userName', async (req, res) => {
 	const userName = req.params.userName ?? null;
 	let error;
 	try {
-		const toReturn = usersHandler.getUserByUsername(userName);
+		const toReturn = await usersHandler.getUserByUsername(userName);
 		res.status(200).json(toReturn);
 	} catch (err) {
 		error = err;
@@ -41,11 +41,11 @@ app.get('/byUsername/:userName', (req, res) => {
 	}
 });
 
-app.get('/byEmail/:email', (req, res) => {
+app.get('/byEmail/:email', async (req, res) => {
 	const email = req.params.email ?? null;
 	let error;
 	try {
-		const toReturn = usersHandler.getUserByEmail(email);
+		const toReturn = await usersHandler.getUserByEmail(email);
 		res.status(200).json(toReturn);
 	} catch (err) {
 		error = err;
@@ -55,11 +55,11 @@ app.get('/byEmail/:email', (req, res) => {
 	
 });
 
-app.post('/createUser', (req, res) => {
+app.post('/createUser', async (req, res) => {
 	const user = req.body;
 	let error;
 	try {
-		const response = usersHandler.addUser(user);
+		const response = await usersHandler.addUser(user);
 		res.status(200).json(response);
 	} catch (err) {
 		error = err;
@@ -68,12 +68,12 @@ app.post('/createUser', (req, res) => {
 	}
 });
 
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
 	const userName = req.body?.userName ?? null;
 	const password = req.body?.password ?? null;
 	let error;
 	try {
-		const response = usersHandler.login(userName, password);
+		const response = await usersHandler.login(userName, password);
 		res.status(200).json(response);
 	} catch (err) {
 		error = err;

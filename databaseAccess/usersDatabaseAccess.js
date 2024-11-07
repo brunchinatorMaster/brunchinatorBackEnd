@@ -5,7 +5,7 @@ const users = require('../mockDataBase/users');
  * 
  * @returns {object[]}
  */
-const getAllUsers = () => {
+const getAllUsers = async () => {
   // TODO this will be replaced with a call to the database to get all users
   // at some point i may introduce pagination, not sure yet
   const mockUsers = JSON.parse(JSON.stringify(users));
@@ -18,7 +18,7 @@ const getAllUsers = () => {
  * @param {string} userId 
  * @returns {object}
  */
-const getUserByUserId = (userId) => {
+const getUserByUserId = async (userId) => {
   // TODO this will be replaced with either a call to the database to specifically
   // grab one user by id, or some filtering of allUsers
   const mockUsers = JSON.parse(JSON.stringify(users));
@@ -31,7 +31,7 @@ const getUserByUserId = (userId) => {
  * @param {string} userName 
  * @returns {object}
  */
-const getUserByUsername = (userName) => {
+const getUserByUsername = async (userName) => {
   // TODO this will be replaced with either a call to the database to specifically
   // grab one user by userName, or some filtering of allUsers
   const mockUsers = JSON.parse(JSON.stringify(users));
@@ -44,14 +44,14 @@ const getUserByUsername = (userName) => {
  * @param {string} email 
  * @returns {object}
  */
-const getUserByEmail = (email) => {
+const getUserByEmail = async (email) => {
   // TODO this will be replaced with either a call to the database to specifically
   // grab one user by email, or some filtering of allUsers
   const mockUsers = JSON.parse(JSON.stringify(users));
   return mockUsers.filter((user) => user.email == email)?.[0] ?? null;
 }
 
-const addUser = (user) => {
+const addUser = async (user) => {
   // TODO this will be replaced with a call to add a new record to the
   // users table in the database
   const mockUsers = JSON.parse(JSON.stringify(users));
@@ -59,8 +59,8 @@ const addUser = (user) => {
   return mockUsers;
 }
 
-const login = (userName, password) => {
-  const user = getUserByUsername(userName);
+const login = async (userName, password) => {
+  const user = await getUserByUsername(userName);
   return user;
 }
 
