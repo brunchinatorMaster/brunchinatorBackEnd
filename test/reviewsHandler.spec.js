@@ -3,67 +3,64 @@ const ReviewsHandler = require('../handlers/reviewsHandler');
 const reviewsHandler = new ReviewsHandler();
 const mockReviews = require('../mockDataBase/reviews');
 const mockPlaces = require('../mockDataBase/places');
+const { SchemaError } = require('../errors/SchemaError');
 
 describe('reviewsHandler', () => {
   describe('getReviews', () => {
-    it('returns reviews', () => {
-      const response = reviewsHandler.getReviews();
+    it('returns reviews', async () => {
+      const response = await reviewsHandler.getReviews();
       assert.deepEqual(response, mockReviews);
     });
   });
 
   describe('getReviewByReviewId', () => {
-    it('returns only the review that matches reviewId', () => {
-      let response = reviewsHandler.getReviewByReviewId('review1');
+    it('returns only the review that matches reviewId', async () => {
+      let response = await reviewsHandler.getReviewByReviewId('review1');
       assert.deepEqual(response, mockReviews[0]);
 
-      response = reviewsHandler.getReviewByReviewId('review2');
+      response = await reviewsHandler.getReviewByReviewId('review2');
       assert.deepEqual(response, mockReviews[1]);
     });
 
-    it('returns null if no review matches reviewId', () => {
-      const response = reviewsHandler.getReviewByReviewId('review5');
+    it('returns null if no review matches reviewId', async () => {
+      const response = await reviewsHandler.getReviewByReviewId('review5');
       expect(response).to.be.null;
     });
 
-    it('returns null if reviewId is null', () => {
-      const response = reviewsHandler.getReviewByReviewId();
+    it('returns null if reviewId is null', async () => {
+      const response = await reviewsHandler.getReviewByReviewId();
       expect(response).to.be.null;
     });
 
-    it('returns null if reviewId is not a string', () => {
-      let response = reviewsHandler.getReviewByReviewId(1);
-      expect(response).to.be.null;
-
-      response = reviewsHandler.getReviewByReviewId(true);
-      expect(response).to.be.null;
-
-      response = reviewsHandler.getReviewByReviewId({});
-      expect(response).to.be.null;
-
-      response = reviewsHandler.getReviewByReviewId([]);
-      expect(response).to.be.null;
+    it('returns null if reviewId is not a string', async () => {
+      try {
+        await reviewsHandler.getReviewByReviewId(1);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.reasonForError).to.equal('"value" must be a string');
+        expect(error.originatingRequest).to.equal(1);
+      }
     });
   });
 
   describe('getReviewsByPlaceId', () => {
-    it('returns only the review that matches placeId', () => {
-      let response = reviewsHandler.getReviewsByPlaceId('place1');
+    it('returns only the review that matches placeId', async () => {
+      let response = await reviewsHandler.getReviewsByPlaceId('place1');
       expect(response).to.have.lengthOf(1);
       assert.deepEqual(response[0], mockReviews[0]);
 
-      response = reviewsHandler.getReviewsByPlaceId('place2');
+      response = await reviewsHandler.getReviewsByPlaceId('place2');
       expect(response).to.have.lengthOf(2);
       assert.deepEqual(response[0], mockReviews[1]);
       assert.deepEqual(response[1], mockReviews[2]);
 
-      response = reviewsHandler.getReviewsByPlaceId('place3');
+      response = await reviewsHandler.getReviewsByPlaceId('place3');
       expect(response).to.have.lengthOf(1);
       assert.deepEqual(response[0], mockReviews[3]);
     });
 
-    it('returns empty array if no review matches placeId', () => {
-      const response = reviewsHandler.getReviewsByPlaceId('not real');
+    it('returns empty array if no review matches placeId', async () => {
+      const response = await reviewsHandler.getReviewsByPlaceId('not real');
       expect(response).to.have.lengthOf(0);
       expect(response).not.contains(mockReviews[0]);
       expect(response).not.contains(mockReviews[1]);
@@ -71,70 +68,62 @@ describe('reviewsHandler', () => {
       expect(response).not.contains(mockReviews[3]);
     });
 
-    it('returns empty array if placeId is null', () => {
-      const response = reviewsHandler.getReviewsByPlaceId();
+    it('returns empty array if placeId is null', async () => {
+      const response = await reviewsHandler.getReviewsByPlaceId();
       expect(response).to.have.lengthOf(0);
     });
 
-    it('returns empty array if placeId is not a string', () => {
-      let response = reviewsHandler.getReviewsByPlaceId(1);
-      expect(response).to.have.lengthOf(0);
-
-      response = reviewsHandler.getReviewsByPlaceId(true);
-      expect(response).to.have.lengthOf(0);
-
-      response = reviewsHandler.getReviewsByPlaceId({});
-      expect(response).to.have.lengthOf(0);
-
-      response = reviewsHandler.getReviewsByPlaceId([]);
-      expect(response).to.have.lengthOf(0);
+    it('throws SchemaError if placeId is invalid', async () => {
+      try {
+        await reviewsHandler.getReviewsByPlaceId(1);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.reasonForError).to.equal('"value" must be a string');
+        expect(error.originatingRequest).to.equal(1);
+      }
     });
   });
 
   describe('getReviewsByUserId', () => {
-    it('returns only the reviews that matches userId', () => {
-      let response = reviewsHandler.getReviewsByUserId('user1');
+    it('returns only the reviews that matches userId', async () => {
+      let response = await reviewsHandler.getReviewsByUserId('user1');
       expect(response).to.have.lengthOf(2);
       assert.deepEqual(response[0], mockReviews[0]);
       assert.deepEqual(response[1], mockReviews[1]);
 
-      response = reviewsHandler.getReviewsByUserId('user2');
+      response = await reviewsHandler.getReviewsByUserId('user2');
       expect(response).to.have.lengthOf(2);
       assert.deepEqual(response[0], mockReviews[2]);
       assert.deepEqual(response[1], mockReviews[3]);
     });
 
-    it('returns empty array if no review matches userId', () => {
-      const response = reviewsHandler.getReviewsByUserId('not real');
+    it('returns empty array if no review matches userId', async () => {
+      const response = await reviewsHandler.getReviewsByUserId('not real');
       expect(response).to.have.lengthOf(0);
       expect(response).not.contains(mockReviews[0]);
       expect(response).not.contains(mockReviews[1]);
     });
 
-    it('returns empty array if userId is null', () => {
-      const response = reviewsHandler.getReviewsByUserId();
+    it('returns empty array if userId is null', async () => {
+      const response = await reviewsHandler.getReviewsByUserId();
       expect(response).to.have.lengthOf(0);
     });
 
-    it('returns empty array if userId is not a string', () => {
-      let response = reviewsHandler.getReviewsByUserId(1);
-      expect(response).to.have.lengthOf(0);
-
-      response = reviewsHandler.getReviewsByUserId(true);
-      expect(response).to.have.lengthOf(0);
-
-      response = reviewsHandler.getReviewsByUserId({});
-      expect(response).to.have.lengthOf(0);
-
-      response = reviewsHandler.getReviewsByUserId([]);
-      expect(response).to.have.lengthOf(0);
+    it('throws SchemaError if userId is invalid', async () => {
+      try {
+        await reviewsHandler.getReviewsByUserId(1);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.reasonForError).to.equal('"value" must be a string');
+        expect(error.originatingRequest).to.equal(1);
+      }
     });
   });
 
   describe('deleteReviewByReviewId', () => {
     describe('when deleting a review for a place that has only 1 review', () => {
-      it('deletes correct review and deletes place', () => {
-        const response = reviewsHandler.deleteReviewByReviewId('review1');
+      it('deletes correct review and deletes place', async () => {
+        const response = await reviewsHandler.deleteReviewByReviewId('review1');
   
         expect(response.reviews).to.have.lengthOf(3);
         assert.deepEqual(response.reviews[0], mockReviews[1]);
@@ -148,8 +137,8 @@ describe('reviewsHandler', () => {
       });
     });
     describe('when deleteing a review for a place that has more than 1 review', () => {
-      it('deletes correct review and updates place', () => {
-        const response = reviewsHandler.deleteReviewByReviewId('review2');
+      it('deletes correct review and updates place', async () => {
+        const response = await reviewsHandler.deleteReviewByReviewId('review2');
 
         expect(response.reviews).to.have.lengthOf(3);
         assert.deepEqual(response.reviews[0], mockReviews[0]);
@@ -171,7 +160,7 @@ describe('reviewsHandler', () => {
 
   describe('addReview', () => {
     describe('when adding a review for a new place', () => {
-      it('adds review and adds place', () => {
+      it('adds review and adds place', async () => {
         const reviewForNewPlace = {
           reviewId: 'review5',
           placeId: 'place4',
@@ -184,7 +173,7 @@ describe('reviewsHandler', () => {
           reviewDate: '8/21/2018',
           words: 'meh'
         };
-        const response = reviewsHandler.addReview(reviewForNewPlace);
+        const response = await reviewsHandler.addReview(reviewForNewPlace);
         expect(response.reviews).contains(reviewForNewPlace);
   
         expect(response.places[3]).includes({
@@ -201,7 +190,7 @@ describe('reviewsHandler', () => {
     });
 
     describe('when adding a review for a preexisting place', () => {
-      it('adds review and updates place', () => {
+      it('adds review and updates place', async () => {
         const reviewForPreexistingPlace = {
           reviewId: 'review5',
           placeId: 'place3',
@@ -215,8 +204,7 @@ describe('reviewsHandler', () => {
           words: 'meh'
         };
         
-        const response = reviewsHandler.addReview(reviewForPreexistingPlace);
-  
+        const response = await reviewsHandler.addReview(reviewForPreexistingPlace);
         expect(response.reviews).contains(reviewForPreexistingPlace);
   
         expect(response.places[2]).includes({
@@ -229,66 +217,6 @@ describe('reviewsHandler', () => {
           numberOfReviews: 2,
           overallRating: 2
         });
-      });
-    });
-  });
-
-  describe('addReviewForNewPlace', () => {
-    it('returns new review and new place', () => {
-      const reviewForNewPlace = {
-        reviewId: 'review5',
-        placeId: 'place4',
-        userId: 'user1',
-        placeName: 'Royal Tavern',
-        beers: 1,
-        benny: 1,
-        bloody: 1,
-        burger: 1,
-        reviewDate: '8/21/2018',
-        words: 'meh'
-      };
-      const response = reviewsHandler.addReviewForNewPlace(reviewForNewPlace);
-      expect(response.reviews).contains(reviewForNewPlace);
-
-      expect(response.places[3]).includes({
-        placeId: 'place4',
-        placeName: 'Royal Tavern',
-        beers: 1,
-        benny: 1,
-        burger: 1,
-        bloody: 1,
-        numberOfReviews: 1,
-        overallRating: 1
-      });
-    });
-  });
-
-  describe('addReviewForPreexistingPlace', () => {
-    it('returns new review and preexisting place', () => {
-      const reviewForPreexistingPlace = {
-        reviewId: 'review5',
-        placeId: 'place3',
-        userId: 'user1',
-        placeName: 'White Dog Cafe',
-        beers: 1,
-        benny: 1,
-        bloody: 1,
-        burger: 1,
-        reviewDate: '8/21/2018',
-        words: 'meh'
-      };
-      const response = reviewsHandler.addReviewForPreexistingPlace(reviewForPreexistingPlace);
-      expect(response.reviews).contains(reviewForPreexistingPlace);
-
-      expect(response.places[2]).includes({
-        placeId: 'place3',
-        placeName: 'White Dog Cafe',
-        beers: 2,
-        benny: 1,
-        burger: 3,
-        bloody: 2,
-        numberOfReviews: 2,
-        overallRating: 2
       });
     });
   });
