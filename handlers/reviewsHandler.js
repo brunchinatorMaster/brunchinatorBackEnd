@@ -17,7 +17,12 @@ const {
 	getPlaceByPlaceId,
 	updatePlace,
 	deletePlaceByPlaceId
-} = require('../databaseAccess/placesDatabaseAccess')
+} = require('../databaseAccess/placesDatabaseAccess');
+const { SchemaError } = require('../errors/SchemaError');
+const { validateBySchema, JWT_SECRET } = require('../utils/utils');
+const { REVIEW_ID_SCHEMA, VALIDATE_CREATE_REVIEW_SCHEMA } = require('../schemas/reviewsSchemas');
+const { PLACE_ID_SCHEMA } = require('../schemas/placesSchemas');
+const { USER_ID_SCHEMA } = require('../schemas/usersSchemas');
 
 class ReviewsHandler {
 
@@ -26,8 +31,8 @@ class ReviewsHandler {
 	 * 
 	 * @returns {object[]}
 	 */
-	getReviews() {
-		const allReviews = getReviews();
+	async getReviews() {
+		const allReviews = await getReviews();
 		// TODO do business logic, if any
 		return allReviews;
 	}
@@ -38,8 +43,14 @@ class ReviewsHandler {
 	 * @param {string} reviewId 
 	 * @returns {object}
 	 */
-	getReviewByReviewId(reviewId) {
-		const reviewToReturn = getReviewByReviewId(reviewId);
+	async getReviewByReviewId(reviewId) {
+		const validateResponse = validateBySchema(reviewId, REVIEW_ID_SCHEMA);
+
+		if (!validateResponse.isValid) {
+			throw new SchemaError(validateResponse.error);
+		}
+
+		const reviewToReturn = await getReviewByReviewId(reviewId);
 		// TODO do business logic, if any
 		return reviewToReturn;
 	}
@@ -50,8 +61,14 @@ class ReviewsHandler {
 	 * @param {string} placeId 
 	 * @returns {object[]}
 	 */
-	getReviewsByPlaceId(placeId) {
-		const reviewsToReturn = getReviewsByPlaceId(placeId);
+	async getReviewsByPlaceId(placeId) {
+		const validateResponse = validateBySchema(placeId, PLACE_ID_SCHEMA);
+
+		if (!validateResponse.isValid) {
+			throw new SchemaError(validateResponse.error);
+		}
+
+		const reviewsToReturn = await getReviewsByPlaceId(placeId);
 		// TODO do business logic, if any
 		return reviewsToReturn;
 	}
@@ -62,8 +79,14 @@ class ReviewsHandler {
 	 * @param {string} userId 
 	 * @returns {object[]}
 	 */
-	getReviewsByUserId(userId) {
-		const reviewsToReturn = getReviewsByUserId(userId);
+	async getReviewsByUserId(userId) {
+		const validateResponse = validateBySchema(userId, USER_ID_SCHEMA);
+
+		if (!validateResponse.isValid) {
+			throw new SchemaError(validateResponse.error);
+		}
+
+		const reviewsToReturn = await getReviewsByUserId(userId);
 		// TODO do business logic, if any
 		return reviewsToReturn;
 	}
@@ -75,16 +98,22 @@ class ReviewsHandler {
 	 * @param {string} reviewId 
 	 * @returns {object}
 	 */
-	deleteReviewByReviewId(reviewId) {
-		const reviewBeingDeleted = getReviewByReviewId(reviewId);
-		const placeToUpdate = getPlaceByPlaceId(reviewBeingDeleted.placeId);
-		const allReviews = deleteReviewByReviewId(reviewId);
+	async deleteReviewByReviewId(reviewId) {
+		const validateResponse = validateBySchema(reviewId, REVIEW_ID_SCHEMA);
+
+		if (!validateResponse.isValid) {
+			throw new SchemaError(validateResponse.error);
+		}
+
+		const reviewBeingDeleted = await getReviewByReviewId(reviewId);
+		const placeToUpdate = await getPlaceByPlaceId(reviewBeingDeleted.placeId);
+		const allReviews = await deleteReviewByReviewId(reviewId);
 		let newAllPlaces = [];
 
 		if(placeToUpdate.numberOfReviews > 1) {
-			newAllPlaces = this.updatePlaceForRemovingReview(reviewBeingDeleted);
+			newAllPlaces = await this.#updatePlaceForRemovingReview(reviewBeingDeleted);
 		} else {
-			newAllPlaces = deletePlaceByPlaceId(placeToUpdate.placeId);
+			newAllPlaces = await deletePlaceByPlaceId(placeToUpdate.placeId);
 		}
 
 		const toReturn = {
@@ -104,12 +133,12 @@ class ReviewsHandler {
 	 * @param {object} review 
 	 * @returns 
 	 */
-	updatePlaceForRemovingReview(review) {
-		let toUpdate = getPlaceByPlaceId(review.placeId);
+	async #updatePlaceForRemovingReview(review) {
+		let toUpdate = await getPlaceByPlaceId(review.placeId);
 
 		toUpdate = recalculateRatingsForRemovingReviewFromPlace(review, toUpdate);
 		toUpdate.numberOfReviews--;
-		const allPlaces = updatePlace(toUpdate);
+		const allPlaces = await updatePlace(toUpdate);
 		// TODO do business logic, if any
 		return allPlaces;
 	}
@@ -122,12 +151,18 @@ class ReviewsHandler {
 	 * @param {object} review 
 	 * @returns {object}
 	 */
-	addReview(review) {
-		const placeExists = doesPlaceExist(review.placeId);
-		if(!placeExists) {
-			return this.addReviewForNewPlace(review)
+	async addReview(review) {
+		const validateResponse = validateBySchema(review, VALIDATE_CREATE_REVIEW_SCHEMA);
+
+		if (!validateResponse.isValid) {
+			throw new SchemaError(validateResponse.error);
 		}
-		return this.addReviewForPreexistingPlace(review);
+
+		const placeExists = await doesPlaceExist(review.placeId);
+		if(!placeExists) {
+			return await this.#addReviewForNewPlace(review)
+		}
+		return await this.#addReviewForPreexistingPlace(review);
 	}
 
 	/**
@@ -138,14 +173,14 @@ class ReviewsHandler {
 	 * @param {object} review 
 	 * @returns {object}
 	 */
-	addReviewForNewPlace(review) {
+	async #addReviewForNewPlace(review) {
 		const place = createNewPlaceFromReview(review);
-		const newAllPlaces = addPlace(place);
+		const newAllPlaces = await addPlace(place);
 		//TO DO we have to return the new places as well as the new reviews to the frontend.
 		//maybe put in one object to return. not sure yet.
 		//or the front end can make another call to refresh the places when a successfull add review happens
 		// maybe a boolen on teh return 'refreshPlaces' tells the front end to do that. maybe. hmm...
-		const allReviews = addReview(review);
+		const allReviews = await addReview(review);
 		const toReturn = {
 			places: newAllPlaces,
 			reviews: allReviews,
@@ -160,9 +195,9 @@ class ReviewsHandler {
 	 * @param {object} review 
 	 * @returns  {object}
 	 */
-	addReviewForPreexistingPlace(review) {
-		const newAllPlaces = this.updatePlaceForAddingReview(review);
-		const allReviews = addReview(review);
+	async #addReviewForPreexistingPlace(review) {
+		const newAllPlaces = await this.#updatePlaceForAddingReview(review);
+		const allReviews = await addReview(review);
 		const toReturn = {
 			places: newAllPlaces,
 			reviews: allReviews,
@@ -179,15 +214,15 @@ class ReviewsHandler {
 	 * @param {object} review 
 	 * @returns {object[]}
 	 */
-	updatePlaceForAddingReview(review) {
+	async #updatePlaceForAddingReview(review) {
 		// TODO this manual finding of the place may not be necessary
 		// once we have a database we may have a patch function
 		// for now it is there to mimic functionality.
-		let toUpdate = getPlaceByPlaceId(review.placeId);
+		let toUpdate = await getPlaceByPlaceId(review.placeId);
 
 		toUpdate = recalculateRatingsForAddingReviewToPlace(review, toUpdate);
 		toUpdate.numberOfReviews++;
-		const allPlaces = updatePlace(toUpdate);
+		const allPlaces = await updatePlace(toUpdate);
 		// TODO do business logic, if any
 		return allPlaces;
 	}

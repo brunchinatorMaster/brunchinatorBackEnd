@@ -5,7 +5,7 @@ const reviews = require('../mockDataBase/reviews');
  * 
  * @returns {object[]}
  */
-const getReviews = () => {
+const getReviews = async () => {
   const mockReviews = JSON.parse(JSON.stringify(reviews));
   return mockReviews;
 }
@@ -16,7 +16,7 @@ const getReviews = () => {
  * @param {string} reviewId 
  * @returns {object}
  */
-const getReviewByReviewId = (reviewId) => {
+const getReviewByReviewId = async (reviewId) => {
   // TODO this will be replaced with either a call to the database to specifically
   // grab one place by id, or some filtering of allPlaces
   const mockReviews = JSON.parse(JSON.stringify(reviews));
@@ -29,7 +29,7 @@ const getReviewByReviewId = (reviewId) => {
  * @param {string} placeId 
  * @returns {object[]}
  */
-const getReviewsByPlaceId = (placeId) => {
+const getReviewsByPlaceId = async (placeId) => {
   // TODO this will be replaced with either a call to the database to specifically
   // grab one place by id, or some filtering of allPlaces
   const mockReviews = JSON.parse(JSON.stringify(reviews));
@@ -42,7 +42,7 @@ const getReviewsByPlaceId = (placeId) => {
  * @param {string} userId 
  * @returns {object[]}
  */
-const getReviewsByUserId = (userId) => {
+const getReviewsByUserId = async (userId) => {
   // TODO this will be replaced with either a call to the database to specifically
   // grab one place by id, or some filtering of allPlaces
   const mockReviews = JSON.parse(JSON.stringify(reviews));
@@ -55,7 +55,7 @@ const getReviewsByUserId = (userId) => {
  * @param {string} reviewId 
  * @returns {object[]}
  */
-const deleteReviewByReviewId = (reviewId) => {
+const deleteReviewByReviewId = async (reviewId) => {
   // TODO this will be replaced with a delete call to the database
   const mockReviews = JSON.parse(JSON.stringify(reviews));
   return mockReviews.filter((review) => review.reviewId !== reviewId);
@@ -67,7 +67,7 @@ const deleteReviewByReviewId = (reviewId) => {
  * @param {object} review 
  * @returns {object[]}
  */
-const addReview = (review) => {
+const addReview = async (review) => {
   // TODO this will be replaced with a add call to the database
   const mockReviews = JSON.parse(JSON.stringify(reviews));
   mockReviews.push(review);
