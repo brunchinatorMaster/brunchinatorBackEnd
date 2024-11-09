@@ -14,6 +14,7 @@ app.get('/all', async (req, res) => {
 		res.status(400).json(error);
 	}
 });
+
 app.get('/byReviewId/:reviewId', async (req, res) => {
 	const reviewId = req.params.reviewId ?? null;
 	let error;
