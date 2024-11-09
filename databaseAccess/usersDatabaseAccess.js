@@ -1,4 +1,6 @@
 const users = require('../mockDataBase/users');
+const { v4 } = require('uuid');
+const { dynamodb } = require('../aws/awsClients');
 
 /**
  * returns all users
@@ -52,11 +54,13 @@ const getUserByEmail = async (email) => {
 }
 
 const addUser = async (user) => {
-  // TODO this will be replaced with a call to add a new record to the
-  // users table in the database
-  const mockUsers = JSON.parse(JSON.stringify(users));
-  mockUsers.push(user);
-  return mockUsers;
+  user.userId = v4();
+  const toPush = {
+    TableName: 'Users',
+    Item: user 
+  }
+  const response = await dynamodb.put(toPush).promise();
+  return response;
 }
 
 const login = async (userName, password) => {

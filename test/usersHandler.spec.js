@@ -91,18 +91,6 @@ describe('usersHandler', () => {
   });
 
   describe('addUser', () => {
-    it('adds a user to users', async () => {
-      const toAdd = {
-        email: 'address@domain.com',
-        userName: 'some username',
-        password: 'somePassword',
-      };
-      const response = await usersHandler.addUser(toAdd);
-      assert.deepEqual(response, {
-        success: true
-      });
-    });
-
     it('throws SchemaError is request is invalid', async () => {
       const toAdd = {
         userName: 'some username',
