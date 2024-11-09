@@ -20,6 +20,12 @@ const { validateBySchema, JWT_SECRET } = require('../utils/utils');
 const jwt = require('jsonwebtoken');
 
 class ReviewsHandler {
+
+	/**
+	 * returns all users
+	 * 
+	 * @returns {object[]}
+	 */
 	async getUsers() {
 		const allUsers = await getAllUsers();
 		// TODO business logic, if any
@@ -27,6 +33,12 @@ class ReviewsHandler {
 		return toReturn;
 	}
 
+	/**
+	 * returns user that matches userId
+	 *  
+	 * @param {string} userId 
+	 * @returns {object}
+	 */
 	async getUserByUserId(userId) {
 		const validateResponse = validateBySchema(userId, USER_ID_SCHEMA);
 
@@ -40,6 +52,12 @@ class ReviewsHandler {
 		return toReturn;
 	}
 
+	/**
+	 * returns user that matches userName
+	 *  
+	 * @param {string} userName 
+	 * @returns {object}
+	 */
   async getUserByUsername(userName) {
 		const validateResponse = validateBySchema(userName, USERNAME_SCHEMA);
 
@@ -53,6 +71,12 @@ class ReviewsHandler {
 		return toReturn;
 	}
 
+	/**
+	 * returns user that matches email
+	 *  
+	 * @param {string} email 
+	 * @returns {object}
+	 */
   async getUserByEmail(email) {
 		const validateResponse = validateBySchema(email, EMAIL_SCHEMA);
 
@@ -66,6 +90,13 @@ class ReviewsHandler {
 		return toReturn;
 	}
 
+	/**
+	 * adds user, 
+	 * and returns an object with success: true
+	 * 
+	 * @param {object} user 
+	 * @returns {object}
+	 */
 	async addUser(user) {
 		const validateResponse = validateBySchema(user, VALIDATE_CREATE_USER_SCHEMA);
 
@@ -80,6 +111,16 @@ class ReviewsHandler {
 		};
 	}
 
+	/**
+	 * checks userName and password against database, 
+	 * returns error if no user is found that matches userName
+	 * returns error if password doesn't match
+	 * returns object with cleanUser and token if login is success
+	 * 
+	 * @param {string} userName 
+	 * @param {string} password 
+	 * @returns {object}
+	 */
 	async login(userName, password){
 		const userNameIsValid = validateBySchema(userName, USERNAME_SCHEMA);
 

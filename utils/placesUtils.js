@@ -1,5 +1,12 @@
 const { getAllPlaces } = require('../databaseAccess/placesDatabaseAccess');
 
+/**
+ * creates and returns a new place created from 
+ * the data in a first time review, 
+ * 
+ * @param {object} review 
+ * @returns {object}
+ */
 const createNewPlaceFromReview = (review) => {
   const place = {};
   place.placeId = review.placeId;
@@ -13,6 +20,12 @@ const createNewPlaceFromReview = (review) => {
   return place;
 };
 
+/**
+ * returns the average of an array of numbers, 
+ * 
+ * @param {array} arrayOfValues 
+ * @returns {object}
+ */
 const findAverageOf = (arrayOfValues) => {
   let numerator = 0;
   let denominator = 0;
@@ -26,6 +39,13 @@ const findAverageOf = (arrayOfValues) => {
   return +(numerator / denominator).toFixed(2);
 }
 
+/**
+ * returns a boolean if place exists in database or not.
+ * will probably be replaced with a database method 
+ * 
+ * @param {string} placeIdToVerify 
+ * @returns {boolean}
+ */
 const doesPlaceExist = async (placeIdToVerify) => {
   const places = await getAllPlaces();
   let toReturn = false;
@@ -37,6 +57,15 @@ const doesPlaceExist = async (placeIdToVerify) => {
   return toReturn;
 }
 
+/**
+ * recalculates the individual ratings and overallRating
+ * of a place(toUpdate) that already exists when a review is added.
+ * returns toUpdate with the updated values
+ * 
+ * @param {object} review 
+ * @param {object} toUpdate 
+ * @returns {object}
+ */
 const recalculateRatingsForAddingReviewToPlace = (review, toUpdate) => {
   const newBeers = findAverageOf([review.beers, toUpdate.beers]);
   const newBenny = findAverageOf([review.benny, toUpdate.benny]);
@@ -53,6 +82,15 @@ const recalculateRatingsForAddingReviewToPlace = (review, toUpdate) => {
   return toUpdate;
 };
 
+/**
+ * recalculates the individual ratings and overallRating
+ * of a place(toUpdate) that already exists when a review is deleted.
+ * returns toUpdate with the updated values
+ * 
+ * @param {object} review 
+ * @param {object} toUpdate 
+ * @returns {object}
+ */
 const recalculateRatingsForRemovingReviewFromPlace = (review, toUpdate) => {
   const newBeers = removeFromAverage(review.beers, toUpdate.beers, toUpdate.numberOfReviews);
   const newBenny = removeFromAverage(review.benny, toUpdate.benny, toUpdate.numberOfReviews);
@@ -69,6 +107,14 @@ const recalculateRatingsForRemovingReviewFromPlace = (review, toUpdate) => {
   return toUpdate;
 }
 
+/**
+ * removes elementToRemove from originalAverage and returns new average
+ * 
+ * @param {number} elementToRemove 
+ * @param {number} originalAverage 
+ * @param {number} originalNumberOfElements 
+ * @returns {object}
+ */
 const removeFromAverage = (elementToRemove, originalAverage, originalNumberOfElements) => {
   if(elementToRemove == null) {
     return originalAverage;
