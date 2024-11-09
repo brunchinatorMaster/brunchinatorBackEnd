@@ -26,8 +26,8 @@ const findAverageOf = (arrayOfValues) => {
   return +(numerator / denominator).toFixed(2);
 }
 
-const doesPlaceExist = (placeIdToVerify) => {
-  const places = getAllPlaces();
+const doesPlaceExist = async (placeIdToVerify) => {
+  const places = await getAllPlaces();
   let toReturn = false;
   places.forEach((place) => {
     if(place.placeId == placeIdToVerify) {

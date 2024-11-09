@@ -1,10 +1,13 @@
 const Joi = require('joi');
-const { PLACE_ID_SCHEMA, PLACE_NAME_SCHEMA } = require('./placesSchemas');
+const {
+  PLACE_ID_SCHEMA,
+  PLACE_NAME_SCHEMA,
+  INDIVIDUAL_RATINGS_SCHEMA,
+  WORDS_SCHEMA,
+} = require('./placesSchemas');
 const { USER_ID_SCHEMA } = require('./usersSchemas');
 
 const REVIEW_ID_SCHEMA = Joi.string();
-const INDIVIDUAL_RATINGS_SCHEMA = Joi.number().greater(0).less(6);
-const WORDS_SCHEMA = Joi.string();
 const REVIEW_DATE_SCHEMA = Joi.date();
 
 const VALIDATE_CREATE_REVIEW_SCHEMA = Joi.object({

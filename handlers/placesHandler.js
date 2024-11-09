@@ -3,6 +3,9 @@ const {
 	getPlaceByPlaceId,
 	addPlace,
 } = require('../databaseAccess/placesDatabaseAccess');
+const { SchemaError } = require('../errors/SchemaError');
+const { PLACE_ID_SCHEMA, VALIDATE_CREATE_PLACE_SCHEMA } = require('../schemas/placesSchemas');
+const { validateBySchema } = require('../utils/utils');
 
 class PlacesHandler {
 
@@ -11,8 +14,8 @@ class PlacesHandler {
 	 * 
 	 * @returns {object[]}
 	 */
-	getPlaces() {
-		const allPlaces = getAllPlaces();
+	async getPlaces() {
+		const allPlaces = await getAllPlaces();
 		// TODO do business logic, if any
 		return allPlaces;
 	}
@@ -23,8 +26,14 @@ class PlacesHandler {
 	 * @param {string} placeId 
 	 * @returns {object}
 	 */
-	getPlaceByPlaceId(placeId) {
-		const placeToReturn = getPlaceByPlaceId(placeId);
+	async getPlaceByPlaceId(placeId) {
+		const validateResponse = validateBySchema(placeId, PLACE_ID_SCHEMA);
+
+		if (!validateResponse.isValid) {
+			throw new SchemaError(validateResponse.error);
+		}
+
+		const placeToReturn = await getPlaceByPlaceId(placeId);
 		// TODO do business logic, if any
 		return placeToReturn;
 	}
@@ -35,8 +44,14 @@ class PlacesHandler {
 	 * @param {object} place 
 	 * @returns {object[]}
 	 */
-	addPlace(place) {
-		const allPlaces = addPlace(place);
+	async addPlace(place) {
+		const validateResponse = validateBySchema(place, VALIDATE_CREATE_PLACE_SCHEMA);
+
+		if (!validateResponse.isValid) {
+			throw new SchemaError(validateResponse.error);
+		}
+
+		const allPlaces = await addPlace(place);
 		// TODO do business logic, if any
 		return allPlaces;
 	}

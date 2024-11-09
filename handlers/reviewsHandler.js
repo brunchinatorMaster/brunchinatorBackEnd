@@ -19,7 +19,7 @@ const {
 	deletePlaceByPlaceId
 } = require('../databaseAccess/placesDatabaseAccess');
 const { SchemaError } = require('../errors/SchemaError');
-const { validateBySchema, JWT_SECRET } = require('../utils/utils');
+const { validateBySchema } = require('../utils/utils');
 const { REVIEW_ID_SCHEMA, VALIDATE_CREATE_REVIEW_SCHEMA } = require('../schemas/reviewsSchemas');
 const { PLACE_ID_SCHEMA } = require('../schemas/placesSchemas');
 const { USER_ID_SCHEMA } = require('../schemas/usersSchemas');

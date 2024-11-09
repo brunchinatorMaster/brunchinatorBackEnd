@@ -2,65 +2,59 @@ const { expect, assert } = require('chai');
 const PlacesHandler = require('../handlers/placesHandler');
 const placesHandler = new PlacesHandler();
 const mockPlaces = require('../mockDataBase/places');
+const { SchemaError } = require('../errors/SchemaError');
 
 describe('placesHandler', () => {
   describe('getPlaces', () => {
-    it('returns places', () => {
-      const response = placesHandler.getPlaces();
+    it('returns places', async () => {
+      const response = await placesHandler.getPlaces();
       assert.deepEqual(response, mockPlaces);
     });
   });
 
   describe('getPlaceByPlaceId', () => {
-    it('returns only the place that matches placeId', () => {
-      let response = placesHandler.getPlaceByPlaceId('place1');
+    it('returns only the place that matches placeId', async () => {
+      let response = await placesHandler.getPlaceByPlaceId('place1');
       assert.deepEqual(response, mockPlaces[0]);
 
-      response = placesHandler.getPlaceByPlaceId('place2');
+      response = await placesHandler.getPlaceByPlaceId('place2');
       assert.deepEqual(response, mockPlaces[1]);
 
-      response = placesHandler.getPlaceByPlaceId('place3');
+      response = await placesHandler.getPlaceByPlaceId('place3');
       assert.deepEqual(response, mockPlaces[2]);
     });
 
-    it('returns null if no place matches placeId', () => {
-      const response = placesHandler.getPlaceByPlaceId('place4');
+    it('returns null if no place matches placeId', async () => {
+      const response = await placesHandler.getPlaceByPlaceId('place4');
       expect(response).to.be.null;
     });
 
-    it('returns null if placeId is null', () => {
-      const response = placesHandler.getPlaceByPlaceId();
+    it('returns null if placeId is null', async () => {
+      const response = await placesHandler.getPlaceByPlaceId();
       expect(response).to.be.null;
     });
 
-    it('returns null if placeId is not a string', () => {
-      let response = placesHandler.getPlaceByPlaceId(1);
-      expect(response).to.be.null;
-
-      response = placesHandler.getPlaceByPlaceId(true);
-      expect(response).to.be.null;
-
-      response = placesHandler.getPlaceByPlaceId({});
-      expect(response).to.be.null;
-
-      response = placesHandler.getPlaceByPlaceId([]);
-      expect(response).to.be.null;
+    it('throws SchemaError if placeId is invalid', async () => {
+      try {
+        await placesHandler.getPlaceByPlaceId(1);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.reasonForError).to.equal('"value" must be a string');
+        expect(error.originatingRequest).to.equal(1);
+      }
     });
   });
 
   describe('addPlace', () => {
-    it('adds a place to places', () => {
+    it('adds a place to places', async () => {
       const toAdd = {
-        placeId: 'place4',
         placeName: 'Royal Tavern',
-        numberOfReviews: 1,
-        overallRating: 2.5,
         beers: 1,
         benny: 2,
         bloody: 3,
         burger: 4,
       };
-      const response = placesHandler.addPlace(toAdd);
+      const response = await placesHandler.addPlace(toAdd);
       expect(response).to.contain(toAdd);
     });
   });
