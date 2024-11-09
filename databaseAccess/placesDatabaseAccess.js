@@ -5,7 +5,7 @@ const places = require('../mockDataBase/places');
  * 
  * @returns {object[]}
  */
-const getAllPlaces = () => {
+const getAllPlaces = async () => {
   // TODO this will be replaced with a call to the database to get all places
   // at some point i may introduce pagination, not sure yet
   const mockPlaces = JSON.parse(JSON.stringify(places));
@@ -18,7 +18,7 @@ const getAllPlaces = () => {
  * @param {string} placeId 
  * @returns {object}
  */
-const getPlaceByPlaceId = (placeId) => {
+const getPlaceByPlaceId = async (placeId) => {
   // TODO this will be replaced with either a call to the database to specifically
   // grab one place by id, or some filtering of allPlaces
   const mockPlaces = JSON.parse(JSON.stringify(places));
@@ -31,7 +31,7 @@ const getPlaceByPlaceId = (placeId) => {
  * @param {object} place 
  * @returns {object[]}
  */
-const addPlace = (place) => {
+const addPlace = async (place) => {
   // TODO this will be replaced with either a call to add a new record to the
   // mockPlaces table in the database
   const mockPlaces = JSON.parse(JSON.stringify(places));
@@ -45,7 +45,7 @@ const addPlace = (place) => {
  * @param {object} place 
  * @returns 
  */
-const updatePlace = (place) => {
+const updatePlace = async (place) => {
   // TODO this will be replaced with either a patch call to update a record in the
   // mockPlaces table in the database
   const mockPlaces = JSON.parse(JSON.stringify(places));
@@ -60,7 +60,7 @@ const updatePlace = (place) => {
  * @param {string} placeId 
  * @returns 
  */
-const deletePlaceByPlaceId = (placeId) => {
+const deletePlaceByPlaceId = async (placeId) => {
   // TODO this will be replaced with either a delete call to the database
   const mockPlaces = JSON.parse(JSON.stringify(places));
   return mockPlaces.filter((place) => place.placeId !== placeId);
