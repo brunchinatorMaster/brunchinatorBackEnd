@@ -12,7 +12,7 @@ const {
 	USERNAME_SCHEMA,
 	PASSWORD_SCHEMA,
  } = require('../schemas/usersSchemas');
-const { removePassswordFromArrayOfUsers, removePassswordFromUser } = require('../utils/usersUtils');
+const { removePassswordFromUser } = require('../utils/usersUtils');
 const { validateBySchema, JWT_SECRET } = require('../utils/utils');
 const jwt = require('jsonwebtoken');
 
@@ -32,7 +32,6 @@ class ReviewsHandler {
 		}
 
 		const userToReturn = await getUserByUsername(userName);
-		// TODO do business logic, if any
 		const toReturn = removePassswordFromUser(userToReturn);
 		return toReturn;
 	}
@@ -51,7 +50,6 @@ class ReviewsHandler {
 		}
 
 		const userToReturn = await getUserByEmail(email);
-		// TODO do business logic, if any
 		const toReturn = removePassswordFromUser(userToReturn); 
 		return toReturn;
 	}
@@ -71,7 +69,6 @@ class ReviewsHandler {
 		}
 
 		await addUser(user);
-		// TODO do business logic, if any
 		return {
 			success: true
 		};

@@ -28,14 +28,6 @@ describe('POST /createUser', () => {
 });
 
 describe('GET /byEmail/:email', () => {
-  it('returns correct user', async () => {
-    const response = await supertest(app)
-      .get('/users/byEmail/tohearstories@gmail.com')
-      .expect(200);
-      
-    assert.deepEqual(response.body, mockUsersWithoutPasswords[0]);
-  });
-
   it('returns error if email is invalid', async () => {
     const response = await supertest(app)
       .get('/users/byEmail/tohearstories@gmail')

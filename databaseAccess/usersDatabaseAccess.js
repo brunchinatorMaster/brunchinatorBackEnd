@@ -3,7 +3,8 @@ const { v4 } = require('uuid');
 const { 
   docClient,
   QueryCommand,
-  PutCommand 
+  PutCommand,
+  ScanCommand
 } = require('../aws/awsClients');
 const { LoginError } = require('../errors/LoginError');
 
@@ -17,11 +18,10 @@ const { LoginError } = require('../errors/LoginError');
 const getUserByUsername = async (userName) => {
   const queryCommand = new QueryCommand({
     TableName: 'Users',
-    KeyConditionExpression:
-      'userName = :userName',
     ExpressionAttributeValues: {
       ':userName': userName,
     },
+    KeyConditionExpression: 'userName = :userName',
     ConsistentRead: true,
   });
 
@@ -39,10 +39,21 @@ const getUserByUsername = async (userName) => {
  * @returns {object}
  */
 const getUserByEmail = async (email) => {
-  // TODO this will be replaced with either a call to the database to specifically
-  // grab one user by email, or some filtering of allUsers
-  const mockUsers = JSON.parse(JSON.stringify(users));
-  return mockUsers.filter((user) => user.email == email)?.[0] ?? null;
+  const scanCommand = new ScanCommand({
+    TableName: "Users",
+    ExpressionAttributeValues: {
+      ':email': email,
+    },
+    FilterExpression: 'email = :email',
+    ProjectionExpression: "userName, email",
+  });
+
+  const response = await docClient.send(scanCommand);
+
+  if(response?.Items?.length > 0) {
+    return response.Items[0];
+  }
+  throw new LoginError('No User Found');
 }
 
 const addUser = async (user) => {
