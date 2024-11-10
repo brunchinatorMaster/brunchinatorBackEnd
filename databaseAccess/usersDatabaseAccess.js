@@ -1,6 +1,9 @@
 const users = require('../mockDataBase/users');
 const { v4 } = require('uuid');
-const { dynamodb } = require('../aws/awsClients');
+const { 
+  docClient,
+  PutCommand 
+} = require('../aws/awsClients');
 
 /**
  * returns all users
@@ -55,11 +58,11 @@ const getUserByEmail = async (email) => {
 
 const addUser = async (user) => {
   user.userId = v4();
-  const toPush = {
+  const toPut = new PutCommand({
     TableName: 'Users',
     Item: user 
-  }
-  const response = await dynamodb.put(toPush).promise();
+  });
+  const response = await docClient.send(toPut);
   return response;
 }
 
