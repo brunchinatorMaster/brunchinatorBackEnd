@@ -5,7 +5,7 @@ const {
   INDIVIDUAL_RATINGS_SCHEMA,
   WORDS_SCHEMA,
 } = require('./placesSchemas');
-const { USER_ID_SCHEMA } = require('./usersSchemas');
+const { USERNAME_SCHEMA } = require('./usersSchemas');
 
 const REVIEW_ID_SCHEMA = Joi.string();
 const REVIEW_DATE_SCHEMA = Joi.date();
@@ -13,7 +13,7 @@ const REVIEW_DATE_SCHEMA = Joi.date();
 const VALIDATE_CREATE_REVIEW_SCHEMA = Joi.object({
   reviewId: REVIEW_ID_SCHEMA,
   placeId: PLACE_ID_SCHEMA.required(),
-  userId: USER_ID_SCHEMA.required(),
+  userName: USERNAME_SCHEMA.required(),
   placeName: PLACE_NAME_SCHEMA.required(),
   beers: INDIVIDUAL_RATINGS_SCHEMA,
   benny: INDIVIDUAL_RATINGS_SCHEMA,

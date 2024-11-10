@@ -15,19 +15,6 @@ app.get('/all', async (req, res, next) => {
 	}
 });
 
-app.get('/byUserId/:userId', async (req, res) => {
-	const userId = req.params.userId ?? null;
-	let error;
-	try {
-		const toReturn = await usersHandler.getUserByUserId(userId);
-		res.status(200).json(toReturn);
-	} catch (err) {
-		error = err;
-	} finally {
-		res.status(400).json(error);
-	}
-});
-
 app.get('/byUsername/:userName', async (req, res) => {
 	const userName = req.params.userName ?? null;
 	let error;

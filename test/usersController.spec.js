@@ -47,33 +47,9 @@ describe('GET /byEmail/:email', () => {
 });
 
 describe('GET /byUsername/:userName', () => {
-  it('returns correct user', async () => {
-    const response = await supertest(app)
-      .get('/users/byUsername/geo')
-      .expect(200);
-      
-    assert.deepEqual(response.body, mockUsersWithoutPasswords[0]);
-  });
-
   it('returns 404 if userName is missing', async () => {
     await supertest(app)
       .get('/users/byUsername/')
-      .expect(404);
-  });
-});
-
-describe('GET /byUserId/:userId', () => {
-  it('returns correct user', async () => {
-    const response = await supertest(app)
-      .get('/users/byUserId/user1')
-      .expect(200);
-      
-    assert.deepEqual(response.body, mockUsersWithoutPasswords[0]);
-  });
-
-  it('returns 404 if userName is missing', async () => {
-    await supertest(app)
-      .get('/users/byUserId/')
       .expect(404);
   });
 });

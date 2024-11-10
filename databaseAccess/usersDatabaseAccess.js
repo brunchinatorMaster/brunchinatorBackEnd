@@ -2,8 +2,10 @@ const users = require('../mockDataBase/users');
 const { v4 } = require('uuid');
 const { 
   docClient,
+  QueryCommand,
   PutCommand 
 } = require('../aws/awsClients');
+const { LoginError } = require('../errors/LoginError');
 
 /**
  * returns all users
@@ -18,29 +20,28 @@ const getAllUsers = async () => {
 }
 
 /**
- * returns user that has matching userId
- * 
- * @param {string} userId 
- * @returns {object}
- */
-const getUserByUserId = async (userId) => {
-  // TODO this will be replaced with either a call to the database to specifically
-  // grab one user by id, or some filtering of allUsers
-  const mockUsers = JSON.parse(JSON.stringify(users));
-  return mockUsers.filter((user) => user.userId == userId)?.[0] ?? null;
-}
-
-/**
  * returns user that has matching userName
+ * throws LoginError if no user is found
  * 
  * @param {string} userName 
  * @returns {object}
  */
 const getUserByUsername = async (userName) => {
-  // TODO this will be replaced with either a call to the database to specifically
-  // grab one user by userName, or some filtering of allUsers
-  const mockUsers = JSON.parse(JSON.stringify(users));
-  return mockUsers.filter((user) => user.userName == userName)?.[0] ?? null;
+  const queryCommand = new QueryCommand({
+    TableName: 'Users',
+    KeyConditionExpression:
+      'userName = :userName',
+    ExpressionAttributeValues: {
+      ':userName': userName,
+    },
+    ConsistentRead: true,
+  });
+
+  const response = await docClient.send(queryCommand);
+  if(response?.Items?.length > 0) {
+    return response.Items[0];
+  }
+  throw new LoginError('No User Found');
 }
 
 /**
@@ -57,7 +58,6 @@ const getUserByEmail = async (email) => {
 }
 
 const addUser = async (user) => {
-  user.userId = v4();
   const toPut = new PutCommand({
     TableName: 'Users',
     Item: user 
@@ -73,7 +73,6 @@ const login = async (userName, password) => {
 
 module.exports = {
   getAllUsers,
-  getUserByUserId,
   getUserByUsername,
   getUserByEmail,
   addUser,

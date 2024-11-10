@@ -41,11 +41,11 @@ app.get('/byPlaceId/:placeId', async (req, res) => {
 	}
 });
 
-app.get('/byUserId/:userId', async (req, res) => {
-	const userId = req.params.userId ?? null;
+app.get('/byUserName/:userName', async (req, res) => {
+	const userName = req.params.userName ?? null;
 	let error;
 	try {
-		const toReturn = await reviewsHandler.getReviewsByUserId(userId);
+		const toReturn = await reviewsHandler.getReviewsByUserName(userName);
 		res.status(200).json(toReturn);
 	} catch (err) {
 		error = err;

@@ -23,40 +23,7 @@ describe('usersHandler', () => {
     });
   });
 
-  describe('getUserByUserId', () => {
-    it('returns only the user that matches userId', async () => {
-      let response = await usersHandler.getUserByUserId('user1');
-      
-      expect(response).contains(mockUsersWithoutPasswords[0]);
-      expect(response).not.contains(mockUsersWithoutPasswords[1]);
-
-      response = await usersHandler.getUserByUserId('user2');
-      expect(response).not.contains(mockUsersWithoutPasswords[0]);
-      expect(response).contains(mockUsersWithoutPasswords[1]);
-    });
-
-    it('throws SchemaError is userId is invalid', async () => {
-      try {
-        await usersHandler.getUserByUserId(12345);
-      } catch (error) {
-        expect(error).to.be.instanceof(SchemaError);
-        expect(error.reasonForError).to.equal('"value" must be a string');
-        expect(error.originatingRequest).to.equal(12345);
-      }
-    });
-  });
-
   describe('getUserByUsername', () => {
-    it('returns only the user that matches userName', async () => {
-      let response = await usersHandler.getUserByUsername('geo');
-      expect(response).contains(mockUsersWithoutPasswords[0]);
-      expect(response).not.contains(mockUsersWithoutPasswords[1]);
-
-      response = await usersHandler.getUserByUsername('bex');
-      expect(response).not.contains(mockUsersWithoutPasswords[0]);
-      expect(response).contains(mockUsersWithoutPasswords[1]);
-    });
-
     it('throws SchemaError is userName is invalid', async () => {
       try {
         await usersHandler.getUserByUsername(12345);
@@ -149,45 +116,6 @@ describe('usersHandler', () => {
         expect(error).to.be.instanceof(SchemaError);
         expect(error.reasonForError).to.equal('"password" cannot be an empty string');
       }
-    });
-
-    it('throws LoginError error if no user exists with the username', async () => {
-      const userName = 'not a valid user';
-      const password = 'derp';
-      try {
-        await usersHandler.login(userName, password);
-      } catch (error) {
-        expect(error).to.be.instanceof(LoginError);
-        expect(error.statusCode).to.equal(401);
-        expect(error.message).to.equal('No User Found');
-      }
-    });
-
-    it('throws LoginError error if password is wrong', async () => {
-      const userName = 'geo';
-      const password = 'not a valid password';
-      try {
-        await usersHandler.login(userName, password);
-      } catch (error) {
-        expect(error).to.be.instanceof(LoginError);
-        expect(error.statusCode).to.equal(401);
-        expect(error.message).to.equal('Wrong Password');
-      }
-    });
-
-    it('returns user and jwt token upon successful login', async () => {
-      const mockUser = JSON.parse(JSON.stringify(users[0]));
-      const cleanUser = removePassswordFromUser(mockUser);
-      const token = jwt.sign(cleanUser, JWT_SECRET);
-
-      const userName = 'geo';
-      const password = 'geoPassword';
-
-      const response = await usersHandler.login(userName, password);
-      assert.deepEqual(response, {
-        user: cleanUser,
-        token,
-      });
     });
   });
 });

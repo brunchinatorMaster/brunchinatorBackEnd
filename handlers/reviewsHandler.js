@@ -8,7 +8,7 @@ const {
 	getReviews,
 	getReviewByReviewId,
 	getReviewsByPlaceId,
-	getReviewsByUserId,
+	getReviewsByUserName,
 	deleteReviewByReviewId,
 	addReview,
 } = require('../databaseAccess/reviewsDatabaseAccess');
@@ -22,7 +22,7 @@ const { SchemaError } = require('../errors/SchemaError');
 const { validateBySchema } = require('../utils/utils');
 const { REVIEW_ID_SCHEMA, VALIDATE_CREATE_REVIEW_SCHEMA } = require('../schemas/reviewsSchemas');
 const { PLACE_ID_SCHEMA } = require('../schemas/placesSchemas');
-const { USER_ID_SCHEMA } = require('../schemas/usersSchemas');
+const { USERNAME_SCHEMA } = require('../schemas/usersSchemas');
 
 class ReviewsHandler {
 
@@ -74,19 +74,19 @@ class ReviewsHandler {
 	}
 
 	/**
-	 * returns reviews left by user that matches userId
+	 * returns reviews left by user that matches userName
 	 * 
-	 * @param {string} userId 
+	 * @param {string} userName 
 	 * @returns {object[]}
 	 */
-	async getReviewsByUserId(userId) {
-		const validateResponse = validateBySchema(userId, USER_ID_SCHEMA);
+	async getReviewsByUserName(userName) {
+		const validateResponse = validateBySchema(userName, USERNAME_SCHEMA);
 
 		if (!validateResponse.isValid) {
 			throw new SchemaError(validateResponse.error);
 		}
 
-		const reviewsToReturn = await getReviewsByUserId(userId);
+		const reviewsToReturn = await getReviewsByUserName(userName);
 		// TODO do business logic, if any
 		return reviewsToReturn;
 	}
