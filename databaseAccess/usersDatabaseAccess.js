@@ -8,18 +8,6 @@ const {
 const { LoginError } = require('../errors/LoginError');
 
 /**
- * returns all users
- * 
- * @returns {object[]}
- */
-const getAllUsers = async () => {
-  // TODO this will be replaced with a call to the database to get all users
-  // at some point i may introduce pagination, not sure yet
-  const mockUsers = JSON.parse(JSON.stringify(users));
-  return mockUsers;
-}
-
-/**
  * returns user that has matching userName
  * throws LoginError if no user is found
  * 
@@ -72,7 +60,6 @@ const login = async (userName, password) => {
 }
 
 module.exports = {
-  getAllUsers,
   getUserByUsername,
   getUserByEmail,
   addUser,

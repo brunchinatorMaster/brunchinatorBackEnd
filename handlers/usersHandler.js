@@ -1,5 +1,4 @@
 const {
-	getAllUsers,
 	getUserByUsername,
 	getUserByEmail,
 	addUser,
@@ -18,18 +17,6 @@ const { validateBySchema, JWT_SECRET } = require('../utils/utils');
 const jwt = require('jsonwebtoken');
 
 class ReviewsHandler {
-
-	/**
-	 * returns all users
-	 * 
-	 * @returns {object[]}
-	 */
-	async getUsers() {
-		const allUsers = await getAllUsers();
-		// TODO business logic, if any
-		const toReturn = removePassswordFromArrayOfUsers(allUsers);
-		return toReturn;
-	}
 
 	/**
 	 * returns user that matches userName
