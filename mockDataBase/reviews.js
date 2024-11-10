@@ -2,7 +2,7 @@ const mockReviews = [
 	{
 		reviewId: 'review1',
 		placeId: 'place1',
-		userId: 'user1',
+		userName: 'geo',
 		placeName: 'Burg\'s Hideaway Lounge',
 		beers: 4,
 		benny: null,
@@ -14,7 +14,7 @@ const mockReviews = [
 	{
 		reviewId: 'review2',
 		placeId: 'place2',
-		userId: 'user1',
+		userName: 'geo',
 		placeName: 'Devil\'s Pocket',
 		beers: 5,
 		benny: null,
@@ -26,7 +26,7 @@ const mockReviews = [
 	{
 		reviewId: 'review3',
 		placeId: 'place2',
-		userId: 'user2',
+		userName: 'bex',
 		placeName: 'Devil\'s Pocket',
 		beers: 3,
 		benny: 2,
@@ -38,7 +38,7 @@ const mockReviews = [
 	{
 		reviewId: 'review4',
 		placeId: 'place3',
-		userId: 'user2',
+		userName: 'bex',
 		placeName: 'Flannel Cafe',
 		beers: 3,
 		benny: null,

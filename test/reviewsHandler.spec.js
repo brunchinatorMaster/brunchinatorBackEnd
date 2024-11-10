@@ -84,37 +84,26 @@ describe('reviewsHandler', () => {
     });
   });
 
-  describe('getReviewsByUserId', () => {
-    it('returns only the reviews that matches userId', async () => {
-      let response = await reviewsHandler.getReviewsByUserId('user1');
-      expect(response).to.have.lengthOf(2);
-      assert.deepEqual(response[0], mockReviews[0]);
-      assert.deepEqual(response[1], mockReviews[1]);
+  describe('getReviewsByUserName', () => {
 
-      response = await reviewsHandler.getReviewsByUserId('user2');
-      expect(response).to.have.lengthOf(2);
-      assert.deepEqual(response[0], mockReviews[2]);
-      assert.deepEqual(response[1], mockReviews[3]);
-    });
-
-    it('returns empty array if no review matches userId', async () => {
-      const response = await reviewsHandler.getReviewsByUserId('not real');
+    it('returns empty array if no review matches userName', async () => {
+      const response = await reviewsHandler.getReviewsByUserName('not real');
       expect(response).to.have.lengthOf(0);
       expect(response).not.contains(mockReviews[0]);
       expect(response).not.contains(mockReviews[1]);
     });
 
-    it('returns empty array if userId is null', async () => {
-      const response = await reviewsHandler.getReviewsByUserId();
+    it('returns empty array if userName is null', async () => {
+      const response = await reviewsHandler.getReviewsByUserName();
       expect(response).to.have.lengthOf(0);
     });
 
-    it('throws SchemaError if userId is invalid', async () => {
+    it('throws SchemaError if userName is invalid', async () => {
       try {
-        await reviewsHandler.getReviewsByUserId(1);
+        await reviewsHandler.getReviewsByUserName(1);
       } catch (error) {
         expect(error).to.be.instanceof(SchemaError);
-        expect(error.reasonForError).to.equal('"value" must be a string');
+        expect(error.reasonForError).to.equal('"userName" must be a string');
         expect(error.originatingRequest).to.equal(1);
       }
     });
@@ -164,7 +153,7 @@ describe('reviewsHandler', () => {
         const reviewForNewPlace = {
           reviewId: 'review5',
           placeId: 'place4',
-          userId: 'user1',
+          userName: 'geo',
           placeName: 'Royal Tavern',
           beers: 1,
           benny: 1,
@@ -194,7 +183,7 @@ describe('reviewsHandler', () => {
         const reviewForPreexistingPlace = {
           reviewId: 'review5',
           placeId: 'place3',
-          userId: 'user1',
+          userName: 'geo',
           placeName: 'White Dog Cafe',
           beers: 1,
           benny: 1,

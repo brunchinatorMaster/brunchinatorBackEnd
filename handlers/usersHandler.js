@@ -1,6 +1,5 @@
 const {
 	getAllUsers,
-	getUserByUserId,
 	getUserByUsername,
 	getUserByEmail,
 	addUser,
@@ -11,7 +10,6 @@ const { LoginError } = require('../errors/LoginError');
 const { 
 	VALIDATE_CREATE_USER_SCHEMA,
 	EMAIL_SCHEMA,
-	USER_ID_SCHEMA,
 	USERNAME_SCHEMA,
 	PASSWORD_SCHEMA,
  } = require('../schemas/usersSchemas');
@@ -30,25 +28,6 @@ class ReviewsHandler {
 		const allUsers = await getAllUsers();
 		// TODO business logic, if any
 		const toReturn = removePassswordFromArrayOfUsers(allUsers);
-		return toReturn;
-	}
-
-	/**
-	 * returns user that matches userId
-	 *  
-	 * @param {string} userId 
-	 * @returns {object}
-	 */
-	async getUserByUserId(userId) {
-		const validateResponse = validateBySchema(userId, USER_ID_SCHEMA);
-
-		if (!validateResponse.isValid) {
-			throw new SchemaError(validateResponse.error);
-		}
-
-		const userToReturn = await getUserByUserId(userId);
-		// TODO do business logic, if any
-		const toReturn = removePassswordFromUser(userToReturn);
 		return toReturn;
 	}
 

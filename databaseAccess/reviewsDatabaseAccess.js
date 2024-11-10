@@ -37,16 +37,16 @@ const getReviewsByPlaceId = async (placeId) => {
 }
 
 /**
- * returns all reviews for user that matches userId
+ * returns all reviews for user that matches userName
  * 
- * @param {string} userId 
+ * @param {string} userName 
  * @returns {object[]}
  */
-const getReviewsByUserId = async (userId) => {
+const getReviewsByUserName = async (userName) => {
   // TODO this will be replaced with either a call to the database to specifically
   // grab one place by id, or some filtering of allPlaces
   const mockReviews = JSON.parse(JSON.stringify(reviews));
-  return mockReviews.filter((review) => review.userId == userId) ?? [];
+  return mockReviews.filter((review) => review.userName == userName) ?? [];
 }
 
 /**
@@ -78,7 +78,7 @@ module.exports = {
   getReviews,
   getReviewByReviewId,
   getReviewsByPlaceId,
-  getReviewsByUserId,
+  getReviewsByUserName,
   deleteReviewByReviewId,
   addReview
 }
