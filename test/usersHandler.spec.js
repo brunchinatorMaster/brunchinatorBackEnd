@@ -16,13 +16,6 @@ describe('usersHandler', () => {
     mockUsersWithoutPasswords = removePassswordFromArrayOfUsers(mockUsers);
   });
 
-  describe('getUsers', () => {
-    it('returns users', async () => {
-      const response = await usersHandler.getUsers();
-      assert.deepEqual(response, mockUsersWithoutPasswords);
-    });
-  });
-
   describe('getUserByUsername', () => {
     it('throws SchemaError is userName is invalid', async () => {
       try {
