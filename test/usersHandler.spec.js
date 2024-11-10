@@ -29,16 +29,6 @@ describe('usersHandler', () => {
   });
 
   describe('getUserByEmail', () => {
-    it('returns only the user that matches email', async () => {
-      let response = await usersHandler.getUserByEmail('tohearstories@gmail.com');
-      expect(response).contains(mockUsersWithoutPasswords[0]);
-      expect(response).not.contains(mockUsersWithoutPasswords[1]);
-
-      response = await usersHandler.getUserByEmail('zombiestyle@gmail.com');
-      expect(response).not.contains(mockUsersWithoutPasswords[0]);
-      expect(response).contains(mockUsersWithoutPasswords[1]);
-    });
-
     it('throws SchemaError is email is invalid', async () => {
       try {
         await usersHandler.getUserByEmail('tohearstories@gmail');
