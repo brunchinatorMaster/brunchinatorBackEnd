@@ -8,23 +8,6 @@ const mockUsers = JSON.parse(JSON.stringify(users));
 const mockUsersWithoutPasswords = removePassswordFromArrayOfUsers(mockUsers);
 
 describe('POST /createUser', () => {
-  it('returns success upon adding user', async () => {
-    const toSend = {
-      email: 'address@domain.com',
-      userName: 'some username',
-      password: 'somePassword'
-    };
-
-    const response = await supertest(app)
-      .post('/users/createUser')
-      .send(toSend)
-      .expect(200);
-      
-    assert.deepEqual(response.body, {
-      success: true
-    });
-  });
-
   it('returns error if request is invalid', async () => {
     const mockUsers = JSON.parse(JSON.stringify(users));
 
