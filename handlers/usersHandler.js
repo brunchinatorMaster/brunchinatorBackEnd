@@ -4,6 +4,7 @@ const {
 	addUser,
 	login,
 	deleteUser,
+	updateUser,
  } = require('../databaseAccess/usersDatabaseAccess');
 const { SchemaError } = require('../errors/SchemaError');
 const { LoginError } = require('../errors/LoginError');
@@ -53,6 +54,26 @@ class ReviewsHandler {
 		const userToReturn = await getUserByEmail(email);
 		const toReturn = removePassswordFromUser(userToReturn); 
 		return toReturn;
+	}
+
+	/**
+	 * updates user, 
+	 * and returns an object with success: true
+	 * 
+	 * @param {object} user 
+	 * @returns {object}
+	 */
+	async updateUser(user) {
+		const validateResponse = validateBySchema(user, VALIDATE_CREATE_USER_SCHEMA);
+
+		if (!validateResponse.isValid) {
+			throw new SchemaError(validateResponse.error);
+		}
+
+		await updateUser(user);
+		return {
+			success: true
+		};
 	}
 
 	/**

@@ -1,22 +1,14 @@
 const supertest = require('supertest');
-const { assert, expect } = require('chai');
+const { expect } = require('chai');
 const app = require('../app');
-
-const { removePassswordFromArrayOfUsers } = require('../utils/usersUtils');
-const users = require('../mockDataBase/users');
-const mockUsers = JSON.parse(JSON.stringify(users));
-const mockUsersWithoutPasswords = removePassswordFromArrayOfUsers(mockUsers);
 
 describe('POST /createUser', () => {
   it('returns error if request is invalid', async () => {
-    const mockUsers = JSON.parse(JSON.stringify(users));
-
     const toSend = {
       userName: 'some username',
       password: 'somePassword'
     };
 
-    mockUsers.push(toSend);
     const response = await supertest(app)
       .post('/users/createUser')
       .send(toSend)
@@ -24,6 +16,39 @@ describe('POST /createUser', () => {
 
       expect(response.body.errorInField[0]).to.equal('email');
       expect(response.body.reasonForError).to.equal('"email" is required');
+  });
+});
+
+describe('POST /updateUser', () => {
+  it('returns error if required field is missing', async () => {
+    const toSend = {
+      userName: 'some username',
+      password: 'somePassword'
+    };
+
+    const response = await supertest(app)
+      .post('/users/updateUser')
+      .send(toSend)
+      .expect(400);
+
+      expect(response.body.errorInField[0]).to.equal('email');
+      expect(response.body.reasonForError).to.equal('"email" is required');
+  });
+
+  it('returns error if field is wrong type', async () => {
+    const toSend = {
+      userName: 123,
+      password: 'somePassword',
+      email: 'address@domain.com'
+    };
+
+    const response = await supertest(app)
+      .post('/users/updateUser')
+      .send(toSend)
+      .expect(400);
+
+      expect(response.body.errorInField[0]).to.equal('userName');
+      expect(response.body.reasonForError).to.equal('"userName" must be a string');
   });
 });
 

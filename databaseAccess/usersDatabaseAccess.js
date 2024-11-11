@@ -5,7 +5,8 @@ const {
   QueryCommand,
   PutCommand,
   ScanCommand,
-  DeleteCommand
+  DeleteCommand,
+  UpdateCommand
 } = require('../aws/awsClients');
 const { LoginError } = require('../errors/LoginError');
 
@@ -57,6 +58,23 @@ const getUserByEmail = async (email) => {
   throw new LoginError('No User Found');
 }
 
+const updateUser = async (user) => {
+  const toUpdate = new UpdateCommand({
+    TableName: 'Users',
+    Key: {
+      userName: user.userName,
+    },
+    UpdateExpression: 'set password = :password, email = :email',
+    ExpressionAttributeValues: {
+      ":password": user.password,
+      ":email": user.email
+    },
+    ReturnValues: "ALL_NEW",
+  });
+  const response = await docClient.send(toUpdate);
+  return response;
+}
+
 const addUser = async (user) => {
   const toPut = new PutCommand({
     TableName: 'Users',
@@ -87,5 +105,6 @@ module.exports = {
   getUserByEmail,
   addUser,
   login,
-  deleteUser
+  deleteUser,
+  updateUser
 }

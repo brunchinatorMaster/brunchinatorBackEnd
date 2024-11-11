@@ -42,6 +42,19 @@ app.get('/byEmail/:email', async (req, res) => {
 	
 });
 
+app.post('/updateUser', async (req, res) => {
+	const user = req.body;
+	let error;
+	try {
+		const response = await usersHandler.updateUser(user);
+		res.status(200).json(response);
+	} catch (err) {
+		error = err;
+	} finally {
+		res.status(400).json(error);
+	}
+});
+
 app.post('/createUser', async (req, res) => {
 	const user = req.body;
 	let error;
