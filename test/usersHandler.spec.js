@@ -47,6 +47,82 @@ describe('usersHandler', () => {
     });
   });
 
+  describe('updateUser', () => {
+    it('throws SchemaError is request is invalid', async () => {
+      const toUpdate = {
+        userName: 'some username',
+        password: 'somePassword',
+      };
+      try {
+        await usersHandler.updateUser(toUpdate);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.errorInField[0]).to.equal('email');
+        expect(error.reasonForError).to.equal('"email" is required');
+      }
+    });
+
+    it('throws SchemaError is username is invalid', async () => {
+      const toUpdate = {
+        userName: 123,
+        password: 'somePassword',
+        email: 'address@domain.com'
+      };
+      try {
+        await usersHandler.updateUser(toUpdate);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.errorInField[0]).to.equal('userName');
+        expect(error.reasonForError).to.equal('"userName" must be a string');
+      }
+    });
+
+    it('throws SchemaError is password is invalid', async () => {
+      const toUpdate = {
+        userName: 'test',
+        password: 123,
+        email: 'address@domain.com'
+      };
+      try {
+        await usersHandler.updateUser(toUpdate);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.errorInField[0]).to.equal('password');
+        expect(error.reasonForError).to.equal('"password" must be a string');
+      }
+    });
+
+    it('throws SchemaError is email is not a string', async () => {
+      const toUpdate = {
+        userName: 'test',
+        password: 'test',
+        email: 123
+      };
+      try {
+        await usersHandler.updateUser(toUpdate);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.errorInField[0]).to.equal('email');
+        expect(error.reasonForError).to.equal('"email" must be a string');
+      }
+    });
+
+    it('throws SchemaError is email is not a valid email', async () => {
+      const toUpdate = {
+        userName: 'test',
+        password: 'test',
+        email: 'some string'
+      };
+      try {
+        await usersHandler.updateUser(toUpdate);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.errorInField[0]).to.equal('email');
+        expect(error.reasonForError).to.equal('"email" must be a valid email');
+      }
+    });
+  });
+
   describe('login', () => {
     it('throws SchemaError if username is not a string', async () => {
       const userName = 1;
@@ -81,7 +157,7 @@ describe('usersHandler', () => {
       }
     });
 
-    it('throws SchemaError if username is an empty string', async () => {
+    it('throws SchemaError if password is an empty string', async () => {
       const userName = 'geo';
       const password = '';
       try {
