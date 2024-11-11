@@ -1,20 +1,11 @@
-const { expect, assert } = require('chai');
+const { expect } = require('chai');
 const UsersHandler = require('../handlers/usersHandler');
 const usersHandler = new UsersHandler();
 const users = require('../mockDataBase/users');
 const { SchemaError } = require('../errors/SchemaError');
-const { removePassswordFromArrayOfUsers, removePassswordFromUser } = require('../utils/usersUtils');
-const { JWT_SECRET } = require('../utils/utils');
-const jwt = require('jsonwebtoken');
-const { LoginError } = require('../errors/LoginError');
+
 
 describe('usersHandler', () => {
-
-  let mockUsersWithoutPasswords;
-  beforeEach(() => {
-    const mockUsers = JSON.parse(JSON.stringify(users));
-    mockUsersWithoutPasswords = removePassswordFromArrayOfUsers(mockUsers);
-  });
 
   describe('getUserByUsername', () => {
     it('throws SchemaError is userName is invalid', async () => {
@@ -98,6 +89,20 @@ describe('usersHandler', () => {
       } catch (error) {
         expect(error).to.be.instanceof(SchemaError);
         expect(error.reasonForError).to.equal('"password" cannot be an empty string');
+      }
+    });
+  });
+
+  describe('deleteUser', () => {
+    it('throws SchemaError is userName is invalid', async () => {
+      const toDelete = {
+        userName: 123
+      };
+      try {
+        await usersHandler.deleteUser(toDelete);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.reasonForError).to.equal('"userName" must be a string');
       }
     });
   });

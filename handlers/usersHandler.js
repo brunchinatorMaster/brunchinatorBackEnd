@@ -3,6 +3,7 @@ const {
 	getUserByEmail,
 	addUser,
 	login,
+	deleteUser,
  } = require('../databaseAccess/usersDatabaseAccess');
 const { SchemaError } = require('../errors/SchemaError');
 const { LoginError } = require('../errors/LoginError');
@@ -113,6 +114,26 @@ class ReviewsHandler {
 		return {
 			user: cleanUser,
 			token
+		};
+	}
+
+	/**
+	 * deletes user, 
+	 * and returns an object with success: true
+	 * 
+	 * @param {string} userName 
+	 * @returns {object}
+	 */
+	async deleteUser(userName) {
+		const validateResponse = validateBySchema(userName, USERNAME_SCHEMA);
+
+		if (!validateResponse.isValid) {
+			throw new SchemaError(validateResponse.error);
+		}
+
+		await deleteUser(userName);
+		return {
+			success: true
 		};
 	}
 }

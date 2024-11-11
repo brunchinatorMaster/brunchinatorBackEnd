@@ -4,7 +4,8 @@ const {
   docClient,
   QueryCommand,
   PutCommand,
-  ScanCommand
+  ScanCommand,
+  DeleteCommand
 } = require('../aws/awsClients');
 const { LoginError } = require('../errors/LoginError');
 
@@ -70,9 +71,21 @@ const login = async (userName, password) => {
   return user;
 }
 
+const deleteUser = async (userName) => {
+  const toPut = new DeleteCommand({
+    TableName: 'Users',
+    Key: {
+      userName,
+    }
+  });
+  const response = await docClient.send(toPut);
+  return response;
+}
+
 module.exports = {
   getUserByUsername,
   getUserByEmail,
   addUser,
   login,
+  deleteUser
 }
