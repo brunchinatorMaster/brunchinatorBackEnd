@@ -3,18 +3,6 @@ const app = express();
 const UsersHandler = require('../handlers/usersHandler');
 const usersHandler = new UsersHandler();
 
-app.get('/all', async (req, res, next) => {
-	let error;
-	try {
-		const users = await usersHandler.getUsers();
-		res.status(200).json(users);
-	} catch (err) {
-		error = err;
-	} finally {
-		res.status(400).json(error);
-	}
-});
-
 app.get('/byUsername/:userName', async (req, res) => {
 	const userName = req.params.userName ?? null;
 	let error;
