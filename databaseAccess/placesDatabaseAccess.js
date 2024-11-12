@@ -1,16 +1,9 @@
 const places = require('../mockDataBase/places');
-
-/**
- * returns all places
- * 
- * @returns {object[]}
- */
-const getAllPlaces = async () => {
-  // TODO this will be replaced with a call to the database to get all places
-  // at some point i may introduce pagination, not sure yet
-  const mockPlaces = JSON.parse(JSON.stringify(places));
-  return mockPlaces;
-}
+const { 
+  docClient,
+  PutCommand,
+  QueryCommand,
+} = require('../aws/awsClients');
 
 /**
  * returns place that has matching placeId
@@ -19,24 +12,44 @@ const getAllPlaces = async () => {
  * @returns {object}
  */
 const getPlaceByPlaceId = async (placeId) => {
+  if (!placeId) {
+    throw new Error('placeId must not be null');
+  }
+
+  const queryCommand = new QueryCommand({
+    TableName: 'Places',
+    ExpressionAttributeValues: {
+      ':placeId': placeId,
+    },
+    KeyConditionExpression: 'placeId = :placeId',
+    ConsistentRead: true,
+  });
+
+  const response = await docClient.send(queryCommand);
+  if(response?.Items?.length > 0) {
+    return response.Items[0];
+  }
+  throw new Error('no place found');
+
   // TODO this will be replaced with either a call to the database to specifically
   // grab one place by id, or some filtering of allPlaces
-  const mockPlaces = JSON.parse(JSON.stringify(places));
-  return mockPlaces.filter((place) => place.placeId == placeId)?.[0] ?? null;
+  // const mockPlaces = JSON.parse(JSON.stringify(places));
+  // return mockPlaces.filter((place) => place.placeId == placeId)?.[0] ?? null;
 }
 
 /**
- * adds place and then returns all places
+ * adds place to dynamo
  * 
  * @param {object} place 
  * @returns {object[]}
  */
 const addPlace = async (place) => {
-  // TODO this will be replaced with either a call to add a new record to the
-  // mockPlaces table in the database
-  const mockPlaces = JSON.parse(JSON.stringify(places));
-  mockPlaces.push(place);
-  return mockPlaces;
+  const toPut = new PutCommand({
+    TableName: 'Places',
+    Item: place 
+  });
+  const response = await docClient.send(toPut);
+  return response;
 }
 
 /**
@@ -67,7 +80,6 @@ const deletePlaceByPlaceId = async (placeId) => {
 };
 
 module.exports = {
-  getAllPlaces,
   getPlaceByPlaceId,
   addPlace,
   updatePlace,deletePlaceByPlaceId,

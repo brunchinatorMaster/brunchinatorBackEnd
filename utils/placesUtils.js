@@ -9,7 +9,6 @@ const { getAllPlaces } = require('../databaseAccess/placesDatabaseAccess');
  */
 const createNewPlaceFromReview = (review) => {
   const place = {};
-  place.placeId = review.placeId;
   place.placeName = review.placeName;
   place.beers = review.beers;
   place.benny = review.benny;

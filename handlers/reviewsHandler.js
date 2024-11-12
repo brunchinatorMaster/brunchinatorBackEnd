@@ -21,8 +21,9 @@ const {
 const { SchemaError } = require('../errors/SchemaError');
 const { validateBySchema } = require('../utils/utils');
 const { REVIEW_ID_SCHEMA, VALIDATE_CREATE_REVIEW_SCHEMA } = require('../schemas/reviewsSchemas');
-const { PLACE_ID_SCHEMA } = require('../schemas/placesSchemas');
+const { PLACE_ID_SCHEMA, VALIDATE_CREATE_PLACE_SCHEMA } = require('../schemas/placesSchemas');
 const { USERNAME_SCHEMA } = require('../schemas/usersSchemas');
+const { v4 } = require('uuid');
 
 class ReviewsHandler {
 
@@ -175,6 +176,12 @@ class ReviewsHandler {
 	 */
 	async #addReviewForNewPlace(review) {
 		const place = createNewPlaceFromReview(review);
+		const validateResponse = validateBySchema(place, VALIDATE_CREATE_PLACE_SCHEMA);
+
+		if (!validateResponse.isValid) {
+			throw new SchemaError(validateResponse.error);
+		}
+		place.placeId = v4();
 		const newAllPlaces = await addPlace(place);
 		//TO DO we have to return the new places as well as the new reviews to the frontend.
 		//maybe put in one object to return. not sure yet.
