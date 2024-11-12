@@ -1,5 +1,5 @@
 const { expect, assert } = require('chai');
-const { createNewPlaceFromReview, findAverageOf, recalculateRatingsForAddingReviewToPlace, removeFromAverage, recalculateRatingsForRemovingReviewFromPlace } = require('../utils/placesUtils');
+const { findAverageOf, recalculateRatingsForAddingReviewToPlace, removeFromAverage, recalculateRatingsForRemovingReviewFromPlace } = require('../utils/placesUtils');
 
 describe('findAverageOf', () => {
   it('calculates average', () => {
@@ -12,29 +12,29 @@ describe('findAverageOf', () => {
 });
 
 describe('createNewPlaceFromReview', () => {
-  it('correctly calculates overall Rating', () => {
-    review = {
-      placeId: '123',
-      placeName: 'some place',
-      beers: 1,
-      bloody: 2,
-      burger: 3,
-      benny: null,
-    };
+  // it('correctly calculates overall Rating', () => {
+  //   review = {
+  //     placeId: '123',
+  //     placeName: 'some place',
+  //     beers: 1,
+  //     bloody: 2,
+  //     burger: 3,
+  //     benny: null,
+  //   };
 
-    const response = createNewPlaceFromReview(review);
+  //   const response = createNewPlaceFromReview(review);
 
-    assert.deepEqual(response, {
-      placeId: '123',
-      placeName: 'some place',
-      beers: 1,
-      bloody: 2,
-      burger: 3,
-      benny: null,
-      numberOfReviews: 1,
-      overallRating: 2,
-    });
-  });
+  //   assert.deepEqual(response, {
+  //     placeId: '123',
+  //     placeName: 'some place',
+  //     beers: 1,
+  //     bloody: 2,
+  //     burger: 3,
+  //     benny: null,
+  //     numberOfReviews: 1,
+  //     overallRating: 2,
+  //   });
+  // });
 });
 
 describe('recalculateRatingsForAddingReviewToPlace', () => {

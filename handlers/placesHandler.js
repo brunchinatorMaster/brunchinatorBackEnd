@@ -1,24 +1,14 @@
 const { 
-	getAllPlaces, 
 	getPlaceByPlaceId,
 	addPlace,
 } = require('../databaseAccess/placesDatabaseAccess');
 const { SchemaError } = require('../errors/SchemaError');
 const { PLACE_ID_SCHEMA, VALIDATE_CREATE_PLACE_SCHEMA } = require('../schemas/placesSchemas');
+const { createNewPlaceFromReview } = require('../utils/placesUtils');
 const { validateBySchema } = require('../utils/utils');
+const { v4 } = require('uuid');
 
 class PlacesHandler {
-
-	/**
-	 * returns all places
-	 * 
-	 * @returns {object[]}
-	 */
-	async getPlaces() {
-		const allPlaces = await getAllPlaces();
-		// TODO do business logic, if any
-		return allPlaces;
-	}
 
 	/**
 	 * returns place that matches placeId
@@ -50,10 +40,11 @@ class PlacesHandler {
 		if (!validateResponse.isValid) {
 			throw new SchemaError(validateResponse.error);
 		}
-
-		const allPlaces = await addPlace(place);
-		// TODO do business logic, if any
-		return allPlaces;
+		place.placeId = v4();
+		await addPlace(toCreate);
+		return {
+			success: true
+		};
 	}
 }
 
