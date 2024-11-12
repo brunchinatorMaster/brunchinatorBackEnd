@@ -1,5 +1,3 @@
-const users = require('../mockDataBase/users');
-const { v4 } = require('uuid');
 const { 
   docClient,
   QueryCommand,
@@ -11,7 +9,7 @@ const {
 const { LoginError } = require('../errors/LoginError');
 
 /**
- * returns user that has matching userName
+ * returns user in dynamo that has matching userName
  * throws LoginError if no user is found
  * 
  * @param {string} userName 
@@ -35,7 +33,7 @@ const getUserByUsername = async (userName) => {
 }
 
 /**
- * returns user that has matching email
+ * returns user in dynamo that has matching email
  * 
  * @param {string} email 
  * @returns {object}
@@ -58,6 +56,12 @@ const getUserByEmail = async (email) => {
   throw new LoginError('No User Found');
 }
 
+/**
+ * updates user in dynamo
+ * 
+ * @param {object} user 
+ * @returns {object}
+ */
 const updateUser = async (user) => {
   const toUpdate = new UpdateCommand({
     TableName: 'Users',
@@ -75,6 +79,12 @@ const updateUser = async (user) => {
   return response;
 }
 
+/**
+ * adds user to dynamo
+ * 
+ * @param {object} user 
+ * @returns {object}
+ */
 const addUser = async (user) => {
   const toPut = new PutCommand({
     TableName: 'Users',
@@ -84,11 +94,14 @@ const addUser = async (user) => {
   return response;
 }
 
-const login = async (userName, password) => {
-  const user = await getUserByUsername(userName);
-  return user;
-}
-
+/**
+ * deletes user from dynamo
+ * 
+ * NOTE: purely a utility function and will
+ * probably never actually be used
+ * @param {object} user 
+ * @returns {object}
+ */
 const deleteUser = async (userName) => {
   const toPut = new DeleteCommand({
     TableName: 'Users',
@@ -104,7 +117,6 @@ module.exports = {
   getUserByUsername,
   getUserByEmail,
   addUser,
-  login,
   deleteUser,
   updateUser
 }

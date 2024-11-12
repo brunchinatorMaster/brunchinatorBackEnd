@@ -119,7 +119,7 @@ class ReviewsHandler {
 			throw new SchemaError(passwordIsValid.error);
 		}
 
-		const user = await login(userName, password);
+		const user = await getUserByUsername(userName, password);
 
 		if(!user) {
 			throw new LoginError('No User Found');
@@ -141,6 +141,8 @@ class ReviewsHandler {
 	/**
 	 * deletes user, 
 	 * and returns an object with success: true
+	 * NOTE: purely a utility function and will
+	 * probably never actually be used
 	 * 
 	 * @param {string} userName 
 	 * @returns {object}
