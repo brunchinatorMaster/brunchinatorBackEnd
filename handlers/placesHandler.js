@@ -24,7 +24,6 @@ class PlacesHandler {
 		}
 
 		const placeToReturn = await getPlaceByPlaceId(placeId);
-		// TODO do business logic, if any
 		return placeToReturn;
 	}
 
@@ -41,7 +40,7 @@ class PlacesHandler {
 			throw new SchemaError(validateResponse.error);
 		}
 		place.placeId = v4();
-		await addPlace(toCreate);
+		await addPlace(place);
 		return {
 			success: true
 		};

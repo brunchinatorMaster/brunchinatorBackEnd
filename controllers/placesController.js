@@ -5,14 +5,11 @@ const placesHandler = new PlacesHandler();
 
 app.get('/byPlaceId/:placeId', async (req, res) => {
 	const placeId = req.params.placeId ?? null;
-	let error;
 	try {
 		const toReturn = await placesHandler.getPlaceByPlaceId(placeId);
 		res.status(200).json(toReturn);
-	} catch (err) {
-		error = err;
-	} finally {
-		res.status(400).json(error);
+	} catch (error) {
+		res.status(error.statusCode ?? 400).json(error);
 	}
 });
 

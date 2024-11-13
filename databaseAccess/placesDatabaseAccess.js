@@ -4,6 +4,7 @@ const {
   PutCommand,
   QueryCommand,
 } = require('../aws/awsClients');
+const { DynamoError } = require('../errors/DynamoError');
 
 /**
  * returns place that has matching placeId
@@ -13,7 +14,7 @@ const {
  */
 const getPlaceByPlaceId = async (placeId) => {
   if (!placeId) {
-    throw new Error('placeId must not be null');
+    throw new DynamoError(400, 'placeId must not be null');
   }
 
   const queryCommand = new QueryCommand({
@@ -29,12 +30,7 @@ const getPlaceByPlaceId = async (placeId) => {
   if(response?.Items?.length > 0) {
     return response.Items[0];
   }
-  throw new Error('no place found');
-
-  // TODO this will be replaced with either a call to the database to specifically
-  // grab one place by id, or some filtering of allPlaces
-  // const mockPlaces = JSON.parse(JSON.stringify(places));
-  // return mockPlaces.filter((place) => place.placeId == placeId)?.[0] ?? null;
+  throw new DynamoError(404, `No Place Found with placeId: ${placeId}`);
 }
 
 /**
