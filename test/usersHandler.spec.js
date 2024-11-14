@@ -1,11 +1,18 @@
-const { expect } = require('chai');
+const { expect, assert } = require('chai');
 const UsersHandler = require('../handlers/usersHandler');
 const usersHandler = new UsersHandler();
-const users = require('../mockDataBase/users');
+const mockUsers = require('../mockDataBase/users');
 const { SchemaError } = require('../errors/SchemaError');
+
+const { docClient, QueryCommand, ScanCommand, PutCommand, UpdateCommand, DeleteCommand } = require('../aws/awsClients');
+const { mockClient } = require('aws-sdk-client-mock');
+const ddbMock = mockClient(docClient);
 
 
 describe('usersHandler', () => {
+  beforeEach(() => {
+    ddbMock.reset();
+  });
 
   describe('getUserByUsername', () => {
     it('throws SchemaError is userName is invalid', async () => {
@@ -16,6 +23,19 @@ describe('usersHandler', () => {
         expect(error.reasonForError).to.equal('"userName" must be a string');
         expect(error.originatingRequest).to.equal(12345);
       }
+    });
+
+    it('returns user found by dynamo', async () => {
+      ddbMock.on(QueryCommand).resolves({
+        Items: [mockUsers[0]]
+      });
+  
+      const response = await usersHandler.getUserByUsername('geo');
+
+        assert.deepEqual(response, {
+          userName: 'geo',
+          email: 'tohearstories@gmail.com'
+        });
     });
   });
 
@@ -29,13 +49,26 @@ describe('usersHandler', () => {
         expect(error.originatingRequest).to.equal('tohearstories@gmail');
       }
     });
+
+    it('returns user found by dynamo', async () => {
+      ddbMock.on(ScanCommand).resolves({
+        Items: [mockUsers[0]]
+      });
+  
+      const response = await usersHandler.getUserByEmail('tohearstories@gmail.com');
+
+        assert.deepEqual(response, {
+          userName: 'geo',
+          email: 'tohearstories@gmail.com'
+        });
+    });
   });
 
   describe('addUser', () => {
-    it('throws SchemaError is request is invalid', async () => {
+    it('throws SchemaError if email is missing', async () => {
       const toAdd = {
         userName: 'some username',
-        password: 'somePassword',
+        password: 'somePassword'
       };
       try {
         await usersHandler.addUser(toAdd);
@@ -45,13 +78,102 @@ describe('usersHandler', () => {
         expect(error.reasonForError).to.equal('"email" is required');
       }
     });
+
+    it('throws SchemaError if email is not a valid email', async () => {
+      const toAdd = {
+        userName: 'some username',
+        password: 'somePassword',
+        email: 'tohearstories@gmail'
+      };
+      try {
+        await usersHandler.addUser(toAdd);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.errorInField[0]).to.equal('email');
+        expect(error.reasonForError).to.equal('"email" must be a valid email');
+      }
+    });
+
+    it('throws SchemaError if userName is missing', async () => {
+      const toAdd = {
+        password: 'somePassword',
+        email: 'tohearstories@gmail.com'
+      };
+      try {
+        await usersHandler.addUser(toAdd);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.errorInField[0]).to.equal('userName');
+        expect(error.reasonForError).to.equal('"userName" is a required field');
+      }
+    });
+
+    it('throws SchemaError if userName is not a string', async () => {
+      const toAdd = {
+        userName: 123,
+        password: 'somePassword',
+        email: 'tohearstories@gmail.com'
+      };
+      try {
+        await usersHandler.addUser(toAdd);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.errorInField[0]).to.equal('userName');
+        expect(error.reasonForError).to.equal('"userName" must be a string');
+      }
+    });
+
+    it('throws SchemaError if password is missing', async () => {
+      const toAdd = {
+        userName: 'someName',
+        email: 'tohearstories@gmail.com'
+      };
+      try {
+        await usersHandler.addUser(toAdd);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.errorInField[0]).to.equal('password');
+        expect(error.reasonForError).to.equal('"password" is a required field');
+      }
+    });
+
+    it('throws SchemaError if password is not a string', async () => {
+      const toAdd = {
+        userName: 'someName',
+        password: 123,
+        email: 'tohearstories@gmail.com'
+      };
+      try {
+        await usersHandler.addUser(toAdd);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.errorInField[0]).to.equal('password');
+        expect(error.reasonForError).to.equal('"password" must be a string');
+      }
+    });
+
+    it('returns success:true if user addition is successful', async () => {
+      ddbMock.on(PutCommand).resolves({
+        Items: [mockUsers[0]]
+      });
+
+      const toAdd = {
+        userName: 'someName',
+        password: 'password',
+        email: 'tohearstories@gmail.com'
+      };
+
+      const response = await usersHandler.addUser(toAdd);
+
+      assert.deepEqual(response, {success: true});
+    });
   });
 
   describe('updateUser', () => {
-    it('throws SchemaError is request is invalid', async () => {
+    it('throws SchemaError if email is missing', async () => {
       const toUpdate = {
         userName: 'some username',
-        password: 'somePassword',
+        password: 'somePassword'
       };
       try {
         await usersHandler.updateUser(toUpdate);
@@ -62,11 +184,40 @@ describe('usersHandler', () => {
       }
     });
 
-    it('throws SchemaError is username is invalid', async () => {
+    it('throws SchemaError if email is not a valid email', async () => {
+      const toUpdate = {
+        userName: 'some username',
+        password: 'somePassword',
+        email: 'tohearstories@gmail'
+      };
+      try {
+        await usersHandler.updateUser(toUpdate);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.errorInField[0]).to.equal('email');
+        expect(error.reasonForError).to.equal('"email" must be a valid email');
+      }
+    });
+
+    it('throws SchemaError if userName is missing', async () => {
+      const toUpdate = {
+        password: 'somePassword',
+        email: 'tohearstories@gmail.com'
+      };
+      try {
+        await usersHandler.updateUser(toUpdate);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.errorInField[0]).to.equal('userName');
+        expect(error.reasonForError).to.equal('"userName" is a required field');
+      }
+    });
+
+    it('throws SchemaError if userName is not a string', async () => {
       const toUpdate = {
         userName: 123,
         password: 'somePassword',
-        email: 'address@domain.com'
+        email: 'tohearstories@gmail.com'
       };
       try {
         await usersHandler.updateUser(toUpdate);
@@ -77,11 +228,25 @@ describe('usersHandler', () => {
       }
     });
 
-    it('throws SchemaError is password is invalid', async () => {
+    it('throws SchemaError if password is missing', async () => {
       const toUpdate = {
-        userName: 'test',
+        userName: 'someName',
+        email: 'tohearstories@gmail.com'
+      };
+      try {
+        await usersHandler.updateUser(toUpdate);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.errorInField[0]).to.equal('password');
+        expect(error.reasonForError).to.equal('"password" is a required field');
+      }
+    });
+
+    it('throws SchemaError if password is not a string', async () => {
+      const toUpdate = {
+        userName: 'someName',
         password: 123,
-        email: 'address@domain.com'
+        email: 'tohearstories@gmail.com'
       };
       try {
         await usersHandler.updateUser(toUpdate);
@@ -92,34 +257,20 @@ describe('usersHandler', () => {
       }
     });
 
-    it('throws SchemaError is email is not a string', async () => {
-      const toUpdate = {
-        userName: 'test',
-        password: 'test',
-        email: 123
-      };
-      try {
-        await usersHandler.updateUser(toUpdate);
-      } catch (error) {
-        expect(error).to.be.instanceof(SchemaError);
-        expect(error.errorInField[0]).to.equal('email');
-        expect(error.reasonForError).to.equal('"email" must be a string');
-      }
-    });
+    it('returns success:true if user update is successful', async () => {
+      ddbMock.on(UpdateCommand).resolves({
+        Items: [mockUsers[0]]
+      });
 
-    it('throws SchemaError is email is not a valid email', async () => {
       const toUpdate = {
-        userName: 'test',
-        password: 'test',
-        email: 'some string'
+        userName: 'someName',
+        password: 'password',
+        email: 'tohearstories@gmail.com'
       };
-      try {
-        await usersHandler.updateUser(toUpdate);
-      } catch (error) {
-        expect(error).to.be.instanceof(SchemaError);
-        expect(error.errorInField[0]).to.equal('email');
-        expect(error.reasonForError).to.equal('"email" must be a valid email');
-      }
+
+      const response = await usersHandler.updateUser(toUpdate);
+
+      assert.deepEqual(response, {success: true});
     });
   });
 
@@ -167,19 +318,52 @@ describe('usersHandler', () => {
         expect(error.reasonForError).to.equal('"password" cannot be an empty string');
       }
     });
+
+    it('returns passwordless user and token upon successful login', async () => {
+      ddbMock.on(QueryCommand).resolves({
+        Items: [{
+          userName: 'geo',
+          email: 'tohearstories@gmail.com',
+          password: 'geoPassword'
+        }]
+      });
+
+      const response = await usersHandler.login('geo', 'geoPassword');
+      assert.deepEqual(response.user, {
+          userName: 'geo',
+          email: 'tohearstories@gmail.com'
+      });
+      expect(response.token).to.be.not.null;
+    })
   });
 
   describe('deleteUser', () => {
-    it('throws SchemaError is userName is invalid', async () => {
-      const toDelete = {
-        userName: 123
-      };
+    it('throws SchemaError is userName is missing', async () => {
       try {
-        await usersHandler.deleteUser(toDelete);
+        await usersHandler.deleteUser();
       } catch (error) {
         expect(error).to.be.instanceof(SchemaError);
         expect(error.reasonForError).to.equal('"userName" must be a string');
       }
+    });
+
+    it('throws SchemaError is userName is not a string', async () => {
+      try {
+        await usersHandler.deleteUser(123);
+      } catch (error) {
+        expect(error).to.be.instanceof(SchemaError);
+        expect(error.reasonForError).to.equal('"userName" must be a string');
+      }
+    });
+
+    it('returns success:true if user delete is successful', async () => {
+      ddbMock.on(DeleteCommand).resolves({
+        not: 'an error'
+      });
+
+      const response = await usersHandler.deleteUser('someUserName');
+
+      assert.deepEqual(response, {success: true});
     });
   });
 });
