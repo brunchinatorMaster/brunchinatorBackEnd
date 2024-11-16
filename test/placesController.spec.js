@@ -22,19 +22,25 @@ describe('placesController', () => {
         .get('/places/byPlaceId/place1')
         .expect(200);
         
-      assert.deepEqual(response.body, mockPlaces[0]);
+      assert.deepEqual(response.body, {
+        placeExists: true,
+        place: mockPlaces[0]
+      });
     });
 
-    it('throws error if no place is found', async () => {
+    it('returns 200 if no place is found with placeExists: false', async () => {
       ddbMock.on(QueryCommand).resolves({
         Items: []
       })
       
       const response = await supertest(app)
       .get('/places/byPlaceId/place1')
-      .expect(404);
+      .expect(200);
 
-      expect(response.body.message).to.equal('No Place Found with placeId: place1');
+      assert.deepEqual(response.body, {
+        placeExists: false,
+        place: null
+      });
     });
   });
 });

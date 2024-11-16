@@ -1,5 +1,4 @@
 const {
-	doesPlaceExist,
 	createNewPlaceFromReview,
 	recalculateRatingsForAddingReviewToPlace,
 	recalculateRatingsForRemovingReviewFromPlace
@@ -21,7 +20,7 @@ const {
 const { SchemaError } = require('../errors/SchemaError');
 const { validateBySchema } = require('../utils/utils');
 const { REVIEW_ID_SCHEMA, VALIDATE_CREATE_REVIEW_SCHEMA } = require('../schemas/reviewsSchemas');
-const { PLACE_ID_SCHEMA, VALIDATE_CREATE_PLACE_SCHEMA } = require('../schemas/placesSchemas');
+const { PLACE_ID_SCHEMA, VALIDATE_CREATE_PLACE_SCHEMA, VALIDATE_UPDATE_PLACE_SCHEMA } = require('../schemas/placesSchemas');
 const { USERNAME_SCHEMA } = require('../schemas/usersSchemas');
 const { v4 } = require('uuid');
 
@@ -147,7 +146,29 @@ class ReviewsHandler {
 	/**
 	 * adds review, 
 	 * creates place or updates place that the review is for,
-	 * and returns an object containing all reviews and all places
+	 * and returns either {
+	 * 	placesResponse: {
+	 * 			addPlaceResponse: {
+	 * 				success: true
+	 * 			}		
+	 * 		},
+	 * 		addReviewResponse: {
+	 * 			success: true
+	 * 		}
+	 * 	}
+	 * OR
+	 * 	{
+	 * 		placesResponse: {
+	 * 			updatePlaceResponse: {
+	 * 				success: true,
+	 * 				updatedPlace: PLACE OBJECT,
+	 * 			}
+	 * 		},
+	 * 		addReviewResponse: {
+	 * 			success: true
+	 * 		}
+	 * 	}
+	 * 	
 	 * 
 	 * @param {object} review 
 	 * @returns {object}
@@ -159,79 +180,81 @@ class ReviewsHandler {
 			throw new SchemaError(validateResponse.error);
 		}
 
-		const placeExists = await doesPlaceExist(review.placeId);
-		if(!placeExists) {
-			return await this.#addReviewForNewPlace(review)
+		const { placeExists, place } = await getPlaceByPlaceId(review.placeId);
+		let placeResponse;
+		if (!placeExists) {
+			placeResponse = await this.#addPlaceFromReview(review)
+		} else {
+			placeResponse =  await this.#updatePlaceFromReview(review, place);
 		}
-		return await this.#addReviewForPreexistingPlace(review);
+
+		review.reviewId = v4();
+		const addReviewResponse = await addReview(review);
+
+		return {
+			placeResponse,
+			addReviewResponse
+		}
+		
 	}
 
 	/**
 	 * creates new place from values from review, 
 	 * adds place to database,
-	 * and returns an object containing all reviews and all places
+	 * adds review to database,
+	 * and returns {
+	 * 	addPlaceResponse: {
+	 * 		success: true
+	 * 	}
+	 * }
 	 * 
 	 * @param {object} review 
 	 * @returns {object}
 	 */
-	async #addReviewForNewPlace(review) {
+	async #addPlaceFromReview(review) {
 		const place = createNewPlaceFromReview(review);
 		const validateResponse = validateBySchema(place, VALIDATE_CREATE_PLACE_SCHEMA);
 
 		if (!validateResponse.isValid) {
 			throw new SchemaError(validateResponse.error);
 		}
+
 		place.placeId = v4();
-		const newAllPlaces = await addPlace(place);
-		//TO DO we have to return the new places as well as the new reviews to the frontend.
-		//maybe put in one object to return. not sure yet.
-		//or the front end can make another call to refresh the places when a successfull add review happens
-		// maybe a boolen on teh return 'refreshPlaces' tells the front end to do that. maybe. hmm...
-		const allReviews = await addReview(review);
-		const toReturn = {
-			places: newAllPlaces,
-			reviews: allReviews,
-		}
-		return toReturn;
+		const addPlaceResponse = await addPlace(place);
+
+		return {
+			addPlaceResponse,
+		};
 	}
 
 	/**
 	 * updates preexisting place with values from review
 	 * and returns an object containing all reviews and all places
+	 * returns {
+	 *		updatePlaceResponse: {
+	 *  		success: boolean,
+   *  		updatedPlace: object
+	 * 		},
+	 * }
 	 * 
 	 * @param {object} review 
 	 * @returns  {object}
 	 */
-	async #addReviewForPreexistingPlace(review) {
-		const newAllPlaces = await this.#updatePlaceForAddingReview(review);
-		const allReviews = await addReview(review);
-		const toReturn = {
-			places: newAllPlaces,
-			reviews: allReviews,
+	async #updatePlaceFromReview(review, place) { console.log('updatePlaceFromReview fires');
+		let toUpdate = recalculateRatingsForAddingReviewToPlace(review, place);
+		toUpdate.numberOfReviews++; 
+
+		const validateResponse = validateBySchema(toUpdate, VALIDATE_UPDATE_PLACE_SCHEMA);
+
+		if (!validateResponse.isValid) {
+			throw new SchemaError(validateResponse.error);
 		}
-		return toReturn;
-	}
 
-	/**
-	 * gets place that matches review.placeId, 
-	 * recalculates values with the values from review, 
-	 * updates place in database, 
-	 * and returns all places
-	 * 
-	 * @param {object} review 
-	 * @returns {object[]}
-	 */
-	async #updatePlaceForAddingReview(review) {
-		// TODO this manual finding of the place may not be necessary
-		// once we have a database we may have a patch function
-		// for now it is there to mimic functionality.
-		let toUpdate = await getPlaceByPlaceId(review.placeId);
+		const updatePlaceResponse = await updatePlace(toUpdate);
 
-		toUpdate = recalculateRatingsForAddingReviewToPlace(review, toUpdate);
-		toUpdate.numberOfReviews++;
-		const allPlaces = await updatePlace(toUpdate);
-		// TODO do business logic, if any
-		return allPlaces;
+		return {
+			updatePlaceResponse,
+		};
 	}
 }
 
