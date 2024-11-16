@@ -22,7 +22,12 @@ const validateBySchema = (toValidate, schema) => {
   };
 };
 
+const deepCopy = (toCopy) => {
+  return JSON.parse(JSON.stringify(toCopy));
+};
+
 module.exports = {
   validateBySchema,
   JWT_SECRET,
+  deepCopy,
 }

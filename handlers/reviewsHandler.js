@@ -240,7 +240,7 @@ class ReviewsHandler {
 	 * @param {object} review 
 	 * @returns  {object}
 	 */
-	async #updatePlaceFromReview(review, place) { console.log('updatePlaceFromReview fires');
+	async #updatePlaceFromReview(review, place) {
 		let toUpdate = recalculateRatingsForAddingReviewToPlace(review, place);
 		toUpdate.numberOfReviews++; 
 

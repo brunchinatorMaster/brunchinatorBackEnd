@@ -6,6 +6,7 @@ const {
   UpdateCommand
 } = require('../aws/awsClients');
 const { DynamoError } = require('../errors/DynamoError');
+const { deepCopy } = require('../utils/utils');
 
 /**
  * returns place that has matching placeId
@@ -104,7 +105,7 @@ const updatePlace = async (place) => {
  */
 const deletePlaceByPlaceId = async (placeId) => {
   // TODO this will be replaced with either a delete call to the database
-  const mockPlaces = JSON.parse(JSON.stringify(places));
+  const mockPlaces = deepCopy(places);
   return mockPlaces.filter((place) => place.placeId !== placeId);
 };
 
