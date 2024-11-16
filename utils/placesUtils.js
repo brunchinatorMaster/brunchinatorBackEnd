@@ -1,5 +1,3 @@
-const { getAllPlaces } = require('../databaseAccess/placesDatabaseAccess');
-
 /**
  * creates and returns a new place created from 
  * the data in a first time review, 
@@ -36,24 +34,6 @@ const findAverageOf = (arrayOfValues) => {
   });
   
   return +(numerator / denominator).toFixed(2);
-}
-
-/**
- * returns a boolean if place exists in database or not.
- * will probably be replaced with a database method 
- * 
- * @param {string} placeIdToVerify 
- * @returns {boolean}
- */
-const doesPlaceExist = async (placeIdToVerify) => {
-  const places = await getAllPlaces();
-  let toReturn = false;
-  places.forEach((place) => {
-    if(place.placeId == placeIdToVerify) {
-      toReturn = true;
-    }
-  });
-  return toReturn;
 }
 
 /**
@@ -126,7 +106,6 @@ const removeFromAverage = (elementToRemove, originalAverage, originalNumberOfEle
 module.exports = {
   findAverageOf,
   createNewPlaceFromReview,
-  doesPlaceExist,
   recalculateRatingsForAddingReviewToPlace,
   recalculateRatingsForRemovingReviewFromPlace,
   removeFromAverage

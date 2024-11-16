@@ -1,4 +1,9 @@
 const reviews = require('../mockDataBase/reviews');
+const { 
+  docClient,
+  PutCommand,
+  QueryCommand,
+} = require('../aws/awsClients');
 
 /**
  * returns all reviews
@@ -62,16 +67,22 @@ const deleteReviewByReviewId = async (reviewId) => {
 }
 
 /**
- * adds review and returns all reviews
+ * adds review and returns {
+ *  success: true
+ * }
  * 
  * @param {object} review 
  * @returns {object[]}
  */
 const addReview = async (review) => {
-  // TODO this will be replaced with a add call to the database
-  const mockReviews = JSON.parse(JSON.stringify(reviews));
-  mockReviews.push(review);
-  return mockReviews;
+  const toPut = new PutCommand({
+    TableName: 'Reviews',
+    Item: review 
+  });
+  await docClient.send(toPut);
+  return {
+    success: true,
+  };
 }
 
 module.exports = {

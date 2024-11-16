@@ -11,7 +11,11 @@ const { v4 } = require('uuid');
 class PlacesHandler {
 
 	/**
-	 * returns place that matches placeId
+	 * finds place that matches placeId and
+	 * returns {
+ 	 *   placeExists: boolean,
+   *   place: object
+   * }
 	 * 
 	 * @param {string} placeId 
 	 * @returns {object}

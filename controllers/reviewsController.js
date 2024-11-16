@@ -69,14 +69,11 @@ app.delete('/byReviewId/:reviewId', async (req, res) => {
 
 app.post('/', async (req, res) => {
 	const review = req.body ?? null;
-	let error;
 	try {
 		const reviews = await reviewsHandler.addReview(review);
 		res.status(200).json(reviews);
-	} catch (err) {
-		error = err;
-	} finally {
-		res.status(400).json(error);
+	} catch (error) {
+		res.status(error.statusCode ?? 400).json(error);
 	}
 });
 

@@ -41,8 +41,11 @@ describe('placesHandler', () => {
       });
       
       const response = await placesHandler.getPlaceByPlaceId('place1');
-      assert.deepEqual(response, mockPlaces[0]);
-    })
+      assert.deepEqual(response, {
+        placeExists: true,
+        place: mockPlaces[0]
+      });
+    });
   });
 
   describe('addPlace', () => {

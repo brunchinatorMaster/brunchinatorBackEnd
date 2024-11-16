@@ -3,11 +3,16 @@ const {
   docClient,
   PutCommand,
   QueryCommand,
+  UpdateCommand
 } = require('../aws/awsClients');
 const { DynamoError } = require('../errors/DynamoError');
 
 /**
  * returns place that has matching placeId
+ * returns {
+ *   placeExists: boolean,
+ *   place: object
+ * }
  * 
  * @param {string} placeId 
  * @returns {object}
@@ -27,10 +32,17 @@ const getPlaceByPlaceId = async (placeId) => {
   });
 
   const response = await docClient.send(queryCommand);
-  if(response?.Items?.length > 0) {
-    return response.Items[0];
+
+  if (response?.Items?.length > 0) {
+    return {
+      placeExists: true,
+      place: response.Items[0]
+    }
   }
-  throw new DynamoError(404, `No Place Found with placeId: ${placeId}`);
+  return {
+    placeExists: false,
+    place: null
+  }
 }
 
 /**
@@ -45,22 +57,43 @@ const addPlace = async (place) => {
     Item: place 
   });
   const response = await docClient.send(toPut);
-  return response;
+  return {
+    success: true,
+  };
 }
 
 /**
- * updates place and then returns all places
+ * updates place and returns {
+ *  success: boolean,
+ *  updatedPlace: object
+ * }
  * 
  * @param {object} place 
  * @returns 
  */
 const updatePlace = async (place) => {
-  // TODO this will be replaced with either a patch call to update a record in the
-  // mockPlaces table in the database
-  const mockPlaces = JSON.parse(JSON.stringify(places));
-  let indexToUpdate = mockPlaces.findIndex(p => p.placeId == place.placeId );
-  mockPlaces[indexToUpdate] = place;
-  return mockPlaces;
+  const toUpdate = new UpdateCommand({
+    TableName: 'Places',
+    Key: {
+      placeId: place.placeId,
+      placeName: place.placeName,
+    },
+    UpdateExpression: 'set beers = :beers, bloody = :bloody, burger = :burger, benny = :benny, numberOfReviews = :numberOfReviews, overallRating = :overallRating',
+    ExpressionAttributeValues: {
+      ":beers": place.beers,
+      ":bloody": place.bloody,
+      ":burger": place.burger,
+      ":benny": place.benny,
+      ":numberOfReviews": place.numberOfReviews,
+      ":overallRating": place.overallRating,
+    },
+    ReturnValues: "ALL_NEW",
+  });
+  await docClient.send(toUpdate);
+  return {
+    success: true,
+    updatedPlace: response.Attributes,
+  };
 }
 
 /**
@@ -78,5 +111,6 @@ const deletePlaceByPlaceId = async (placeId) => {
 module.exports = {
   getPlaceByPlaceId,
   addPlace,
-  updatePlace,deletePlaceByPlaceId,
+  updatePlace,
+  deletePlaceByPlaceId,
 }
