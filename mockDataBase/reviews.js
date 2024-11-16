@@ -5,7 +5,6 @@ const mockReviews = [
 		userName: 'geo',
 		placeName: 'Burg\'s Hideaway Lounge',
 		beers: 4,
-		benny: null,
 		bloody: 5,
 		burger: 5,
 		reviewDate: '4/21/2019',

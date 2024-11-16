@@ -4,6 +4,7 @@ const {
   PutCommand,
   QueryCommand,
 } = require('../aws/awsClients');
+const { deepCopy } = require('../utils/utils');
 
 /**
  * returns all reviews
@@ -11,7 +12,7 @@ const {
  * @returns {object[]}
  */
 const getReviews = async () => {
-  const mockReviews = JSON.parse(JSON.stringify(reviews));
+  const mockReviews = deepCopy(reviews);
   return mockReviews;
 }
 
@@ -24,7 +25,7 @@ const getReviews = async () => {
 const getReviewByReviewId = async (reviewId) => {
   // TODO this will be replaced with either a call to the database to specifically
   // grab one place by id, or some filtering of allPlaces
-  const mockReviews = JSON.parse(JSON.stringify(reviews));
+  const mockReviews = deepCopy(reviews);
   return mockReviews.filter((review) => review.reviewId == reviewId)?.[0] ?? null;
 }
 
@@ -37,7 +38,7 @@ const getReviewByReviewId = async (reviewId) => {
 const getReviewsByPlaceId = async (placeId) => {
   // TODO this will be replaced with either a call to the database to specifically
   // grab one place by id, or some filtering of allPlaces
-  const mockReviews = JSON.parse(JSON.stringify(reviews));
+  const mockReviews = deepCopy(reviews);
   return mockReviews.filter((review) => review.placeId == placeId) ?? [];
 }
 
@@ -50,7 +51,7 @@ const getReviewsByPlaceId = async (placeId) => {
 const getReviewsByUserName = async (userName) => {
   // TODO this will be replaced with either a call to the database to specifically
   // grab one place by id, or some filtering of allPlaces
-  const mockReviews = JSON.parse(JSON.stringify(reviews));
+  const mockReviews = deepCopy(reviews);
   return mockReviews.filter((review) => review.userName == userName) ?? [];
 }
 
@@ -62,7 +63,7 @@ const getReviewsByUserName = async (userName) => {
  */
 const deleteReviewByReviewId = async (reviewId) => {
   // TODO this will be replaced with a delete call to the database
-  const mockReviews = JSON.parse(JSON.stringify(reviews));
+  const mockReviews = deepCopy(reviews);
   return mockReviews.filter((review) => review.reviewId !== reviewId);
 }
 

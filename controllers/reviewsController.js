@@ -67,7 +67,7 @@ app.delete('/byReviewId/:reviewId', async (req, res) => {
 	}
 });
 
-app.post('/', async (req, res) => {
+app.post('/createReview', async (req, res) => {
 	const review = req.body ?? null;
 	try {
 		const reviews = await reviewsHandler.addReview(review);
