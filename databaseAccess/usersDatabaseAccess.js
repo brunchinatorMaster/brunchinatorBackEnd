@@ -6,11 +6,14 @@ const {
   DeleteCommand,
   UpdateCommand
 } = require('../aws/awsClients');
-const { LoginError } = require('../errors/LoginError');
 
 /**
- * returns user in dynamo that has matching userName
- * throws LoginError if no user is found
+ * finds user in dynamo that has matching userName
+ * returns {
+ *  success: boolean,
+ *  user: user || null,
+ *  DBError: error || null
+ * }
  * 
  * @param {string} userName 
  * @returns {object}
@@ -25,15 +28,33 @@ const getUserByUsername = async (userName) => {
     ConsistentRead: true,
   });
 
-  const response = await docClient.send(queryCommand);
-  if(response?.Items?.length > 0) {
-    return response.Items[0];
+  let success = false;
+  let user;
+  let DBError;
+  try {
+    const response = await docClient.send(queryCommand);
+    if (response?.Items?.length > 0) {
+      success = true;
+      user = response.Items[0]
+    }
+  } catch (error) {
+    DBError = error;
+  } finally {
+    return {
+      success,
+      user,
+      DBError
+    }
   }
-  throw new LoginError('No User Found');
 }
 
 /**
  * returns user in dynamo that has matching email
+ * returns {
+ *  success: boolean,
+ *  user: user || null,
+ *  DBError: error || null
+ * }
  * 
  * @param {string} email 
  * @returns {object}
@@ -48,17 +69,33 @@ const getUserByEmail = async (email) => {
     ProjectionExpression: "userName, email",
   });
 
-  const response = await docClient.send(scanCommand);
-
-  if(response?.Items?.length > 0) {
-    return response.Items[0];
+  let success = false;
+  let user;
+  let DBError;
+  try {
+    const response = await docClient.send(scanCommand);
+    if (response?.Items?.length > 0) {
+      success = true;
+      user = response.Items[0]
+    }
+  } catch (error) {
+    DBError = error;
+  } finally {
+    return {
+      success,
+      user,
+      DBError
+    }
   }
-  throw new LoginError('No User Found');
 }
 
 /**
  * updates user in dynamo
- * 
+ * * returns {
+ *  success: boolean,
+ *  user: updatedUser || null,
+ *  DBError: error || null
+ * }
  * @param {object} user 
  * @returns {object}
  */
@@ -69,48 +106,102 @@ const updateUser = async (user) => {
       userName: user.userName,
     },
     UpdateExpression: 'set password = :password, email = :email',
+    ConditionExpression: 'attribute_exists(userName)',
     ExpressionAttributeValues: {
       ":password": user.password,
       ":email": user.email
     },
     ReturnValues: "ALL_NEW",
   });
-  const response = await docClient.send(toUpdate);
-  return response;
+
+  let success = false;
+  let updatedUser;
+  let DBError;
+  
+  try {
+    const response = await docClient.send(toUpdate);
+    if (response?.Attributes) {
+      success = true;
+      updatedUser = response.Attributes;
+    }
+  } catch (error) {
+    DBError = error;
+  } finally {
+    return {
+      success,
+      user: updatedUser,
+      DBError
+    }
+  }
 }
 
 /**
  * adds user to dynamo
- * 
+ * returns {
+ *  success: boolean,
+ *  DBError:error || null
+ * }
  * @param {object} user 
  * @returns {object}
  */
 const addUser = async (user) => {
   const toPut = new PutCommand({
     TableName: 'Users',
-    Item: user 
+    Item: user,
   });
-  const response = await docClient.send(toPut);
-  return response;
+
+  let success = false;
+  let DBError;
+  try {
+    const response = await docClient.send(toPut);
+    if (!response?.ValidationException) {
+      success = true;
+    }
+  } catch (error) {
+    DBError = error;
+  } finally {
+    return {
+      success,
+      DBError
+    }
+  }
 }
 
 /**
  * deletes user from dynamo
- * 
+ * returns {
+ *  success: boolean,
+ *  user: null,
+ *  DBError: error || null
+ * }
  * NOTE: purely a utility function and will
  * probably never actually be used
  * @param {object} user 
  * @returns {object}
  */
 const deleteUser = async (userName) => {
-  const toPut = new DeleteCommand({
+  const toDelete = new DeleteCommand({
     TableName: 'Users',
     Key: {
       userName,
     }
   });
-  const response = await docClient.send(toPut);
-  return response;
+  let success = false;
+  let DBError;
+  try {
+    const response = await docClient.send(toDelete);
+    if (!response?.ValidationException) {
+      success = true;
+    }
+  } catch (error) {
+    DBError = error;
+  } finally {
+    return {
+      success,
+      user: null,
+      DBError
+    }
+  }
 }
 
 module.exports = {

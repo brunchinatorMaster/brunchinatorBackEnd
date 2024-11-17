@@ -68,22 +68,35 @@ const deleteReviewByReviewId = async (reviewId) => {
 }
 
 /**
- * adds review and returns {
- *  success: true
+ * adds review to dynamo
+ * returns {
+ *  success: boolean,
+ *  DBError:error || null
  * }
- * 
- * @param {object} review 
- * @returns {object[]}
+ * @param {object} user 
+ * @returns {object}
  */
 const addReview = async (review) => {
   const toPut = new PutCommand({
     TableName: 'Reviews',
     Item: review 
   });
-  await docClient.send(toPut);
-  return {
-    success: true,
-  };
+
+  let success = false;
+  let DBError;
+  try {
+    const response = await docClient.send(toPut);
+    if (!response?.ValidationException) {
+      success = true;
+    }
+  } catch (error) {
+    DBError = error;
+  } finally {
+    return {
+      success,
+      DBError
+    }
+  }
 }
 
 module.exports = {

@@ -32,10 +32,13 @@ describe('usersHandler', () => {
   
       const response = await usersHandler.getUserByUsername('geo');
 
-        assert.deepEqual(response, {
+      assert.deepEqual(response, {
+        userExists: true,
+        user: {
           userName: 'geo',
           email: 'tohearstories@gmail.com'
-        });
+        }
+      });
     });
   });
 
@@ -57,10 +60,13 @@ describe('usersHandler', () => {
   
       const response = await usersHandler.getUserByEmail('tohearstories@gmail.com');
 
-        assert.deepEqual(response, {
+      assert.deepEqual(response, {
+        userExists: true,
+        user: {
           userName: 'geo',
           email: 'tohearstories@gmail.com'
-        });
+        }
+      });
     });
   });
 
@@ -165,7 +171,10 @@ describe('usersHandler', () => {
 
       const response = await usersHandler.addUser(toAdd);
 
-      assert.deepEqual(response, {success: true});
+      assert.deepEqual(response, {
+        success: true,
+        DBError: undefined
+      });
     });
   });
 
@@ -259,7 +268,7 @@ describe('usersHandler', () => {
 
     it('returns success:true if user update is successful', async () => {
       ddbMock.on(UpdateCommand).resolves({
-        Items: [mockUsers[0]]
+        Attributes: mockUsers[0]
       });
 
       const toUpdate = {
@@ -270,7 +279,14 @@ describe('usersHandler', () => {
 
       const response = await usersHandler.updateUser(toUpdate);
 
-      assert.deepEqual(response, {success: true});
+      assert.deepEqual(response, {
+        success: true,
+        updatedUser: {
+          email: 'tohearstories@gmail.com',
+          userName: 'geo'
+        },
+        DBError: undefined
+      });
     });
   });
 

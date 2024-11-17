@@ -4,7 +4,6 @@ const {
 } = require('../databaseAccess/placesDatabaseAccess');
 const { SchemaError } = require('../errors/SchemaError');
 const { PLACE_ID_SCHEMA, VALIDATE_CREATE_PLACE_SCHEMA } = require('../schemas/placesSchemas');
-const { createNewPlaceFromReview } = require('../utils/placesUtils');
 const { validateBySchema } = require('../utils/utils');
 const { v4 } = require('uuid');
 

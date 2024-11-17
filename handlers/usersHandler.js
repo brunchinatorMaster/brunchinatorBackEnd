@@ -2,7 +2,6 @@ const {
 	getUserByUsername,
 	getUserByEmail,
 	addUser,
-	login,
 	deleteUser,
 	updateUser,
  } = require('../databaseAccess/usersDatabaseAccess');
@@ -33,9 +32,17 @@ class ReviewsHandler {
 			throw new SchemaError(validateResponse.error);
 		}
 
-		const userToReturn = await getUserByUsername(userName);
-		const toReturn = removePassswordFromUser(userToReturn);
-		return toReturn;
+		const response = await getUserByUsername(userName);
+
+		let user;
+		if (response.success && response.user) {
+			user = removePassswordFromUser(response.user);
+		}
+
+		return {
+			userExists: response.success,
+			user,
+		}
 	}
 
 	/**
@@ -51,9 +58,17 @@ class ReviewsHandler {
 			throw new SchemaError(validateResponse.error);
 		}
 
-		const userToReturn = await getUserByEmail(email);
-		const toReturn = removePassswordFromUser(userToReturn); 
-		return toReturn;
+		const response = await getUserByEmail(email);
+
+		let user;
+		if (response.success && response.user) {
+			user = removePassswordFromUser(response.user);
+		}
+
+		return {
+			userExists: response.success,
+			user,
+		}
 	}
 
 	/**
@@ -70,9 +85,17 @@ class ReviewsHandler {
 			throw new SchemaError(validateResponse.error);
 		}
 
-		await updateUser(user);
+		const response = await updateUser(user);
+
+		let updatedUser;
+		if (response.success && response.user) {
+			updatedUser = removePassswordFromUser(response.user);
+		}
+
 		return {
-			success: true
+			success: response.success,
+			updatedUser: response.user,
+			DBError: response.DBError
 		};
 	}
 
@@ -85,14 +108,15 @@ class ReviewsHandler {
 	 */
 	async addUser(user) {
 		const validateResponse = validateBySchema(user, VALIDATE_CREATE_USER_SCHEMA);
-
 		if (!validateResponse.isValid) {
 			throw new SchemaError(validateResponse.error);
 		}
 
-		await addUser(user);
+		const response = await addUser(user);
+
 		return {
-			success: true
+			success: response.success,
+			DBError: response.DBError
 		};
 	}
 
@@ -106,30 +130,28 @@ class ReviewsHandler {
 	 * @param {string} password 
 	 * @returns {object}
 	 */
-	async login(userName, password){
+	async login(userName, password) {
 		const userNameIsValid = validateBySchema(userName, USERNAME_SCHEMA);
-
 		if (!userNameIsValid.isValid) {
 			throw new SchemaError(userNameIsValid.error);
 		}
 
 		const passwordIsValid = validateBySchema(password, PASSWORD_SCHEMA);
-
 		if (!passwordIsValid.isValid) {
 			throw new SchemaError(passwordIsValid.error);
 		}
 
-		const user = await getUserByUsername(userName, password);
+		const response = await getUserByUsername(userName, password);
 
-		if(!user) {
+		if (!response.success) {
 			throw new LoginError('No User Found');
 		}
 
-		if(user.password !== password) {
+		if (response.user.password !== password) {
 			throw new LoginError('Wrong Password');
 		}
 		
-		const cleanUser = removePassswordFromUser(user);
+		const cleanUser = removePassswordFromUser(response.user);
 
 		const token = jwt.sign(cleanUser, JWT_SECRET);
 		return {

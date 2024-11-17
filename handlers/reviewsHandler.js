@@ -45,7 +45,6 @@ class ReviewsHandler {
 	 */
 	async getReviewByReviewId(reviewId) {
 		const validateResponse = validateBySchema(reviewId, REVIEW_ID_SCHEMA);
-
 		if (!validateResponse.isValid) {
 			throw new SchemaError(validateResponse.error);
 		}
@@ -110,7 +109,7 @@ class ReviewsHandler {
 		const allReviews = await deleteReviewByReviewId(reviewId);
 		let newAllPlaces = [];
 
-		if(placeToUpdate.numberOfReviews > 1) {
+		if (placeToUpdate.numberOfReviews > 1) {
 			newAllPlaces = await this.#updatePlaceForRemovingReview(reviewBeingDeleted);
 		} else {
 			newAllPlaces = await deletePlaceByPlaceId(placeToUpdate.placeId);

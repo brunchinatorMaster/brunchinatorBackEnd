@@ -57,7 +57,7 @@ describe('reviewsController', () => {
 
       assert.deepEqual(response.body, {
         addReviewResponse: {
-          success: true
+          success: true,
         },
         placeResponse: {
           addPlaceResponse: {
