@@ -27,7 +27,7 @@ const findAverageOf = (arrayOfValues) => {
   let numerator = 0;
   let denominator = 0;
   arrayOfValues.forEach((value) => {
-    if(value) {
+    if (value) {
       numerator = numerator + value;
       denominator++;
     }
@@ -95,7 +95,7 @@ const recalculateRatingsForRemovingReviewFromPlace = (review, toUpdate) => {
  * @returns {object}
  */
 const removeFromAverage = (elementToRemove, originalAverage, originalNumberOfElements) => {
-  if(elementToRemove == null) {
+  if (elementToRemove == null) {
     return originalAverage;
   }
   const numerator = (originalAverage * originalNumberOfElements) - elementToRemove;

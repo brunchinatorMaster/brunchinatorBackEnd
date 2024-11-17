@@ -9,10 +9,11 @@ const { DynamoError } = require('../errors/DynamoError');
 const { deepCopy } = require('../utils/utils');
 
 /**
- * returns place that has matching placeId
+ * finds place that has matching placeId
  * returns {
- *   placeExists: boolean,
- *   place: object
+ *  success: boolean,
+ *  place: place || null,
+ *  DBError: error || null
  * }
  * 
  * @param {string} placeId 
@@ -32,23 +33,32 @@ const getPlaceByPlaceId = async (placeId) => {
     ConsistentRead: true,
   });
 
-  const response = await docClient.send(queryCommand);
-
-  if (response?.Items?.length > 0) {
-    return {
-      placeExists: true,
-      place: response.Items[0]
+  let success = false;
+  let place;
+  let DBError;
+  try {
+    const response = await docClient.send(queryCommand);
+    if (response?.Items?.length > 0) {
+      success = true;
+      place = response.Items[0]
     }
-  }
-  return {
-    placeExists: false,
-    place: null
+  } catch (error) {
+    DBError = error;
+  } finally {
+    return {
+      success,
+      place,
+      DBError
+    }
   }
 }
 
 /**
  * adds place to dynamo
- * 
+ * returns {
+ *  success: boolean,
+ *  DBError:error || null
+ * }
  * @param {object} place 
  * @returns {object[]}
  */
@@ -57,10 +67,22 @@ const addPlace = async (place) => {
     TableName: 'Places',
     Item: place 
   });
-  const response = await docClient.send(toPut);
-  return {
-    success: true,
-  };
+
+  let success = false;
+  let DBError;
+  try {
+    const response = await docClient.send(toPut);
+    if (!response?.ValidationException) {
+      success = true;
+    }
+  } catch (error) {
+    DBError = error;
+  } finally {
+    return {
+      success,
+      DBError
+    }
+  }
 }
 
 /**
@@ -90,11 +112,25 @@ const updatePlace = async (place) => {
     },
     ReturnValues: "ALL_NEW",
   });
-  await docClient.send(toUpdate);
-  return {
-    success: true,
-    updatedPlace: response.Attributes,
-  };
+  let success = false;
+  let updatedPlace;
+  let DBError;
+
+  try {
+    const response = await docClient.send(toUpdate);
+    if (response?.Attributes) {
+      success = true;
+      updatedPlace = response.Attributes;
+    }
+  } catch (error) {
+    DBError = error;
+  } finally {
+    return {
+      success,
+      place: updatedPlace,
+      DBError
+    }
+  }
 }
 
 /**

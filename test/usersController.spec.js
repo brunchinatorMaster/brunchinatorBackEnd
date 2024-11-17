@@ -116,7 +116,9 @@ describe('usersController', () => {
         .send(mockUsers[0])
         .expect(200);
 
-      assert.deepEqual(response.body, {success: true});
+      assert.deepEqual(response.body, {
+        success: true,
+      });
     });
   });
 
@@ -216,7 +218,7 @@ describe('usersController', () => {
 
     it('returns success:true if user update is successful', async () => {
       ddbMock.on(UpdateCommand).resolves({
-        Items: [mockUsers[0]]
+        Attributes: mockUsers[0]
       });
 
       const response = await supertest(app)
@@ -224,7 +226,13 @@ describe('usersController', () => {
         .send(mockUsers[0])
         .expect(200);
 
-      assert.deepEqual(response.body, {success: true});
+      assert.deepEqual(response.body, {
+        success: true,
+        updatedUser: {
+          email: 'tohearstories@gmail.com',
+          userName: 'geo'
+        }
+      });
     });
   });
 
@@ -247,10 +255,13 @@ describe('usersController', () => {
         .get('/users/byEmail/tohearstories@gmail.com')
         .expect(200);
 
-        assert.deepEqual(response.body, {
+      assert.deepEqual(response.body, {
+        userExists: true,
+        user: {
           userName: 'geo',
           email: 'tohearstories@gmail.com'
-        });
+        }
+      });
     });
   });
 
@@ -270,10 +281,13 @@ describe('usersController', () => {
         .get('/users/byUsername/geo')
         .expect(200);
 
-        assert.deepEqual(response.body, {
+      assert.deepEqual(response.body, {
+        userExists: true,
+        user: {
           userName: 'geo',
           email: 'tohearstories@gmail.com'
-        });
+        }
+      });
     });
   });
 });
