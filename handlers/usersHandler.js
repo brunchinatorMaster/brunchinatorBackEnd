@@ -34,12 +34,21 @@ class ReviewsHandler {
 
 		const response = await getUserByUsername(userName);
 
+		if (response.DBError) {
+			return {
+				success: false,
+				statusCode: response.DBError?.$metadata?.httpStatusCode,
+				message: response.DBError.message
+			}
+		}
+
 		let user;
 		if (response.success && response.user) {
 			user = removePassswordFromUser(response.user);
 		}
 
 		return {
+			success: true,
 			userExists: response.success,
 			user,
 		}
@@ -60,12 +69,21 @@ class ReviewsHandler {
 
 		const response = await getUserByEmail(email);
 
+		if (response.DBError) {
+			return {
+				success: false,
+				statusCode: response.DBError?.$metadata?.httpStatusCode,
+				message: response.DBError.message
+			}
+		}
+
 		let user;
 		if (response.success && response.user) {
 			user = removePassswordFromUser(response.user);
 		}
 
 		return {
+			success: true,
 			userExists: response.success,
 			user,
 		}
@@ -87,14 +105,22 @@ class ReviewsHandler {
 
 		const response = await updateUser(user);
 
+		if (response.DBError) {
+			return {
+				success: false,
+				statusCode: response.DBError?.$metadata?.httpStatusCode,
+				message: response.DBError.message
+			}
+		}
+
 		let updatedUser;
 		if (response.success && response.user) {
 			updatedUser = removePassswordFromUser(response.user);
 		}
 
 		return {
-			success: response.success,
-			updatedUser: response.user,
+			success: true,
+			updatedUser,
 			DBError: response.DBError
 		};
 	}
@@ -114,8 +140,16 @@ class ReviewsHandler {
 
 		const response = await addUser(user);
 
+		if (response.DBError) {
+			return {
+				success: false,
+				statusCode: response.DBError?.$metadata?.httpStatusCode,
+				message: response.DBError.message
+			}
+		}
+
 		return {
-			success: response.success,
+			success: true,
 			DBError: response.DBError
 		};
 	}
@@ -143,6 +177,14 @@ class ReviewsHandler {
 
 		const response = await getUserByUsername(userName, password);
 
+		if (response.DBError) {
+			return {
+				success: false,
+				statusCode: response.DBError?.$metadata?.httpStatusCode,
+				message: response.DBError.message
+			}
+		}
+
 		if (!response.success) {
 			throw new LoginError('No User Found');
 		}
@@ -155,6 +197,7 @@ class ReviewsHandler {
 
 		const token = jwt.sign(cleanUser, JWT_SECRET);
 		return {
+			success: true,
 			user: cleanUser,
 			token
 		};
@@ -176,7 +219,15 @@ class ReviewsHandler {
 			throw new SchemaError(validateResponse.error);
 		}
 
-		await deleteUser(userName);
+		const response = await deleteUser(userName);
+
+		if (response.DBError) {
+			return {
+				success: false,
+				statusCode: response.DBError?.$metadata?.httpStatusCode,
+				message: response.DBError.message
+			}
+		}
 		return {
 			success: true
 		};
