@@ -105,7 +105,7 @@ class ReviewsHandler {
 
 		const response = await updateUser(user);
 
-		if (response.DBError) {console.log('ding ding ding');console.log(response)
+		if (response.DBError) {
 			return {
 				success: false,
 				statusCode: response.DBError?.$metadata?.httpStatusCode,
