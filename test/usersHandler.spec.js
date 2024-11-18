@@ -33,6 +33,7 @@ describe('usersHandler', () => {
       const response = await usersHandler.getUserByUsername('geo');
 
       assert.deepEqual(response, {
+        success: true,
         userExists: true,
         user: {
           userName: 'geo',
@@ -61,6 +62,7 @@ describe('usersHandler', () => {
       const response = await usersHandler.getUserByEmail('tohearstories@gmail.com');
 
       assert.deepEqual(response, {
+        success: true,
         userExists: true,
         user: {
           userName: 'geo',

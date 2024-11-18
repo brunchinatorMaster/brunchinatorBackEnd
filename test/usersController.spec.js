@@ -6,6 +6,8 @@ const app = require('../app');
 const { docClient, QueryCommand, PutCommand, UpdateCommand, ScanCommand } = require('../aws/awsClients');
 const { mockClient } = require('aws-sdk-client-mock');
 const ddbMock = mockClient(docClient);
+const { mockGenericDynamoError } = require('./mockDynamoResponses');
+const { deepCopy } = require('../utils/utils');
 
 describe('usersController', () => {
   beforeEach(() => {
@@ -107,17 +109,34 @@ describe('usersController', () => {
     });
 
     it('returns success:true if user addition is successful', async () => {
+      const toSend = deepCopy(mockUsers[0]);
       ddbMock.on(PutCommand).resolves({
-        Items: [mockUsers[0]]
+        Items: [toSend]
       });
 
       const response = await supertest(app)
         .post('/users/createUser')
-        .send(mockUsers[0])
+        .send(toSend)
         .expect(200);
 
       assert.deepEqual(response.body, {
         success: true,
+      });
+    });
+
+    it('returns appropriate response if dynamo throws error', async () => {
+      const toSend = deepCopy(mockUsers[0]);
+      ddbMock.on(PutCommand).rejects(mockGenericDynamoError);
+  
+      const response = await supertest(app)
+      .post('/users/createUser')
+        .send(toSend)
+        .expect(mockGenericDynamoError.$metadata.httpStatusCode);
+
+      assert.deepEqual(response.body, {
+        success: false,
+        statusCode: mockGenericDynamoError.$metadata.httpStatusCode,
+        message: mockGenericDynamoError.message
       });
     });
   });
@@ -217,13 +236,14 @@ describe('usersController', () => {
     });
 
     it('returns success:true if user update is successful', async () => {
+      const toSend = deepCopy(mockUsers[0]);
       ddbMock.on(UpdateCommand).resolves({
-        Attributes: mockUsers[0]
+        Attributes: toSend
       });
 
       const response = await supertest(app)
         .post('/users/updateUser')
-        .send(mockUsers[0])
+        .send(toSend)
         .expect(200);
 
       assert.deepEqual(response.body, {
@@ -232,6 +252,22 @@ describe('usersController', () => {
           email: 'tohearstories@gmail.com',
           userName: 'geo'
         }
+      });
+    });
+
+    it('returns appropriate response if dynamo throws error', async () => {
+      const toSend = deepCopy(mockUsers[0]);
+      ddbMock.on(UpdateCommand).rejects(mockGenericDynamoError);
+  
+      const response = await supertest(app)
+        .post('/users/updateUser')
+        .send(toSend)
+        .expect(mockGenericDynamoError.$metadata.httpStatusCode);
+
+      assert.deepEqual(response.body, {
+        success: false,
+        statusCode: mockGenericDynamoError.$metadata.httpStatusCode,
+        message: mockGenericDynamoError.message
       });
     });
   });
@@ -256,11 +292,26 @@ describe('usersController', () => {
         .expect(200);
 
       assert.deepEqual(response.body, {
+        success: true,
         userExists: true,
         user: {
-          userName: 'geo',
-          email: 'tohearstories@gmail.com'
+          userName: mockUsers[0].userName,
+          email: mockUsers[0].email
         }
+      });
+    });
+
+    it('returns appropriate response if dynamo throws error', async () => {
+      ddbMock.on(ScanCommand).rejects(mockGenericDynamoError);
+  
+      const response = await supertest(app)
+      .get('/users/byEmail/tohearstories@gmail.com')
+        .expect(mockGenericDynamoError.$metadata.httpStatusCode);
+
+      assert.deepEqual(response.body, {
+        success: false,
+        statusCode: mockGenericDynamoError.$metadata.httpStatusCode,
+        message: mockGenericDynamoError.message
       });
     });
   });
@@ -282,11 +333,26 @@ describe('usersController', () => {
         .expect(200);
 
       assert.deepEqual(response.body, {
+        success: true,
         userExists: true,
         user: {
           userName: 'geo',
           email: 'tohearstories@gmail.com'
         }
+      });
+    });
+
+    it('returns appropriate response if dynamo throws error', async () => {
+      ddbMock.on(QueryCommand).rejects(mockGenericDynamoError);
+  
+      const response = await supertest(app)
+        .get('/users/byUsername/geo')
+        .expect(mockGenericDynamoError.$metadata.httpStatusCode);
+
+      assert.deepEqual(response.body, {
+        success: false,
+        statusCode: mockGenericDynamoError.$metadata.httpStatusCode,
+        message: mockGenericDynamoError.message
       });
     });
   });
