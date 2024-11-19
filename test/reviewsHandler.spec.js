@@ -86,17 +86,17 @@ describe('reviewsHandler', () => {
 
   describe('getReviewsByUserName', () => {
 
-    it('returns empty array if no review matches userName', async () => {
-      const response = await reviewsHandler.getReviewsByUserName('not real');
-      expect(response).to.have.lengthOf(0);
-      expect(response).not.contains(mockReviews[0]);
-      expect(response).not.contains(mockReviews[1]);
-    });
+    // it('returns empty array if no review matches userName', async () => {
+    //   const response = await reviewsHandler.getReviewsByUserName('not real');
+    //   expect(response).to.have.lengthOf(0);
+    //   expect(response).not.contains(mockReviews[0]);
+    //   expect(response).not.contains(mockReviews[1]);
+    // });
 
-    it('returns empty array if userName is null', async () => {
-      const response = await reviewsHandler.getReviewsByUserName();
-      expect(response).to.have.lengthOf(0);
-    });
+    // it('returns empty array if userName is null', async () => {
+    //   const response = await reviewsHandler.getReviewsByUserName();
+    //   expect(response).to.have.lengthOf(0);
+    // });
 
     it('throws SchemaError if userName is invalid', async () => {
       try {

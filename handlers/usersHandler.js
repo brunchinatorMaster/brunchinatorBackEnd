@@ -5,6 +5,8 @@ const {
 	deleteUser,
 	updateUser,
  } = require('../databaseAccess/usersDatabaseAccess');
+const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
+const { DBErrorResponse } = require('../errors/DBErrorResponse');
 const { 
 	VALIDATE_CREATE_USER_SCHEMA,
 	EMAIL_SCHEMA,
@@ -26,21 +28,13 @@ class ReviewsHandler {
   async getUserByUsername(userName) {
 		const userNameIsValid = validateBySchema(userName, USERNAME_SCHEMA);
 		if (!userNameIsValid.isValid) {
-			return {
-				success: false,
-				statusCode: 400,
-				message: userNameIsValid.error.message
-			}
+			return new BadSchemaResponse(400, userNameIsValid.error.message);
 		}
 
 		const response = await getUserByUsername(userName);
 
 		if (response.DBError) {
-			return {
-				success: false,
-				statusCode: response.DBError?.$metadata?.httpStatusCode,
-				message: response.DBError.message
-			}
+			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
 		}
 
 		let user;
@@ -64,21 +58,13 @@ class ReviewsHandler {
   async getUserByEmail(email) {
 		const emailIsValid = validateBySchema(email, EMAIL_SCHEMA);
 		if (!emailIsValid.isValid) {
-			return {
-				success: false,
-				statusCode: 400,
-				message: emailIsValid.error.message
-			}
+			return new BadSchemaResponse(400, emailIsValid.error.message);
 		}
 
 		const response = await getUserByEmail(email);
 
 		if (response.DBError) {
-			return {
-				success: false,
-				statusCode: response.DBError?.$metadata?.httpStatusCode,
-				message: response.DBError.message
-			}
+			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
 		}
 
 		let user;
@@ -103,21 +89,13 @@ class ReviewsHandler {
 	async updateUser(user) {
 		const userIsValid = validateBySchema(user, VALIDATE_CREATE_USER_SCHEMA);
 		if (!userIsValid.isValid) {
-			return {
-				success: false,
-				statusCode: 400,
-				message: userIsValid.error.message
-			}
+			return new BadSchemaResponse(400, userIsValid.error.message);
 		}
 
 		const response = await updateUser(user);
 
 		if (response.DBError) {
-			return {
-				success: false,
-				statusCode: response.DBError?.$metadata?.httpStatusCode,
-				message: response.DBError.message
-			}
+			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
 		}
 
 		let updatedUser;
@@ -142,21 +120,13 @@ class ReviewsHandler {
 	async addUser(user) {
 		const userIsValid = validateBySchema(user, VALIDATE_CREATE_USER_SCHEMA);
 		if (!userIsValid.isValid) {
-			return {
-				success: false,
-				statusCode: 400,
-				message: userIsValid.error.message
-			}
+			return new BadSchemaResponse(400, userIsValid.error.message);
 		}
 
 		const response = await addUser(user);
 
 		if (response.DBError) {
-			return {
-				success: false,
-				statusCode: response.DBError?.$metadata?.httpStatusCode,
-				message: response.DBError.message
-			}
+			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
 		}
 
 		return {
@@ -178,30 +148,18 @@ class ReviewsHandler {
 	async login(userName, password) {
 		const userNameIsValid = validateBySchema(userName, USERNAME_SCHEMA);
 		if (!userNameIsValid.isValid) {
-			return {
-				success: false,
-				statusCode: 400,
-				message: userNameIsValid.error.message
-			}
+			return new BadSchemaResponse(400, userNameIsValid.error.message);
 		}
 
 		const passwordIsValid = validateBySchema(password, PASSWORD_SCHEMA);
 		if (!passwordIsValid.isValid) {
-			return {
-				success: false,
-				statusCode: 400,
-				message: passwordIsValid.error.message
-			}
+			return new BadSchemaResponse(400, passwordIsValid.error.message);
 		}
 
 		const response = await getUserByUsername(userName, password);
 
 		if (response.DBError) {
-			return {
-				success: false,
-				statusCode: response.DBError?.$metadata?.httpStatusCode,
-				message: response.DBError.message
-			}
+			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
 		}
 
 		if (!response.success) {
@@ -243,21 +201,13 @@ class ReviewsHandler {
 		const userNameIsValid = validateBySchema(userName, USERNAME_SCHEMA);
 
 		if (!userNameIsValid.isValid) {
-			return {
-				success: false,
-				statusCode: 400,
-				message: userNameIsValid.error.message
-			}
+			return new BadSchemaResponse(400, userNameIsValid.error.message);
 		}
 
 		const response = await deleteUser(userName);
 
 		if (response.DBError) {
-			return {
-				success: false,
-				statusCode: response.DBError?.$metadata?.httpStatusCode,
-				message: response.DBError.message
-			}
+			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
 		}
 		return {
 			success: true
