@@ -26,8 +26,9 @@ describe('usersController', () => {
         .send(toSend)
         .expect(400);
   
-        expect(response.body.errorInField[0]).to.equal('email');
-        expect(response.body.reasonForError).to.equal('"email" is required');
+        expect(response.body.success).to.equal(false);
+        expect(response.body.statusCode).to.equal(400);
+        expect(response.body.message).to.equal('"email" is required');
     });
 
     it('returns error if email is not a valid email', async () => {
@@ -42,8 +43,9 @@ describe('usersController', () => {
         .send(toSend)
         .expect(400);
   
-        expect(response.body.errorInField[0]).to.equal('email');
-        expect(response.body.reasonForError).to.equal('"email" must be a valid email');
+        expect(response.body.success).to.equal(false);
+        expect(response.body.statusCode).to.equal(400);
+        expect(response.body.message).to.equal('"email" must be a valid email');
     });
 
     it('returns error if userName is missing', async () => {
@@ -57,8 +59,9 @@ describe('usersController', () => {
         .send(toSend)
         .expect(400);
   
-        expect(response.body.errorInField[0]).to.equal('userName');
-        expect(response.body.reasonForError).to.equal('"userName" is a required field');
+        expect(response.body.success).to.equal(false);
+        expect(response.body.statusCode).to.equal(400);
+        expect(response.body.message).to.equal('"userName" is a required field');
     });
 
     it('returns error if userName is not a string', async () => {
@@ -73,8 +76,9 @@ describe('usersController', () => {
         .send(toSend)
         .expect(400);
   
-        expect(response.body.errorInField[0]).to.equal('userName');
-        expect(response.body.reasonForError).to.equal('"userName" must be a string');
+        expect(response.body.success).to.equal(false);
+        expect(response.body.statusCode).to.equal(400);
+        expect(response.body.message).to.equal('"userName" must be a string');
     });
 
     it('returns error if password is missing', async () => {
@@ -88,8 +92,9 @@ describe('usersController', () => {
         .send(toSend)
         .expect(400);
   
-        expect(response.body.errorInField[0]).to.equal('password');
-        expect(response.body.reasonForError).to.equal('"password" is a required field');
+        expect(response.body.success).to.equal(false);
+        expect(response.body.statusCode).to.equal(400);
+        expect(response.body.message).to.equal('"password" is a required field');
     });
 
     it('returns error if password is not a string', async () => {
@@ -104,8 +109,9 @@ describe('usersController', () => {
         .send(toSend)
         .expect(400);
   
-        expect(response.body.errorInField[0]).to.equal('password');
-        expect(response.body.reasonForError).to.equal('"password" must be a string');
+        expect(response.body.success).to.equal(false);
+        expect(response.body.statusCode).to.equal(400);
+        expect(response.body.message).to.equal('"password" must be a string');
     });
 
     it('returns success:true if user addition is successful', async () => {
@@ -153,8 +159,9 @@ describe('usersController', () => {
         .send(toSend)
         .expect(400);
   
-        expect(response.body.errorInField[0]).to.equal('email');
-        expect(response.body.reasonForError).to.equal('"email" is required');
+        expect(response.body.success).to.equal(false);
+        expect(response.body.statusCode).to.equal(400);
+        expect(response.body.message).to.equal('"email" is required');
     });
 
     it('returns error if email is not a valid email', async () => {
@@ -169,8 +176,9 @@ describe('usersController', () => {
         .send(toSend)
         .expect(400);
   
-        expect(response.body.errorInField[0]).to.equal('email');
-        expect(response.body.reasonForError).to.equal('"email" must be a valid email');
+        expect(response.body.success).to.equal(false);
+        expect(response.body.statusCode).to.equal(400);
+        expect(response.body.message).to.equal('"email" must be a valid email');
     });
   
     it('returns error if userName is missing', async () => {
@@ -184,8 +192,9 @@ describe('usersController', () => {
         .send(toSend)
         .expect(400);
   
-        expect(response.body.errorInField[0]).to.equal('userName');
-        expect(response.body.reasonForError).to.equal('"userName" is a required field');
+        expect(response.body.success).to.equal(false);
+        expect(response.body.statusCode).to.equal(400);
+        expect(response.body.message).to.equal('"userName" is a required field');
     });
 
     it('returns error if userName is not a string', async () => {
@@ -200,8 +209,9 @@ describe('usersController', () => {
         .send(toSend)
         .expect(400);
   
-        expect(response.body.errorInField[0]).to.equal('userName');
-        expect(response.body.reasonForError).to.equal('"userName" must be a string');
+        expect(response.body.success).to.equal(false);
+        expect(response.body.statusCode).to.equal(400);
+        expect(response.body.message).to.equal('"userName" must be a string');
     });
 
     it('returns error if password is missing', async () => {
@@ -215,8 +225,9 @@ describe('usersController', () => {
         .send(toSend)
         .expect(400);
   
-        expect(response.body.errorInField[0]).to.equal('password');
-        expect(response.body.reasonForError).to.equal('"password" is a required field');
+        expect(response.body.success).to.equal(false);
+        expect(response.body.statusCode).to.equal(400);
+        expect(response.body.message).to.equal('"password" is a required field');
     });
 
     it('returns error if password is not a string', async () => {
@@ -231,8 +242,9 @@ describe('usersController', () => {
         .send(toSend)
         .expect(400);
   
-        expect(response.body.errorInField[0]).to.equal('password');
-        expect(response.body.reasonForError).to.equal('"password" must be a string');
+        expect(response.body.success).to.equal(false);
+        expect(response.body.statusCode).to.equal(400);
+        expect(response.body.message).to.equal('"password" must be a string');
     });
 
     it('returns success:true if user update is successful', async () => {
@@ -278,13 +290,14 @@ describe('usersController', () => {
         .get('/users/byEmail/tohearstories@gmail')
         .expect(400);
         
-        expect(response.body.reasonForError).to.equal('"value" must be a valid email');
-        expect(response.body.originatingRequest).to.equal('tohearstories@gmail');
+        expect(response.body.message).to.equal('"value" must be a valid email');
+        expect(response.body.statusCode).to.equal(400);
     });
 
     it('returns user found by dynamo', async () => {
+      const toSend = deepCopy(mockUsers[0]);
       ddbMock.on(ScanCommand).resolves({
-        Items: [mockUsers[0]]
+        Items: [toSend]
       });
   
       const response = await supertest(app)
@@ -324,8 +337,9 @@ describe('usersController', () => {
     });
 
     it('returns user found by dynamo', async () => {
+      const toSend = deepCopy(mockUsers[0]);
       ddbMock.on(QueryCommand).resolves({
-        Items: [mockUsers[0]]
+        Items: [toSend]
       });
   
       const response = await supertest(app)
@@ -347,6 +361,150 @@ describe('usersController', () => {
   
       const response = await supertest(app)
         .get('/users/byUsername/geo')
+        .expect(mockGenericDynamoError.$metadata.httpStatusCode);
+
+      assert.deepEqual(response.body, {
+        success: false,
+        statusCode: mockGenericDynamoError.$metadata.httpStatusCode,
+        message: mockGenericDynamoError.message
+      });
+    });
+  });
+
+  describe('POST /login', () => {
+    it('returns error if username is missing', async () => {
+      const toSend = {
+        password: 'somePassword'
+      };
+  
+      const response = await supertest(app)
+        .post('/users/login')
+        .send(toSend)
+        .expect(400);
+
+        assert.deepEqual(response.body, {
+          success: false,
+          statusCode: 400,
+          message: '"userName" must be a string',
+        });
+    });
+
+    it('returns error if username is an empty string', async () => {
+      const toSend = {
+        userName: '',
+        password: 'somePassword'
+      };
+  
+      const response = await supertest(app)
+        .post('/users/login')
+        .send(toSend)
+        .expect(400);
+
+        assert.deepEqual(response.body, {
+          success: false,
+          statusCode: 400,
+          message: '"userName" cannot be an empty string',
+        });
+    });
+
+    it('returns error if username is not a string', async () => {
+      const toSend = {
+        userName: 123,
+        password: 'somePassword'
+      };
+  
+      const response = await supertest(app)
+        .post('/users/login')
+        .send(toSend)
+        .expect(400);
+
+        assert.deepEqual(response.body, {
+          success: false,
+          statusCode: 400,
+          message: '"userName" must be a string',
+        });
+    });
+
+    it('returns error if password is missing', async () => {
+      const toSend = {
+        userName: 'geo',
+      };
+  
+      const response = await supertest(app)
+        .post('/users/login')
+        .send(toSend)
+        .expect(400);
+
+        assert.deepEqual(response.body, {
+          success: false,
+          statusCode: 400,
+          message: '"password" must be a string',
+        });
+    });
+
+    it('returns error if password is an empty string', async () => {
+      const toSend = {
+        userName: 'geo',
+        password: ''
+      };
+  
+      const response = await supertest(app)
+        .post('/users/login')
+        .send(toSend)
+        .expect(400);
+
+        assert.deepEqual(response.body, {
+          success: false,
+          statusCode: 400,
+          message: '"password" cannot be an empty string',
+        });
+    });
+
+    it('returns error if password is not a string', async () => {
+      const toSend = {
+        userName: 'geo',
+        password: 123
+      };
+  
+      const response = await supertest(app)
+        .post('/users/login')
+        .send(toSend)
+        .expect(400);
+
+        assert.deepEqual(response.body, {
+          success: false,
+          statusCode: 400,
+          message: '"password" must be a string',
+        });
+    });
+
+    it('returns success:true if user login is successful', async () => {
+      const toSend = deepCopy(mockUsers[0]);
+      ddbMock.on(QueryCommand).resolves({
+        Items: [toSend]
+      });
+
+      const response = await supertest(app)
+        .post('/users/login')
+        .send({
+          userName: 'geo',
+          password: 'geoPassword'
+        })
+        .expect(200);
+
+      assert.deepEqual(response.body.success, true);
+      expect(response.body.token).not.to.be.null;
+    });
+
+    it('returns appropriate response if dynamo throws error', async () => {
+      ddbMock.on(QueryCommand).rejects(mockGenericDynamoError);
+  
+      const response = await supertest(app)
+      .post('/users/login')
+        .send({
+          userName: 'geo',
+          password: 'geoPassword'
+        })
         .expect(mockGenericDynamoError.$metadata.httpStatusCode);
 
       assert.deepEqual(response.body, {

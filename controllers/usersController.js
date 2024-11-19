@@ -47,8 +47,8 @@ app.post('/login', async (req, res) => {
 	const userName = req.body?.userName ?? null;
 	const password = req.body?.password ?? null;
 	try {
-		const response = await usersHandler.login(userName, password);
-		res.status(200).json(response);
+		const toReturn = await usersHandler.login(userName, password);
+		res.status(toReturn.statusCode ?? 200).json(toReturn);
 	} catch (error) {
 		res.status(error.statusCode ?? 400).json(error);
 	}

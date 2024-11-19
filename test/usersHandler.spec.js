@@ -318,12 +318,13 @@ describe('usersHandler', () => {
     it('throws SchemaError if password is not a string', async () => {
       const userName = 'geo';
       const password = 1;
-      try {
-        await usersHandler.login(userName, password);
-      } catch (error) {
-        expect(error).to.be.instanceof(SchemaError);
-        expect(error.reasonForError).to.equal('"password" must be a string');
-      }
+      const response = await usersHandler.login(userName, password);
+      assert.deepEqual(response, {
+				success: false,
+        statusCode:400,
+        message:'"password" must be a string',
+      });
+      
     });
 
     it('throws SchemaError if password is an empty string', async () => {

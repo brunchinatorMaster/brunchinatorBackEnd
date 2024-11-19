@@ -5,8 +5,6 @@ const {
 	deleteUser,
 	updateUser,
  } = require('../databaseAccess/usersDatabaseAccess');
-const { SchemaError } = require('../errors/SchemaError');
-const { LoginError } = require('../errors/LoginError');
 const { 
 	VALIDATE_CREATE_USER_SCHEMA,
 	EMAIL_SCHEMA,
@@ -26,10 +24,13 @@ class ReviewsHandler {
 	 * @returns {object}
 	 */
   async getUserByUsername(userName) {
-		const validateResponse = validateBySchema(userName, USERNAME_SCHEMA);
-
-		if (!validateResponse.isValid) {
-			throw new SchemaError(validateResponse.error);
+		const userNameIsValid = validateBySchema(userName, USERNAME_SCHEMA);
+		if (!userNameIsValid.isValid) {
+			return {
+				success: false,
+				statusCode: 400,
+				message: userNameIsValid.error.message
+			}
 		}
 
 		const response = await getUserByUsername(userName);
@@ -61,10 +62,13 @@ class ReviewsHandler {
 	 * @returns {object}
 	 */
   async getUserByEmail(email) {
-		const validateResponse = validateBySchema(email, EMAIL_SCHEMA);
-
-		if (!validateResponse.isValid) {
-			throw new SchemaError(validateResponse.error);
+		const emailIsValid = validateBySchema(email, EMAIL_SCHEMA);
+		if (!emailIsValid.isValid) {
+			return {
+				success: false,
+				statusCode: 400,
+				message: emailIsValid.error.message
+			}
 		}
 
 		const response = await getUserByEmail(email);
@@ -97,10 +101,13 @@ class ReviewsHandler {
 	 * @returns {object}
 	 */
 	async updateUser(user) {
-		const validateResponse = validateBySchema(user, VALIDATE_CREATE_USER_SCHEMA);
-
-		if (!validateResponse.isValid) {
-			throw new SchemaError(validateResponse.error);
+		const userIsValid = validateBySchema(user, VALIDATE_CREATE_USER_SCHEMA);
+		if (!userIsValid.isValid) {
+			return {
+				success: false,
+				statusCode: 400,
+				message: userIsValid.error.message
+			}
 		}
 
 		const response = await updateUser(user);
@@ -133,9 +140,13 @@ class ReviewsHandler {
 	 * @returns {object}
 	 */
 	async addUser(user) {
-		const validateResponse = validateBySchema(user, VALIDATE_CREATE_USER_SCHEMA);
-		if (!validateResponse.isValid) {
-			throw new SchemaError(validateResponse.error);
+		const userIsValid = validateBySchema(user, VALIDATE_CREATE_USER_SCHEMA);
+		if (!userIsValid.isValid) {
+			return {
+				success: false,
+				statusCode: 400,
+				message: userIsValid.error.message
+			}
 		}
 
 		const response = await addUser(user);
@@ -167,12 +178,20 @@ class ReviewsHandler {
 	async login(userName, password) {
 		const userNameIsValid = validateBySchema(userName, USERNAME_SCHEMA);
 		if (!userNameIsValid.isValid) {
-			throw new SchemaError(userNameIsValid.error);
+			return {
+				success: false,
+				statusCode: 400,
+				message: userNameIsValid.error.message
+			}
 		}
 
 		const passwordIsValid = validateBySchema(password, PASSWORD_SCHEMA);
 		if (!passwordIsValid.isValid) {
-			throw new SchemaError(passwordIsValid.error);
+			return {
+				success: false,
+				statusCode: 400,
+				message: passwordIsValid.error.message
+			}
 		}
 
 		const response = await getUserByUsername(userName, password);
@@ -186,13 +205,21 @@ class ReviewsHandler {
 		}
 
 		if (!response.success) {
-			throw new LoginError('No User Found');
+			return {
+				success: false,
+				statusCode: 401,
+				message: 'No User Found'
+			}
 		}
 
 		if (response.user.password !== password) {
-			throw new LoginError('Wrong Password');
+			return {
+				success: false,
+				statusCode: 401,
+				message: 'Wrong Password'
+			}
 		}
-		
+			
 		const cleanUser = removePassswordFromUser(response.user);
 
 		const token = jwt.sign(cleanUser, JWT_SECRET);
@@ -213,10 +240,14 @@ class ReviewsHandler {
 	 * @returns {object}
 	 */
 	async deleteUser(userName) {
-		const validateResponse = validateBySchema(userName, USERNAME_SCHEMA);
+		const userNameIsValid = validateBySchema(userName, USERNAME_SCHEMA);
 
-		if (!validateResponse.isValid) {
-			throw new SchemaError(validateResponse.error);
+		if (!userNameIsValid.isValid) {
+			return {
+				success: false,
+				statusCode: 400,
+				message: userNameIsValid.error.message
+			}
 		}
 
 		const response = await deleteUser(userName);
