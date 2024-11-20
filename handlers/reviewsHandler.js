@@ -77,15 +77,23 @@ class ReviewsHandler {
 	 * @returns {object[]}
 	 */
 	async getReviewsByPlaceId(placeId) {
-		const validateResponse = validateBySchema(placeId, PLACE_ID_SCHEMA);
+		const placeIdIsValid = validateBySchema(placeId, PLACE_ID_SCHEMA);
 
-		if (!validateResponse.isValid) {
-			throw new SchemaError(validateResponse.error);
+		if (!placeIdIsValid.isValid) {
+			return new BadSchemaResponse(400, placeIdIsValid.error.message);
 		}
 
-		const reviewsToReturn = await getReviewsByPlaceId(placeId);
-		// TODO do business logic, if any
-		return reviewsToReturn;
+		const response = await getReviewsByPlaceId(placeId);
+
+		if (response.DBError) {
+			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+		}
+
+		return {
+			success: true,
+			reviewsExist: response.success,
+			reviews: response.reviews,
+		}
 	}
 
 	/**
