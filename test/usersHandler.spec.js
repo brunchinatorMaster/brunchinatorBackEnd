@@ -7,6 +7,8 @@ const { SchemaError } = require('../errors/SchemaError');
 const { docClient, QueryCommand, ScanCommand, PutCommand, UpdateCommand, DeleteCommand } = require('../aws/awsClients');
 const { mockClient } = require('aws-sdk-client-mock');
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
+const { mockGenericDynamoError } = require('./mockDynamoResponses');
+const { DBErrorResponse } = require('../errors/DBErrorResponse');
 const ddbMock = mockClient(docClient);
 
 
@@ -41,6 +43,17 @@ describe('usersHandler', () => {
         }
       });
     });
+
+    it('returns DBErrorResponse if dynamo throws error', async () => {
+      ddbMock.on(QueryCommand).rejects(mockGenericDynamoError);
+
+      const response = await usersHandler.getUserByUsername('geo');
+
+      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
+      expect(response.message).to.equal(mockGenericDynamoError.message);
+    });
   });
 
   describe('getUserByEmail', () => {
@@ -69,6 +82,17 @@ describe('usersHandler', () => {
           email: 'tohearstories@gmail.com'
         }
       });
+    });
+
+    it('returns DBErrorResponse if dynamo throws error', async () => {
+      ddbMock.on(ScanCommand).rejects(mockGenericDynamoError);
+
+      const response = await usersHandler.getUserByEmail('tohearstories@gmail.com');
+
+      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
+      expect(response.message).to.equal(mockGenericDynamoError.message);
     });
   });
 
@@ -131,6 +155,21 @@ describe('usersHandler', () => {
       expect(response.message).to.equal('"userName" must be a string');
     });
 
+    it('returns BadSchemaResponse if userName is an empty string', async () => {
+      const toAdd = {
+        userName: '',
+        password: 'somePassword',
+        email: 'tohearstories@gmail.com'
+      };
+      
+      const response = await usersHandler.addUser(toAdd);
+      
+      expect(response).to.be.instanceof(BadSchemaResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(400);
+      expect(response.message).to.equal('"userName" cannot be an empty string');
+    });
+
     it('returns BadSchemaResponse if password is missing', async () => {
       const toAdd = {
         userName: 'someName',
@@ -160,6 +199,21 @@ describe('usersHandler', () => {
       expect(response.message).to.equal('"password" must be a string');
     });
 
+    it('returns BadSchemaResponse if password is an empty string', async () => {
+      const toAdd = {
+        userName: 'someName',
+        password: '',
+        email: 'tohearstories@gmail.com'
+      };
+      
+      const response = await usersHandler.addUser(toAdd);
+      
+      expect(response).to.be.instanceof(BadSchemaResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(400);
+      expect(response.message).to.equal('"password" cannot be an empty string');
+    });
+
     it('returns success:true if user addition is successful', async () => {
       ddbMock.on(PutCommand).resolves({
         Items: [mockUsers[0]]
@@ -177,6 +231,23 @@ describe('usersHandler', () => {
         success: true,
         DBError: undefined
       });
+    });
+
+    it('returns DBErrorResponse if dynamo throws error', async () => {
+      ddbMock.on(PutCommand).rejects(mockGenericDynamoError);
+
+      const toAdd = {
+        userName: 'someName',
+        password: 'password',
+        email: 'tohearstories@gmail.com'
+      };
+
+      const response = await usersHandler.addUser(toAdd);
+
+      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
+      expect(response.message).to.equal(mockGenericDynamoError.message);
     });
   });
 
@@ -239,6 +310,21 @@ describe('usersHandler', () => {
       expect(response.message).to.equal('"userName" must be a string');
     });
 
+    it('returns BadSchemaResponse if userName is an empty string', async () => {
+      const toUpdate = {
+        userName: '',
+        password: 'somePassword',
+        email: 'tohearstories@gmail.com'
+      };
+      
+      const response = await usersHandler.updateUser(toUpdate);
+
+      expect(response).to.be.instanceof(BadSchemaResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(400);
+      expect(response.message).to.equal('"userName" cannot be an empty string');
+    });
+
     it('returns BadSchemaResponse if password is missing', async () => {
       const toUpdate = {
         userName: 'someName',
@@ -268,6 +354,21 @@ describe('usersHandler', () => {
       expect(response.message).to.equal('"password" must be a string');
     });
 
+    it('returns BadSchemaResponse if password is an empty string', async () => {
+      const toUpdate = {
+        userName: 'someName',
+        password: '',
+        email: 'tohearstories@gmail.com'
+      };
+      
+      const response = await usersHandler.updateUser(toUpdate);
+
+      expect(response).to.be.instanceof(BadSchemaResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(400);
+      expect(response.message).to.equal('"password" cannot be an empty string');
+    });
+
     it('returns success:true if user update is successful', async () => {
       ddbMock.on(UpdateCommand).resolves({
         Attributes: mockUsers[0]
@@ -289,6 +390,23 @@ describe('usersHandler', () => {
         },
         DBError: undefined
       });
+    });
+
+    it('returns DBErrorResponse if dynamo throws error', async () => {
+      ddbMock.on(UpdateCommand).rejects(mockGenericDynamoError);
+
+      const toUpdate = {
+        userName: 'someName',
+        password: 'password',
+        email: 'tohearstories@gmail.com'
+      };
+
+      const response = await usersHandler.updateUser(toUpdate);
+
+      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
+      expect(response.message).to.equal(mockGenericDynamoError.message);
     });
   });
 
@@ -356,7 +474,18 @@ describe('usersHandler', () => {
           email: 'tohearstories@gmail.com'
       });
       expect(response.token).to.be.not.null;
-    })
+    });
+
+    it('returns DBErrorResponse if dynamo throws error', async () => {
+      ddbMock.on(QueryCommand).rejects(mockGenericDynamoError);
+
+      const response = await usersHandler.login('geo', 'geoPassword');
+
+      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
+      expect(response.message).to.equal(mockGenericDynamoError.message);
+    });
   });
 
   describe('deleteUser', () => {
@@ -386,6 +515,17 @@ describe('usersHandler', () => {
       const response = await usersHandler.deleteUser('someUserName');
 
       assert.deepEqual(response, {success: true});
+    });
+
+    it('returns DBErrorResponse if dynamo throws error', async () => {
+      ddbMock.on(DeleteCommand).rejects(mockGenericDynamoError);
+
+      const response = await usersHandler.deleteUser('someUserName');
+
+      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
+      expect(response.message).to.equal(mockGenericDynamoError.message);
     });
   });
 });
