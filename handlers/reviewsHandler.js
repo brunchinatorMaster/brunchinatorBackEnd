@@ -23,6 +23,7 @@ const { REVIEW_ID_SCHEMA, VALIDATE_CREATE_REVIEW_SCHEMA } = require('../schemas/
 const { PLACE_ID_SCHEMA, VALIDATE_CREATE_PLACE_SCHEMA, VALIDATE_UPDATE_PLACE_SCHEMA } = require('../schemas/placesSchemas');
 const { USERNAME_SCHEMA } = require('../schemas/usersSchemas');
 const { v4 } = require('uuid');
+const { DBErrorResponse } = require('../errors/DBErrorResponse');
 
 class ReviewsHandler {
 
@@ -32,9 +33,15 @@ class ReviewsHandler {
 	 * @returns {object[]}
 	 */
 	async getReviews() {
-		const allReviews = await getReviews();
-		// TODO do business logic, if any
-		return allReviews;
+		const response = await getReviews();
+		if (response.DBError) {
+			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+		}
+
+		return {
+			success: true,
+			reviews: response.reviews
+		}
 	}
 
 	/**

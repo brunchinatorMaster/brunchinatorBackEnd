@@ -5,8 +5,8 @@ const reviewsHandler = new ReviewsHandler();
 
 app.get('/all', async (req, res) => {
 	try {
-		const reviews = await reviewsHandler.getReviews();
-		res.status(200).json(reviews);
+		const toReturn = await reviewsHandler.getReviews();
+		res.status(toReturn.statusCode ?? 200).json(toReturn);
 	} catch (error) {
 		res.status(error.statusCode ?? 400).json(error);
 	}

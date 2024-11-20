@@ -3,6 +3,7 @@ const {
   docClient,
   PutCommand,
   QueryCommand,
+  ScanCommand,
 } = require('../aws/awsClients');
 const { deepCopy } = require('../utils/utils');
 
@@ -12,8 +13,28 @@ const { deepCopy } = require('../utils/utils');
  * @returns {object[]}
  */
 const getReviews = async () => {
-  const mockReviews = deepCopy(reviews);
-  return mockReviews;
+  const scanCommand = new ScanCommand({
+    TableName: "Reviews",
+    ProjectionExpression: 'reviewId, placeId, userName, placeName, beersw, bloody, burger, reviewDate, words',
+  });
+  let success = false;
+  let reviews;
+  let DBError;
+  try {
+    const response = await docClient.send(scanCommand);
+    if (response?.Items?.length > 0) {
+      success = true;
+      reviews = response.Items
+    }
+  } catch (error) {
+    DBError = error;
+  } finally {
+    return {
+      success,
+      reviews,
+      DBError
+    }
+  }
 }
 
 /**
