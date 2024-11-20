@@ -7,7 +7,11 @@ const {
 } = require('./placesSchemas');
 const { USERNAME_SCHEMA } = require('./usersSchemas');
 
-const REVIEW_ID_SCHEMA = Joi.string();
+const REVIEW_ID_SCHEMA = Joi.string().required().messages({
+  'string.base': `"reviewId" must be a string`,
+  'string.empty': `"reviewId" cannot be an empty string`,
+  'any.required': `"reviewId" is a required field`
+});;
 const REVIEW_DATE_SCHEMA = Joi.date();
 
 const VALIDATE_CREATE_REVIEW_SCHEMA = Joi.object({

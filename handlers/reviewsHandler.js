@@ -24,6 +24,7 @@ const { PLACE_ID_SCHEMA, VALIDATE_CREATE_PLACE_SCHEMA, VALIDATE_UPDATE_PLACE_SCH
 const { USERNAME_SCHEMA } = require('../schemas/usersSchemas');
 const { v4 } = require('uuid');
 const { DBErrorResponse } = require('../errors/DBErrorResponse');
+const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
 
 class ReviewsHandler {
 
@@ -51,14 +52,22 @@ class ReviewsHandler {
 	 * @returns {object}
 	 */
 	async getReviewByReviewId(reviewId) {
-		const validateResponse = validateBySchema(reviewId, REVIEW_ID_SCHEMA);
-		if (!validateResponse.isValid) {
-			throw new SchemaError(validateResponse.error);
+		const reviewIdIsValid = validateBySchema(reviewId, REVIEW_ID_SCHEMA);
+		if (!reviewIdIsValid.isValid) {
+			return new BadSchemaResponse(400, reviewIdIsValid.error.message);
 		}
 
-		const reviewToReturn = await getReviewByReviewId(reviewId);
-		// TODO do business logic, if any
-		return reviewToReturn;
+		const response = await getReviewByReviewId(reviewId);
+
+		if (response.DBError) {
+			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+		}
+
+		return {
+			success: true,
+			reviewExists: response.success,
+			review: response.review,
+		}
 	}
 
 	/**

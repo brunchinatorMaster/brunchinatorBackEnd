@@ -16,7 +16,7 @@ app.get('/byReviewId/:reviewId', async (req, res) => {
 	const reviewId = req.params.reviewId ?? null;
 	try {
 		const toReturn = await reviewsHandler.getReviewByReviewId(reviewId);
-		res.status(200).json(toReturn);
+		res.status(toReturn.statusCode ?? 200).json(toReturn);
 	} catch (error) {
 		res.status(error.statusCode ?? 400).json(error);
 	}
