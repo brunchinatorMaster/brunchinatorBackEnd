@@ -58,35 +58,52 @@ describe('placesHandler', () => {
   });
 
   describe('addPlace', () => {
-    it('throws error if placeName is missing', async () => {
-      try {
-        await placesHandler.addPlace({
-          beers: 1,
-          benny: 1,
-          bloody: 1,
-          burger: 1,
-          words: 'some words'
-        });
-      } catch (error) {
-        expect(error).to.be.instanceOf(SchemaError);
-        expect(error.reasonForError).to.equal('"placeName" is required');
-      }
+    it('returns BadSchemaResponse if placeName is missing', async () => {
+      const response = await placesHandler.addPlace({
+        beers: 1,
+        benny: 1,
+        bloody: 1,
+        burger: 1,
+        words: 'some words'
+      });
+
+      expect(response).to.be.instanceof(BadSchemaResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(400);
+      expect(response.message).to.equal('"placeName" is required');
+      
     });
 
     it('throws error if placeName is not a string', async () => {
-      try {
-        await placesHandler.addPlace({
-          placeName: 1,
-          beers: 1,
-          benny: 1,
-          bloody: 1,
-          burger: 1,
-          words: 'some words'
-        });
-      } catch (error) {
-        expect(error).to.be.instanceOf(SchemaError);
-        expect(error.reasonForError).to.equal('"placeName" must be a string');
-      }
+      const response = await placesHandler.addPlace({
+        placeName: 1,
+        beers: 1,
+        benny: 1,
+        bloody: 1,
+        burger: 1,
+        words: 'some words'
+      });
+      
+      expect(response).to.be.instanceof(BadSchemaResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(400);
+      expect(response.message).to.equal('"placeName" must be a string');
+    });
+
+    it('throws error if placeName is an empty string', async () => {
+      const response = await placesHandler.addPlace({
+        placeName: '',
+        beers: 1,
+        benny: 1,
+        bloody: 1,
+        burger: 1,
+        words: 'some words'
+      });
+      
+      expect(response).to.be.instanceof(BadSchemaResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(400);
+      expect(response.message).to.equal('"placeName" is not allowed to be empty');
     });
 
     it('returns success upon successful addition to dynamo', async () => {
