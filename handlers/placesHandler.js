@@ -3,7 +3,7 @@ const {
 	addPlace,
 } = require('../databaseAccess/placesDatabaseAccess');
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
-const { SchemaError } = require('../errors/SchemaError');
+const { DBErrorResponse } = require('../errors/DBErrorResponse');
 const { PLACE_ID_SCHEMA, VALIDATE_CREATE_PLACE_SCHEMA } = require('../schemas/placesSchemas');
 const { validateBySchema } = require('../utils/utils');
 const { v4 } = require('uuid');
@@ -46,13 +46,20 @@ class PlacesHandler {
 	 * @returns {object[]}
 	 */
 	async addPlace(place) {
-		const validateResponse = validateBySchema(place, VALIDATE_CREATE_PLACE_SCHEMA);
+		const placeIsValid = validateBySchema(place, VALIDATE_CREATE_PLACE_SCHEMA);
 
-		if (!validateResponse.isValid) {
-			throw new SchemaError(validateResponse.error);
+		if (!placeIsValid.isValid) {
+			return new BadSchemaResponse(400, placeIsValid.error.message);
 		}
-		place.placeId = v4();
-		await addPlace(place);
+
+		place.placeId = v4(); // TODO will be removed when google places api is integrated with frontend
+		
+		const response = await addPlace(place);
+		
+		if (response.DBError) {
+			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+		}
+
 		return {
 			success: true
 		};
