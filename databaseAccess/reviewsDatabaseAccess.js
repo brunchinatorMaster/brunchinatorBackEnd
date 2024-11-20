@@ -80,10 +80,33 @@ const getReviewByReviewId = async (reviewId) => {
  * @returns {object[]}
  */
 const getReviewsByPlaceId = async (placeId) => {
-  // TODO this will be replaced with either a call to the database to specifically
-  // grab one place by id, or some filtering of allPlaces
-  const mockReviews = deepCopy(reviews);
-  return mockReviews.filter((review) => review.placeId == placeId) ?? [];
+  const scanCommand = new ScanCommand({
+    TableName: 'Reviews',
+    ExpressionAttributeValues: {
+      ':placeId': placeId,
+    },
+    FilterExpression: 'placeId = :placeId',
+    ProjectionExpression: 'reviewId, placeId, userName, placeName, beersw, bloody, burger, reviewDate, words',
+  });
+
+  let success = false;
+  let reviews;
+  let DBError;
+  try {
+    const response = await docClient.send(scanCommand);console.log('response');console.log(response)
+    if (response?.Items?.length > 0) {
+      success = true;
+      reviews = response.Items
+    }
+  } catch (error) {
+    DBError = error;
+  } finally {
+    return {
+      success,
+      reviews,
+      DBError
+    }
+  }
 }
 
 /**

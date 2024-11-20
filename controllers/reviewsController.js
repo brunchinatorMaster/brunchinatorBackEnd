@@ -26,7 +26,7 @@ app.get('/byPlaceId/:placeId', async (req, res) => {
 	const placeId = req.params.placeId ?? null;
 	try {
 		const toReturn = await reviewsHandler.getReviewsByPlaceId(placeId);
-		res.status(200).json(toReturn);
+		res.status(toReturn.statusCode ?? 200).json(toReturn);
 	} catch (error) {
 		res.status(error.statusCode ?? 400).json(error);
 	}

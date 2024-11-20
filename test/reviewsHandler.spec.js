@@ -44,7 +44,7 @@ describe('reviewsHandler', () => {
   });
 
   describe('getReviewByReviewId', () => {
-    it('returns BadSchemaResponse is userName is invalid', async () => {
+    it('returns BadSchemaResponse is reviewId is invalid', async () => {
       const response = await reviewsHandler.getReviewByReviewId(12345);
 
       expect(response).to.be.instanceof(BadSchemaResponse);
@@ -81,44 +81,40 @@ describe('reviewsHandler', () => {
   });
 
   describe('getReviewsByPlaceId', () => {
-    it('returns only the review that matches placeId', async () => {
-      let response = await reviewsHandler.getReviewsByPlaceId('place1');
-      expect(response).to.have.lengthOf(1);
-      assert.deepEqual(response[0], mockReviews[0]);
+    it('returns BadSchemaResponse is placeId is invalid', async () => {
+      const response = await reviewsHandler.getReviewsByPlaceId(12345);
 
-      response = await reviewsHandler.getReviewsByPlaceId('place2');
-      expect(response).to.have.lengthOf(2);
-      assert.deepEqual(response[0], mockReviews[1]);
-      assert.deepEqual(response[1], mockReviews[2]);
-
-      response = await reviewsHandler.getReviewsByPlaceId('place3');
-      expect(response).to.have.lengthOf(1);
-      assert.deepEqual(response[0], mockReviews[3]);
+      expect(response).to.be.instanceof(BadSchemaResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(400);
+      expect(response.message).to.equal('"placeId" must be a string');
     });
 
-    it('returns empty array if no review matches placeId', async () => {
-      const response = await reviewsHandler.getReviewsByPlaceId('not real');
-      expect(response).to.have.lengthOf(0);
-      expect(response).not.contains(mockReviews[0]);
-      expect(response).not.contains(mockReviews[1]);
-      expect(response).not.contains(mockReviews[2]);
-      expect(response).not.contains(mockReviews[3]);
+    it('returns reviews found by dynamo', async () => {
+      const reviews = deepCopy(mockReviews);
+      ddbMock.on(ScanCommand).resolves({
+        Items: [reviews[1], reviews[2]]
+      });
+  
+      const response = await reviewsHandler.getReviewsByPlaceId('place2');
+
+      assert.deepEqual(response, {
+        success: true,
+        reviewsExist: true,
+        reviews: [reviews[1], reviews[2]],
+      });
     });
 
-    // it('returns empty array if placeId is null', async () => {
-    //   const response = await reviewsHandler.getReviewsByPlaceId();
-    //   expect(response).to.have.lengthOf(0);
-    // });
+    it('returns DBErrorResponse if dynamo throws error', async () => {
+      ddbMock.on(ScanCommand).rejects(mockGenericDynamoError);
 
-    // it('throws SchemaError if placeId is invalid', async () => {
-    //   try {
-    //     await reviewsHandler.getReviewsByPlaceId(1);
-    //   } catch (error) {
-    //     expect(error).to.be.instanceof(SchemaError);
-    //     expect(error.reasonForError).to.equal('"value" must be a string');
-    //     expect(error.originatingRequest).to.equal(1);
-    //   }
-    // });
+      const response = await reviewsHandler.getReviewsByPlaceId('123');
+
+      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
+      expect(response.message).to.equal(mockGenericDynamoError.message);
+    });
   });
 
   describe('getReviewsByUserName', () => {
