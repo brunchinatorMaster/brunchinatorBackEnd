@@ -2,6 +2,7 @@ const {
 	getPlaceByPlaceId,
 	addPlace,
 } = require('../databaseAccess/placesDatabaseAccess');
+const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
 const { SchemaError } = require('../errors/SchemaError');
 const { PLACE_ID_SCHEMA, VALIDATE_CREATE_PLACE_SCHEMA } = require('../schemas/placesSchemas');
 const { validateBySchema } = require('../utils/utils');
@@ -20,14 +21,22 @@ class PlacesHandler {
 	 * @returns {object}
 	 */
 	async getPlaceByPlaceId(placeId) {
-		const validateResponse = validateBySchema(placeId, PLACE_ID_SCHEMA);
-
-		if (!validateResponse.isValid) {
-			throw new SchemaError(validateResponse.error);
+		const placeIdIsValid = validateBySchema(placeId, PLACE_ID_SCHEMA);
+		if (!placeIdIsValid.isValid) {
+			return new BadSchemaResponse(400, placeIdIsValid.error.message);
 		}
 
-		const placeToReturn = await getPlaceByPlaceId(placeId);
-		return placeToReturn;
+		const response = await getPlaceByPlaceId(placeId);
+
+		if (response.DBError) {
+			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+		}
+
+		return {
+			success: true,
+			placeExists: response.success,
+			place: response.place,
+		}
 	}
 
 	/**

@@ -20,10 +20,6 @@ const { deepCopy } = require('../utils/utils');
  * @returns {object}
  */
 const getPlaceByPlaceId = async (placeId) => {
-  if (!placeId) {
-    throw new DynamoError(400, 'placeId must not be null');
-  }
-
   const queryCommand = new QueryCommand({
     TableName: 'Places',
     ExpressionAttributeValues: {

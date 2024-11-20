@@ -3,7 +3,11 @@ const Joi = require('joi');
 const RATINGS_SCHEMA = Joi.number().greater(-1).less(6);
 const WORDS_SCHEMA = Joi.string();
 
-const PLACE_ID_SCHEMA = Joi.string();
+const PLACE_ID_SCHEMA = Joi.string().required().messages({
+  'string.base': `"placeId" must be a string`,
+  'string.empty': `"placeId" cannot be an empty string`,
+  'any.required': `"placeId" is a required field`
+});
 const PLACE_NAME_SCHEMA = Joi.string();
 
 const NUMBER_OF_REVIEWS_SCHEMA = Joi.number();

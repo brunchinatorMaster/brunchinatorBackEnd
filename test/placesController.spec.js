@@ -24,6 +24,7 @@ describe('placesController', () => {
         
       assert.deepEqual(response.body, {
         success: true,
+        placeExists: true,
         place: mockPlaces[0]
       });
     });
@@ -38,7 +39,8 @@ describe('placesController', () => {
       .expect(200);
 
       assert.deepEqual(response.body, {
-        success: false
+        success: true,
+        placeExists: false
       });
     });
   });

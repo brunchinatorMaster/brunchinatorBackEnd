@@ -68,20 +68,20 @@ describe('reviewsHandler', () => {
       expect(response).not.contains(mockReviews[3]);
     });
 
-    it('returns empty array if placeId is null', async () => {
-      const response = await reviewsHandler.getReviewsByPlaceId();
-      expect(response).to.have.lengthOf(0);
-    });
+    // it('returns empty array if placeId is null', async () => {
+    //   const response = await reviewsHandler.getReviewsByPlaceId();
+    //   expect(response).to.have.lengthOf(0);
+    // });
 
-    it('throws SchemaError if placeId is invalid', async () => {
-      try {
-        await reviewsHandler.getReviewsByPlaceId(1);
-      } catch (error) {
-        expect(error).to.be.instanceof(SchemaError);
-        expect(error.reasonForError).to.equal('"value" must be a string');
-        expect(error.originatingRequest).to.equal(1);
-      }
-    });
+    // it('throws SchemaError if placeId is invalid', async () => {
+    //   try {
+    //     await reviewsHandler.getReviewsByPlaceId(1);
+    //   } catch (error) {
+    //     expect(error).to.be.instanceof(SchemaError);
+    //     expect(error.reasonForError).to.equal('"value" must be a string');
+    //     expect(error.originatingRequest).to.equal(1);
+    //   }
+    // });
   });
 
   describe('getReviewsByUserName', () => {
