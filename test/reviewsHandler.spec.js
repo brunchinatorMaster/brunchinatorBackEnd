@@ -44,32 +44,39 @@ describe('reviewsHandler', () => {
   });
 
   describe('getReviewByReviewId', () => {
-    it('returns only the review that matches reviewId', async () => {
-      let response = await reviewsHandler.getReviewByReviewId('review1');
-      assert.deepEqual(response, mockReviews[0]);
+    it('returns BadSchemaResponse is userName is invalid', async () => {
+      const response = await reviewsHandler.getReviewByReviewId(12345);
 
-      response = await reviewsHandler.getReviewByReviewId('review2');
-      assert.deepEqual(response, mockReviews[1]);
+      expect(response).to.be.instanceof(BadSchemaResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(400);
+      expect(response.message).to.equal('"reviewId" must be a string');
     });
 
-    it('returns null if no review matches reviewId', async () => {
-      const response = await reviewsHandler.getReviewByReviewId('review5');
-      expect(response).to.be.null;
+    it('returns review found by dynamo', async () => {
+      const review = deepCopy(mockReviews[0]);
+      ddbMock.on(QueryCommand).resolves({
+        Items: [review]
+      });
+  
+      const response = await reviewsHandler.getReviewByReviewId(review.reviewId);
+
+      assert.deepEqual(response, {
+        success: true,
+        reviewExists: true,
+        review,
+      });
     });
 
-    it('returns null if reviewId is null', async () => {
-      const response = await reviewsHandler.getReviewByReviewId();
-      expect(response).to.be.null;
-    });
+    it('returns DBErrorResponse if dynamo throws error', async () => {
+      ddbMock.on(QueryCommand).rejects(mockGenericDynamoError);
 
-    it('returns null if reviewId is not a string', async () => {
-      try {
-        await reviewsHandler.getReviewByReviewId(1);
-      } catch (error) {
-        expect(error).to.be.instanceof(SchemaError);
-        expect(error.reasonForError).to.equal('"value" must be a string');
-        expect(error.originatingRequest).to.equal(1);
-      }
+      const response = await reviewsHandler.getReviewByReviewId('123');
+
+      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
+      expect(response.message).to.equal(mockGenericDynamoError.message);
     });
   });
 

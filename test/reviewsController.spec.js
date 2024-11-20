@@ -3,7 +3,7 @@ const { expect, assert } = require('chai');
 const mockReviews = require('../mockDataBase/reviews')
 const app = require('../app');
 
-const { docClient, PutCommand, ScanCommand } = require('../aws/awsClients');
+const { docClient, PutCommand, ScanCommand, QueryCommand } = require('../aws/awsClients');
 const { mockClient } = require('aws-sdk-client-mock');
 const { deepCopy } = require('../utils/utils');
 const { mockGenericDynamoError } = require('./mockDynamoResponses');
@@ -44,7 +44,46 @@ describe('reviewsController', () => {
           message: mockGenericDynamoError.message
         });
     });
-  })
+  });
+
+  describe('GET /byReviewId/:reviewId', () => {
+    it('returns 404 if reviewId is missing', async () => {
+      await supertest(app)
+        .get('/reviews/byReviewId/')
+        .expect(404);
+    });
+
+    it('returns review found by dynamo', async () => {
+      const review = deepCopy(mockReviews[0]);
+      ddbMock.on(QueryCommand).resolves({
+        Items: [review]
+      });
+  
+      const response = await supertest(app)
+        .get('/reviews/byReviewId/review1')
+        .expect(200);
+
+      assert.deepEqual(response.body, {
+        success: true,
+        reviewExists: true,
+        review,
+      });
+    });
+
+    it('returns appropriate response if dynamo throws error', async () => {
+      ddbMock.on(QueryCommand).rejects(mockGenericDynamoError);
+  
+      const response = await supertest(app)
+      .get('/reviews/byReviewId/review1')
+        .expect(mockGenericDynamoError.$metadata.httpStatusCode);
+
+      assert.deepEqual(response.body, {
+        success: false,
+        statusCode: mockGenericDynamoError.$metadata.httpStatusCode,
+        message: mockGenericDynamoError.message
+      });
+    });
+  });
 
   describe('POST /createReview', () => {
     it('returns error if review contains unsupported field', async () => {

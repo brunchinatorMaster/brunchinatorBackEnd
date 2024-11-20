@@ -44,10 +44,33 @@ const getReviews = async () => {
  * @returns {object}
  */
 const getReviewByReviewId = async (reviewId) => {
-  // TODO this will be replaced with either a call to the database to specifically
-  // grab one place by id, or some filtering of allPlaces
-  const mockReviews = deepCopy(reviews);
-  return mockReviews.filter((review) => review.reviewId == reviewId)?.[0] ?? null;
+  const queryCommand = new QueryCommand({
+    TableName: 'Reviews',
+    ExpressionAttributeValues: {
+      ':reviewId': reviewId,
+    },
+    KeyConditionExpression: 'reviewId = :reviewId',
+    ConsistentRead: true,
+  });
+
+  let success = false;
+  let review;
+  let DBError;
+  try {
+    const response = await docClient.send(queryCommand);
+    if (response?.Items?.length > 0) {
+      success = true;
+      review = response.Items[0]
+    }
+  } catch (error) {
+    DBError = error;
+  } finally {
+    return {
+      success,
+      review,
+      DBError
+    }
+  }
 }
 
 /**
