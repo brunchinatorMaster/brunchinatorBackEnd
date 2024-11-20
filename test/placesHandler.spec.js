@@ -2,13 +2,12 @@ const { expect, assert } = require('chai');
 const PlacesHandler = require('../handlers/placesHandler');
 const placesHandler = new PlacesHandler();
 const mockPlaces = require('../mockDataBase/places');
-const { SchemaError } = require('../errors/SchemaError');
-const { DynamoError } = require('../errors/DynamoError');
-
 const { docClient, QueryCommand, PutCommand } = require('../aws/awsClients');
 const { mockClient } = require('aws-sdk-client-mock');
-const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
 const ddbMock = mockClient(docClient);
+const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
+const { DBErrorResponse } = require('../errors/DBErrorResponse');
+const { mockGenericDynamoError } = require('./mockDynamoResponses');
 
 describe('placesHandler', () => {
   beforeEach(() => {
@@ -54,6 +53,17 @@ describe('placesHandler', () => {
         placeExists: true,
         place: mockPlaces[0],
       });
+    });
+
+    it('returns DBErrorResponse if dynamo throws error', async () => {
+      ddbMock.on(QueryCommand).rejects(mockGenericDynamoError);
+
+      const response = await placesHandler.getPlaceByPlaceId('place1');
+
+      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
+      expect(response.message).to.equal(mockGenericDynamoError.message);
     });
   });
 
@@ -119,7 +129,25 @@ describe('placesHandler', () => {
           burger: 1,
           words: 'some words'
         });
-        assert.deepEqual(response, {success: true});
+
+      assert.deepEqual(response, {success: true});
+    });
+
+    it('returns DBErrorResponse if dynamo throws error', async () => {
+      ddbMock.on(PutCommand).rejects(mockGenericDynamoError);
+      const response = await placesHandler.addPlace({
+        placeName: 'some place',
+        beers: 1,
+        benny: 1,
+        bloody: 1,
+        burger: 1,
+        words: 'some words'
+      });
+
+      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
+      expect(response.message).to.equal(mockGenericDynamoError.message);
     });
   });
 });
