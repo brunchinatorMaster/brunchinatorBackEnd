@@ -2,14 +2,44 @@ const { expect, assert } = require('chai');
 const ReviewsHandler = require('../handlers/reviewsHandler');
 const reviewsHandler = new ReviewsHandler();
 const mockReviews = require('../mockDataBase/reviews');
-const mockPlaces = require('../mockDataBase/places');
 const { SchemaError } = require('../errors/SchemaError');
 
+const { docClient, QueryCommand, ScanCommand } = require('../aws/awsClients');
+const { mockClient } = require('aws-sdk-client-mock');
+const ddbMock = mockClient(docClient);
+const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
+const { DBErrorResponse } = require('../errors/DBErrorResponse');
+const { mockGenericDynamoError } = require('./mockDynamoResponses');
+const { deepCopy } = require('../utils/utils');
+
 describe('reviewsHandler', () => {
+  beforeEach(() => {
+    ddbMock.reset();
+  });
+
   describe('getReviews', () => {
-    it('returns reviews', async () => {
+    it('returns reviews', async () => { 
+      const reviews = deepCopy(mockReviews);
+      ddbMock.on(ScanCommand).resolves({
+        Items: reviews
+      });
+
       const response = await reviewsHandler.getReviews();
-      assert.deepEqual(response, mockReviews);
+      assert.deepEqual(response, {
+        success: true,
+        reviews: reviews
+      });
+    });
+
+    it('returns DBErrorResponse if dynamo throws error', async () => {
+      ddbMock.on(ScanCommand).rejects(mockGenericDynamoError);
+
+      const response = await reviewsHandler.getReviews();
+
+      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
+      expect(response.message).to.equal(mockGenericDynamoError.message);
     });
   });
 
