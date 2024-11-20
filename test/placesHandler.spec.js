@@ -7,6 +7,7 @@ const { DynamoError } = require('../errors/DynamoError');
 
 const { docClient, QueryCommand, PutCommand } = require('../aws/awsClients');
 const { mockClient } = require('aws-sdk-client-mock');
+const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
 const ddbMock = mockClient(docClient);
 
 describe('placesHandler', () => {
@@ -15,24 +16,31 @@ describe('placesHandler', () => {
   });
 
   describe('getPlaceByPlaceId', () => {
-    it('throws error if placeId is null', async () => {
-      try {
-        await placesHandler.getPlaceByPlaceId();
-      } catch (error) {
-        expect(error).to.be.instanceof(DynamoError);
-        expect(error.statusCode).to.equal(400)
-        expect(error.message).to.equal('placeId must not be null');
-      }
+    it('returns BadSchemaResponse if placeId is null', async () => {
+      const response = await placesHandler.getPlaceByPlaceId();
+      
+      expect(response).to.be.instanceof(BadSchemaResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(400);
+      expect(response.message).to.equal('"placeId" is a required field');
     });
 
-    it('throws SchemaError if placeId is invalid', async () => {
-      try {
-        await placesHandler.getPlaceByPlaceId(1);
-      } catch (error) {
-        expect(error).to.be.instanceof(SchemaError);
-        expect(error.reasonForError).to.equal('"value" must be a string');
-        expect(error.originatingRequest).to.equal(1);
-      }
+    it('returns BadSchemaResponse if placeId is invalid', async () => {
+      const response = await placesHandler.getPlaceByPlaceId(1);
+
+      expect(response).to.be.instanceof(BadSchemaResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(400);
+      expect(response.message).to.equal('"placeId" must be a string');
+    });
+
+    it('returns BadSchemaResponse if placeId is an empty string', async () => {
+      const response = await placesHandler.getPlaceByPlaceId('');
+
+      expect(response).to.be.instanceof(BadSchemaResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(400);
+      expect(response.message).to.equal('"placeId" cannot be an empty string');
     });
 
     it('returns place returned from dynamo', async () => {
@@ -43,8 +51,8 @@ describe('placesHandler', () => {
       const response = await placesHandler.getPlaceByPlaceId('place1');
       assert.deepEqual(response, {
         success: true,
+        placeExists: true,
         place: mockPlaces[0],
-        DBError: undefined
       });
     });
   });
