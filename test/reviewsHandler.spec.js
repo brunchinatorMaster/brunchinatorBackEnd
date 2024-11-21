@@ -118,27 +118,39 @@ describe('reviewsHandler', () => {
   });
 
   describe('getReviewsByUserName', () => {
+    it('returns BadSchemaResponse is userName is invalid', async () => {
+      const response = await reviewsHandler.getReviewsByUserName(123);
 
-    // it('returns empty array if no review matches userName', async () => {
-    //   const response = await reviewsHandler.getReviewsByUserName('not real');
-    //   expect(response).to.have.lengthOf(0);
-    //   expect(response).not.contains(mockReviews[0]);
-    //   expect(response).not.contains(mockReviews[1]);
-    // });
+      expect(response).to.be.instanceof(BadSchemaResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(400);
+      expect(response.message).to.equal('"userName" must be a string');
+    });
 
-    // it('returns empty array if userName is null', async () => {
-    //   const response = await reviewsHandler.getReviewsByUserName();
-    //   expect(response).to.have.lengthOf(0);
-    // });
+    it('returns reviews found by dynamo', async () => {
+      const reviews = deepCopy(mockReviews);
+      ddbMock.on(ScanCommand).resolves({
+        Items: [reviews[0], reviews[1]]
+      });
+  
+      const response = await reviewsHandler.getReviewsByUserName('geo');
 
-    it('throws SchemaError if userName is invalid', async () => {
-      try {
-        await reviewsHandler.getReviewsByUserName(1);
-      } catch (error) {
-        expect(error).to.be.instanceof(SchemaError);
-        expect(error.reasonForError).to.equal('"userName" must be a string');
-        expect(error.originatingRequest).to.equal(1);
-      }
+      assert.deepEqual(response, {
+        success: true,
+        reviewsExist: true,
+        reviews: [reviews[0], reviews[1]],
+      });
+    });
+
+    it('returns DBErrorResponse if dynamo throws error', async () => {
+      ddbMock.on(ScanCommand).rejects(mockGenericDynamoError);
+
+      const response = await reviewsHandler.getReviewsByUserName('123');
+
+      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
+      expect(response.message).to.equal(mockGenericDynamoError.message);
     });
   });
 

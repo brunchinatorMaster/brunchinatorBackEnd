@@ -15,7 +15,7 @@ const { deepCopy } = require('../utils/utils');
 const getReviews = async () => {
   const scanCommand = new ScanCommand({
     TableName: "Reviews",
-    ProjectionExpression: 'reviewId, placeId, userName, placeName, beersw, bloody, burger, reviewDate, words',
+    ProjectionExpression: 'reviewId, placeId, userName, placeName, beers, bloody, burger, reviewDate, words',
   });
   let success = false;
   let reviews;
@@ -86,14 +86,14 @@ const getReviewsByPlaceId = async (placeId) => {
       ':placeId': placeId,
     },
     FilterExpression: 'placeId = :placeId',
-    ProjectionExpression: 'reviewId, placeId, userName, placeName, beersw, bloody, burger, reviewDate, words',
+    ProjectionExpression: 'reviewId, placeId, userName, placeName, beers, bloody, burger, reviewDate, words',
   });
 
   let success = false;
   let reviews;
   let DBError;
   try {
-    const response = await docClient.send(scanCommand);console.log('response');console.log(response)
+    const response = await docClient.send(scanCommand);
     if (response?.Items?.length > 0) {
       success = true;
       reviews = response.Items
@@ -116,10 +116,33 @@ const getReviewsByPlaceId = async (placeId) => {
  * @returns {object[]}
  */
 const getReviewsByUserName = async (userName) => {
-  // TODO this will be replaced with either a call to the database to specifically
-  // grab one place by id, or some filtering of allPlaces
-  const mockReviews = deepCopy(reviews);
-  return mockReviews.filter((review) => review.userName == userName) ?? [];
+  const scanCommand = new ScanCommand({
+    TableName: 'Reviews',
+    ExpressionAttributeValues: {
+      ':userName': userName,
+    },
+    FilterExpression: 'userName = :userName',
+    ProjectionExpression: 'reviewId, placeId, userName, placeName, beers, bloody, burger, reviewDate, words',
+  });
+
+  let success = false;
+  let reviews;
+  let DBError;
+  try {
+    const response = await docClient.send(scanCommand);
+    if (response?.Items?.length > 0) {
+      success = true;
+      reviews = response.Items
+    }
+  } catch (error) {
+    DBError = error;
+  } finally {
+    return {
+      success,
+      reviews,
+      DBError
+    }
+  }
 }
 
 /**

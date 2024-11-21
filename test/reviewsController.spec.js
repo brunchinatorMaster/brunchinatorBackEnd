@@ -124,6 +124,45 @@ describe('reviewsController', () => {
     });
   });
 
+  describe('GET /byUserName/:userName', () => {
+    it('returns 404 if placeId is missing', async () => {
+      await supertest(app)
+        .get('/reviews/byUserName/')
+        .expect(404);
+    });
+
+    it('returns reviews found by dynamo', async () => {
+      const reviews = deepCopy(mockReviews);
+      ddbMock.on(ScanCommand).resolves({
+        Items: [reviews[0], reviews[1]]
+      });
+  
+      const response = await supertest(app)
+        .get('/reviews/byUserName/geo')
+        .expect(200);
+
+      assert.deepEqual(response.body, {
+        success: true,
+        reviewsExist: true,
+        reviews: [reviews[0], reviews[1]],
+      });
+    });
+
+    it('returns appropriate response if dynamo throws error', async () => {
+      ddbMock.on(ScanCommand).rejects(mockGenericDynamoError);
+  
+      const response = await supertest(app)
+      .get('/reviews/byUserName/geo')
+        .expect(mockGenericDynamoError.$metadata.httpStatusCode);
+
+      assert.deepEqual(response.body, {
+        success: false,
+        statusCode: mockGenericDynamoError.$metadata.httpStatusCode,
+        message: mockGenericDynamoError.message
+      });
+    });
+  });
+
   describe('POST /createReview', () => {
     it('returns error if review contains unsupported field', async () => {
       const testReview = deepCopy(mockReviews[0]);

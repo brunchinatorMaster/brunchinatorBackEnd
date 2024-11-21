@@ -103,15 +103,23 @@ class ReviewsHandler {
 	 * @returns {object[]}
 	 */
 	async getReviewsByUserName(userName) {
-		const validateResponse = validateBySchema(userName, USERNAME_SCHEMA);
+		const usernameIsValid = validateBySchema(userName, USERNAME_SCHEMA);
 
-		if (!validateResponse.isValid) {
-			throw new SchemaError(validateResponse.error);
+		if (!usernameIsValid.isValid) {
+			return new BadSchemaResponse(400, usernameIsValid.error.message);
 		}
 
-		const reviewsToReturn = await getReviewsByUserName(userName);
-		// TODO do business logic, if any
-		return reviewsToReturn;
+		const response = await getReviewsByUserName(userName);
+		
+		if (response.DBError) {
+			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+		}
+
+		return {
+			success: true,
+			reviewsExist: response.success,
+			reviews: response.reviews,
+		}
 	}
 
 	/**

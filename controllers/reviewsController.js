@@ -36,7 +36,7 @@ app.get('/byUserName/:userName', async (req, res) => {
 	const userName = req.params.userName ?? null;
 	try {
 		const toReturn = await reviewsHandler.getReviewsByUserName(userName);
-		res.status(200).json(toReturn);
+		res.status(toReturn.statusCode ?? 200).json(toReturn);
 	} catch (error) {
 		res.status(error.statusCode ?? 400).json(error);
 	}
