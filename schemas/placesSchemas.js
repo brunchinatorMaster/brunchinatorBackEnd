@@ -13,6 +13,7 @@ const PLACE_NAME_SCHEMA = Joi.string();
 const NUMBER_OF_REVIEWS_SCHEMA = Joi.number();
 
 const VALIDATE_CREATE_PLACE_SCHEMA = Joi.object({
+  placeId: PLACE_ID_SCHEMA,
   placeName: PLACE_NAME_SCHEMA.required(),
   beers: RATINGS_SCHEMA,
   benny: RATINGS_SCHEMA,
@@ -23,7 +24,7 @@ const VALIDATE_CREATE_PLACE_SCHEMA = Joi.object({
   numberOfReviews: NUMBER_OF_REVIEWS_SCHEMA,
 });
 const VALIDATE_UPDATE_PLACE_SCHEMA = Joi.object({
-  placeId: PLACE_ID_SCHEMA.required(),
+  placeId: PLACE_ID_SCHEMA,
   placeName: PLACE_NAME_SCHEMA.required(),
   beers: RATINGS_SCHEMA,
   benny: RATINGS_SCHEMA,

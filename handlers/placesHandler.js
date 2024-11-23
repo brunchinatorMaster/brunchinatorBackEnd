@@ -6,7 +6,6 @@ const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
 const { DBErrorResponse } = require('../errors/DBErrorResponse');
 const { PLACE_ID_SCHEMA, VALIDATE_CREATE_PLACE_SCHEMA } = require('../schemas/placesSchemas');
 const { validateBySchema } = require('../utils/utils');
-const { v4 } = require('uuid');
 
 class PlacesHandler {
 
@@ -52,8 +51,6 @@ class PlacesHandler {
 			return new BadSchemaResponse(400, placeIsValid.error.message);
 		}
 
-		place.placeId = v4(); // TODO will be removed when google places api is integrated with frontend
-		
 		const response = await addPlace(place);
 		
 		if (response.DBError) {

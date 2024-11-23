@@ -50,7 +50,8 @@ describe('recalculateRatingsForAddingReviewToPlace', () => {
       benny: 2,
       bloody: 2,
       burger: 2,
-      overallRating: 2
+      overallRating: 2,
+      numberOfReviews: 1,
     }
   
     const response = recalculateRatingsForAddingReviewToPlace(review, toUpdate);
