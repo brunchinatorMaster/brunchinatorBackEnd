@@ -130,29 +130,47 @@ class ReviewsHandler {
 	 * @returns {object}
 	 */
 	async deleteReviewByReviewId(reviewId) {
-		const validateResponse = validateBySchema(reviewId, REVIEW_ID_SCHEMA);
-
-		if (!validateResponse.isValid) {
-			throw new SchemaError(validateResponse.error);
+		const reviewIdIsValid = validateBySchema(reviewId, REVIEW_ID_SCHEMA);
+		if (!reviewIdIsValid.isValid) {
+			return new BadSchemaResponse(400, reviewIdIsValid.error.message);
 		}
 
-		const reviewBeingDeleted = await getReviewByReviewId(reviewId);
-		const placeToUpdate = await getPlaceByPlaceId(reviewBeingDeleted.placeId);
-		const allReviews = await deleteReviewByReviewId(reviewId);
+		const getReviewByReviewIdResponse = await getReviewByReviewId(reviewId);
+		if (getReviewByReviewIdResponse.DBError) {
+			return new DBErrorResponse(getReviewByReviewIdResponse.DBError?.$metadata?.httpStatusCode, getReviewByReviewIdResponse.DBError.message);
+		}
+
+		const reviewBeingDeleted = getReviewByReviewIdResponse.review;
+
+		const getPlaceByPlaceIdResponse = await getPlaceByPlaceId(reviewBeingDeleted.placeId);
+		if (getPlaceByPlaceIdResponse.DBError) {
+			return new DBErrorResponse(getPlaceByPlaceIdResponse.DBError?.$metadata?.httpStatusCode, getPlaceByPlaceIdResponse.DBError.message);
+		}
+		const placeToUpdate = getPlaceByPlaceIdResponse.place;
+		
+		const deleteReviewByReviewIdResponse = await deleteReviewByReviewId(reviewId);
+		if (deleteReviewByReviewIdResponse.DBError) {
+			return new DBErrorResponse(deleteReviewByReviewIdResponse.DBError?.$metadata?.httpStatusCode, deleteReviewByReviewIdResponse.DBError.message);
+		}
+
 		let newAllPlaces = [];
 
 		if (placeToUpdate.numberOfReviews > 1) {
-			newAllPlaces = await this.#updatePlaceForRemovingReview(reviewBeingDeleted);
+			const updatedPlace = await this.#updatePlaceForRemovingReview(reviewBeingDeleted, placeToUpdate);
+			const updatePlaceResponse = await updatePlace(updatedPlace);
+			if (updatePlaceResponse.DBError) {
+				return new DBErrorResponse(updatePlaceResponse.DBError?.$metadata?.httpStatusCode, updatePlaceResponse.DBError.message);
+			}
 		} else {
-			newAllPlaces = await deletePlaceByPlaceId(placeToUpdate.placeId);
+			const deletePlaceByPlaceIdResponse = await deletePlaceByPlaceId(placeToUpdate.placeId);
+			if (deletePlaceByPlaceIdResponse.DBError) {
+				return new DBErrorResponse(deletePlaceByPlaceIdResponse.DBError?.$metadata?.httpStatusCode, deletePlaceByPlaceIdResponse.DBError.message);
+			}
 		}
 
-		const toReturn = {
-			places: newAllPlaces,
-			reviews: allReviews,
+		return {
+			success: true
 		}
-		//TODO do business logic, if any
-		return toReturn;
 	}
 
 	/**
@@ -164,14 +182,10 @@ class ReviewsHandler {
 	 * @param {object} review 
 	 * @returns 
 	 */
-	async #updatePlaceForRemovingReview(review) {
-		let toUpdate = await getPlaceByPlaceId(review.placeId);
-
-		toUpdate = recalculateRatingsForRemovingReviewFromPlace(review, toUpdate);
-		toUpdate.numberOfReviews--;
-		const allPlaces = await updatePlace(toUpdate);
-		// TODO do business logic, if any
-		return allPlaces;
+	async #updatePlaceForRemovingReview(review, placeToUpdate) {
+		placeToUpdate = recalculateRatingsForRemovingReviewFromPlace(review, placeToUpdate);
+		placeToUpdate.numberOfReviews--;
+		return placeToUpdate;
 	}
 
 	/**

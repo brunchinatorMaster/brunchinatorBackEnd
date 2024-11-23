@@ -3,7 +3,8 @@ const {
   docClient,
   PutCommand,
   QueryCommand,
-  UpdateCommand
+  UpdateCommand,
+  DeleteCommand
 } = require('../aws/awsClients');
 const { DynamoError } = require('../errors/DynamoError');
 const { deepCopy } = require('../utils/utils');
@@ -136,9 +137,28 @@ const updatePlace = async (place) => {
  * @returns 
  */
 const deletePlaceByPlaceId = async (placeId) => {
-  // TODO this will be replaced with either a delete call to the database
-  const mockPlaces = deepCopy(places);
-  return mockPlaces.filter((place) => place.placeId !== placeId);
+  const toDelete = new DeleteCommand({
+    TableName: 'Places',
+    Key: {
+      placeId,
+    }
+  });
+  let success = false;
+  let DBError;
+  try {
+    const response = await docClient.send(toDelete);
+    if (!response?.ValidationException) {
+      success = true;
+    }
+  } catch (error) {
+    DBError = error;
+  } finally {
+    return {
+      success,
+      review: null,
+      DBError
+    }
+  }
 };
 
 module.exports = {
