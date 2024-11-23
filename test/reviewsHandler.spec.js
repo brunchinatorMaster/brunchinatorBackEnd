@@ -4,13 +4,14 @@ const reviewsHandler = new ReviewsHandler();
 const mockReviews = require('../mockDataBase/reviews');
 const { SchemaError } = require('../errors/SchemaError');
 
-const { docClient, QueryCommand, ScanCommand } = require('../aws/awsClients');
+const { docClient, QueryCommand, ScanCommand, DeleteCommand, UpdateCommand } = require('../aws/awsClients');
 const { mockClient } = require('aws-sdk-client-mock');
 const ddbMock = mockClient(docClient);
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
 const { DBErrorResponse } = require('../errors/DBErrorResponse');
 const { mockGenericDynamoError } = require('./mockDynamoResponses');
 const { deepCopy } = require('../utils/utils');
+const mockPlaces = require('../mockDataBase/places');
 
 describe('reviewsHandler', () => {
   beforeEach(() => {
@@ -156,38 +157,141 @@ describe('reviewsHandler', () => {
 
   describe('deleteReviewByReviewId', () => {
     describe('when deleting a review for a place that has only 1 review', () => {
-      // it('deletes correct review and deletes place', async () => {
-      //   const response = await reviewsHandler.deleteReviewByReviewId('review1');
-  
-      //   expect(response.reviews).to.have.lengthOf(3);
-      //   assert.deepEqual(response.reviews[0], mockReviews[1]);
-      //   assert.deepEqual(response.reviews[1], mockReviews[2]);
-      //   assert.deepEqual(response.reviews[2], mockReviews[3]);
-  
-  
-      //   expect(response.places).to.have.lengthOf(2);
-      //   assert.deepEqual(response.places[0], mockPlaces[1]);
-      //   assert.deepEqual(response.places[1], mockPlaces[2]);
-      // });
+      it('deletes correct review, deletes place, and returns success:true', async () => {
+        // call for getReviewByReviewId
+        const review = deepCopy(mockReviews[0]);
+        ddbMock.on(QueryCommand, {
+          TableName: 'Reviews',
+          ExpressionAttributeValues: {
+            ':reviewId': review.reviewId,
+          },
+          KeyConditionExpression: 'reviewId = :reviewId',
+          ConsistentRead: true,
+        }).resolves({
+          Items: [review]
+        });
+
+        // call for getPlaceByPlaceId
+        const place = deepCopy(mockPlaces[0])
+        ddbMock.on(QueryCommand, {
+          TableName: 'Places',
+          ExpressionAttributeValues: {
+            ':placeId': review.placeId,
+          },
+          KeyConditionExpression: 'placeId = :placeId',
+          ConsistentRead: true,
+        }).resolves({
+          Items: [place]
+        });
+
+        // call for deleteReviewByReviewId
+        ddbMock.on(DeleteCommand, {
+          TableName: 'Reviews',
+          Key: {
+            reviewId: review.reviewId,
+          }
+        }).resolves({
+          success: true,
+        });
+
+        // call for updatePlace
+        // ddbMock.on(UpdateCommand, {
+        //   TableName: 'Places',
+        //   Key: {
+        //     placeId: place.placeId,
+        //     placeName: place.placeName,
+        //   },
+        //   UpdateExpression: 'set beers = :beers, bloody = :bloody, burger = :burger, benny = :benny, numberOfReviews = :numberOfReviews, overallRating = :overallRating',
+        //   ExpressionAttributeValues: {
+        //     ":beers": place.beers,
+        //     ":bloody": place.bloody,
+        //     ":burger": place.burger,
+        //     ":benny": place.benny,
+        //     ":numberOfReviews": place.numberOfReviews,
+        //     ":overallRating": place.overallRating,
+        //   },
+        //   ReturnValues: "ALL_NEW",
+        // }).resolves({
+        //   Attributes: place,
+        // });
+
+        // call for deletePlaceByPlaceId
+        ddbMock.on(DeleteCommand, {
+          TableName: 'Places',
+          Key: {
+            placeId: place.placeId,
+          }
+        }).resolves({
+          success: true,
+        });
+
+
+        const response = await reviewsHandler.deleteReviewByReviewId(review.reviewId);
+        assert.deepEqual(response, { success: true })
+      });
     });
     describe('when deleteing a review for a place that has more than 1 review', () => {
-      // it('deletes correct review and updates place', async () => {
-      //   const response = await reviewsHandler.deleteReviewByReviewId('review2');
+      it('deletes correct review, updates place, and returns success:true', async () => {
+        // call for getReviewByReviewId
+      const review = deepCopy(mockReviews[1]);
+      ddbMock.on(QueryCommand, {
+        TableName: 'Reviews',
+        ExpressionAttributeValues: {
+          ':reviewId': review.reviewId,
+        },
+        KeyConditionExpression: 'reviewId = :reviewId',
+        ConsistentRead: true,
+      }).resolves({
+        Items: [review]
+      });
 
-      //   expect(response.reviews).to.have.lengthOf(3);
-      //   assert.deepEqual(response.reviews[0], mockReviews[0]);
-      //   assert.deepEqual(response.reviews[1], mockReviews[2]);
-      //   assert.deepEqual(response.reviews[2], mockReviews[3]);
+      // call for getPlaceByPlaceId
+      const place = deepCopy(mockPlaces[1])
+      ddbMock.on(QueryCommand, {
+        TableName: 'Places',
+        ExpressionAttributeValues: {
+          ':placeId': review.placeId,
+        },
+        KeyConditionExpression: 'placeId = :placeId',
+        ConsistentRead: true,
+      }).resolves({
+        Items: [place]
+      });
 
-      //   expect(response.places).to.have.lengthOf(3);
-      //   assert.deepEqual(response.places[0], mockPlaces[0]);
-      //   assert.deepEqual(response.places[2], mockPlaces[2]);
-      //   expect(response.places[1].beers).to.equal(3);
-      //   expect(response.places[1].benny).to.equal(2);
-      //   expect(response.places[1].bloody).to.equal(3);
-      //   expect(response.places[1].burger).to.equal(1);
-      //   expect(response.places[1].numberOfReviews).to.equal(1);
-      // });
+      // call for deleteReviewByReviewId
+      ddbMock.on(DeleteCommand, {
+        TableName: 'Reviews',
+        Key: {
+          reviewId: review.reviewId,
+        }
+      }).resolves({
+        success: true,
+      });
+
+      // call for updatePlace
+      ddbMock.on(UpdateCommand, {
+        TableName: 'Places',
+        Key: {
+          placeId: place.placeId,
+          placeName: place.placeName,
+        },
+        UpdateExpression: 'set beers = :beers, bloody = :bloody, burger = :burger, benny = :benny, numberOfReviews = :numberOfReviews, overallRating = :overallRating',
+        ExpressionAttributeValues: {
+          ":beers": place.beers,
+          ":bloody": place.bloody,
+          ":burger": place.burger,
+          ":benny": place.benny,
+          ":numberOfReviews": place.numberOfReviews,
+          ":overallRating": place.overallRating,
+        },
+        ReturnValues: "ALL_NEW",
+      }).resolves({
+        Attributes: place,
+      });
+
+      const response = await reviewsHandler.deleteReviewByReviewId(review.reviewId);
+      assert.deepEqual(response, { success: true })
+      });
     });
     
   });

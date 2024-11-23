@@ -4,6 +4,7 @@ const {
   PutCommand,
   QueryCommand,
   ScanCommand,
+  DeleteCommand,
 } = require('../aws/awsClients');
 const { deepCopy } = require('../utils/utils');
 
@@ -152,9 +153,28 @@ const getReviewsByUserName = async (userName) => {
  * @returns {object[]}
  */
 const deleteReviewByReviewId = async (reviewId) => {
-  // TODO this will be replaced with a delete call to the database
-  const mockReviews = deepCopy(reviews);
-  return mockReviews.filter((review) => review.reviewId !== reviewId);
+  const toDelete = new DeleteCommand({
+    TableName: 'Reviews',
+    Key: {
+      reviewId,
+    }
+  });
+  let success = false;
+  let DBError;
+  try {
+    const response = await docClient.send(toDelete);
+    if (!response?.ValidationException) {
+      success = true;
+    }
+  } catch (error) {
+    DBError = error;
+  } finally {
+    return {
+      success,
+      review: null,
+      DBError
+    }
+  }
 }
 
 /**
