@@ -7,6 +7,7 @@
  */
 const createNewPlaceFromReview = (review) => {
   const place = {};
+  place.placeId = review.placeId;
   place.placeName = review.placeName;
   place.beers = review.beers;
   place.benny = review.benny;
@@ -46,10 +47,10 @@ const findAverageOf = (arrayOfValues) => {
  * @returns {object}
  */
 const recalculateRatingsForAddingReviewToPlace = (review, toUpdate) => {
-  const newBeers = findAverageOf([review.beers, toUpdate.beers]);
-  const newBenny = findAverageOf([review.benny, toUpdate.benny]);
-  const newBloody = findAverageOf([review.bloody, toUpdate.bloody]);
-  const newBurger = findAverageOf([review.burger, toUpdate.burger]);
+  const newBeers = addToAverage(toUpdate.beers, toUpdate.numberOfReviews, review.beers);
+  const newBenny = addToAverage(toUpdate.benny, toUpdate.numberOfReviews, review.benny);
+  const newBloody = addToAverage(toUpdate.bloody, toUpdate.numberOfReviews, review.bloody);
+  const newBurger = addToAverage(toUpdate.burger, toUpdate.numberOfReviews, review.burger);
   const newOverallRating = findAverageOf([newBeers, newBenny, newBloody, newBurger]);
 
   toUpdate.beers = newBeers;
@@ -59,6 +60,16 @@ const recalculateRatingsForAddingReviewToPlace = (review, toUpdate) => {
   toUpdate.overallRating = newOverallRating;
   
   return toUpdate;
+};
+
+const addToAverage = (originalAverage, originalNumberOfElements, elementToAdd) => {
+  if (!originalAverage || !originalNumberOfElements || !elementToAdd || typeof originalAverage !== 'number'|| typeof originalNumberOfElements !== 'number'|| typeof elementToAdd !== 'number' ) {
+    return null;
+  }
+  
+  const numerator = (originalAverage * originalNumberOfElements) + elementToAdd;
+  const denominator = originalNumberOfElements + 1;
+  return numerator / denominator;
 };
 
 /**

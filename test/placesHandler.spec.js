@@ -70,6 +70,7 @@ describe('placesHandler', () => {
   describe('addPlace', () => {
     it('returns BadSchemaResponse if placeName is missing', async () => {
       const response = await placesHandler.addPlace({
+        placeId: '123',
         beers: 1,
         benny: 1,
         bloody: 1,
@@ -86,6 +87,7 @@ describe('placesHandler', () => {
 
     it('throws error if placeName is not a string', async () => {
       const response = await placesHandler.addPlace({
+        placeId: '123',
         placeName: 1,
         beers: 1,
         benny: 1,
@@ -102,6 +104,7 @@ describe('placesHandler', () => {
 
     it('throws error if placeName is an empty string', async () => {
       const response = await placesHandler.addPlace({
+        placeId: '123',
         placeName: '',
         beers: 1,
         benny: 1,
@@ -122,6 +125,7 @@ describe('placesHandler', () => {
       });
 
       const response = await placesHandler.addPlace({
+          placeId: '123',
           placeName: 'some place',
           beers: 1,
           benny: 1,
@@ -136,6 +140,7 @@ describe('placesHandler', () => {
     it('returns DBErrorResponse if dynamo throws error', async () => {
       ddbMock.on(PutCommand).rejects(mockGenericDynamoError);
       const response = await placesHandler.addPlace({
+        placeId: '123',
         placeName: 'some place',
         beers: 1,
         benny: 1,

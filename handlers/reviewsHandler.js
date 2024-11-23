@@ -153,8 +153,6 @@ class ReviewsHandler {
 			return new DBErrorResponse(deleteReviewByReviewIdResponse.DBError?.$metadata?.httpStatusCode, deleteReviewByReviewIdResponse.DBError.message);
 		}
 
-		let newAllPlaces = [];
-
 		if (placeToUpdate.numberOfReviews > 1) {
 			const updatedPlace = await this.#updatePlaceForRemovingReview(reviewBeingDeleted, placeToUpdate);
 			const updatePlaceResponse = await updatePlace(updatedPlace);
@@ -225,12 +223,17 @@ class ReviewsHandler {
 			throw new SchemaError(validateResponse.error);
 		}
 
-		const { placeExists, place } = await getPlaceByPlaceId(review.placeId);
+		const getPlaceByPlaceIdResponse = await getPlaceByPlaceId(review.placeId);
+		if (getPlaceByPlaceIdResponse.DBError) {
+			return new DBErrorResponse(getPlaceByPlaceIdResponse.DBError?.$metadata?.httpStatusCode, getPlaceByPlaceIdResponse.DBError.message);
+		}
+		const placeExists = getPlaceByPlaceIdResponse.success;
+
 		let placeResponse;
 		if (!placeExists) {
 			placeResponse = await this.#addPlaceFromReview(review)
 		} else {
-			placeResponse =  await this.#updatePlaceFromReview(review, place);
+			placeResponse =  await this.#updatePlaceFromReview(review, getPlaceByPlaceIdResponse.place);
 		}
 
 		review.reviewId = v4();
@@ -264,7 +267,6 @@ class ReviewsHandler {
 			throw new SchemaError(validateResponse.error);
 		}
 
-		place.placeId = v4();
 		const addPlaceResponse = await addPlace(place);
 
 		return {
@@ -288,7 +290,7 @@ class ReviewsHandler {
 	async #updatePlaceFromReview(review, place) {
 		let toUpdate = recalculateRatingsForAddingReviewToPlace(review, place);
 		toUpdate.numberOfReviews++; 
-
+		
 		const validateResponse = validateBySchema(toUpdate, VALIDATE_UPDATE_PLACE_SCHEMA);
 
 		if (!validateResponse.isValid) {

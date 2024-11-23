@@ -194,27 +194,6 @@ describe('reviewsHandler', () => {
           success: true,
         });
 
-        // call for updatePlace
-        // ddbMock.on(UpdateCommand, {
-        //   TableName: 'Places',
-        //   Key: {
-        //     placeId: place.placeId,
-        //     placeName: place.placeName,
-        //   },
-        //   UpdateExpression: 'set beers = :beers, bloody = :bloody, burger = :burger, benny = :benny, numberOfReviews = :numberOfReviews, overallRating = :overallRating',
-        //   ExpressionAttributeValues: {
-        //     ":beers": place.beers,
-        //     ":bloody": place.bloody,
-        //     ":burger": place.burger,
-        //     ":benny": place.benny,
-        //     ":numberOfReviews": place.numberOfReviews,
-        //     ":overallRating": place.overallRating,
-        //   },
-        //   ReturnValues: "ALL_NEW",
-        // }).resolves({
-        //   Attributes: place,
-        // });
-
         // call for deletePlaceByPlaceId
         ddbMock.on(DeleteCommand, {
           TableName: 'Places',
@@ -230,6 +209,7 @@ describe('reviewsHandler', () => {
         assert.deepEqual(response, { success: true })
       });
     });
+    
     describe('when deleteing a review for a place that has more than 1 review', () => {
       it('deletes correct review, updates place, and returns success:true', async () => {
         // call for getReviewByReviewId
@@ -293,7 +273,6 @@ describe('reviewsHandler', () => {
       assert.deepEqual(response, { success: true })
       });
     });
-    
   });
 
   describe('addReview', () => {
