@@ -9,15 +9,12 @@ const {
 	getReviewsByPlaceId,
 	getReviewsByUserName,
 	deleteReviewByReviewId,
-	addReview,
 } = require('../databaseAccess/reviewsDatabaseAccess');
 const {
-	addPlace,
 	getPlaceByPlaceId,
 	updatePlace,
 	deletePlaceByPlaceId
 } = require('../databaseAccess/placesDatabaseAccess');
-const { SchemaError } = require('../errors/SchemaError');
 const { validateBySchema } = require('../utils/utils');
 const { REVIEW_ID_SCHEMA, VALIDATE_CREATE_REVIEW_SCHEMA } = require('../schemas/reviewsSchemas');
 const { PLACE_ID_SCHEMA, VALIDATE_CREATE_PLACE_SCHEMA, VALIDATE_UPDATE_PLACE_SCHEMA } = require('../schemas/placesSchemas');
@@ -25,6 +22,7 @@ const { USERNAME_SCHEMA } = require('../schemas/usersSchemas');
 const { v4 } = require('uuid');
 const { DBErrorResponse } = require('../errors/DBErrorResponse');
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
+const { transactionAddPlaceAndAddReview, transactionUpdatePlaceAndAddReview } = require('../databaseAccess/transactDatabaseAccess');
 
 class ReviewsHandler {
 
@@ -218,7 +216,6 @@ class ReviewsHandler {
 	 */
 	async addReview(review) {
 		const reviewIsValid = validateBySchema(review, VALIDATE_CREATE_REVIEW_SCHEMA);
-
 		if (!reviewIsValid.isValid) {
 			return new BadSchemaResponse(400, reviewIsValid.error.message);
 		}
@@ -229,80 +226,45 @@ class ReviewsHandler {
 		}
 		const placeExists = getPlaceByPlaceIdResponse.success;
 
-		let placeResponse;
+		let response;
 		if (!placeExists) {
-			placeResponse = await this.#addPlaceFromReview(review);
-			if (placeResponse.DBError) {
-				return new DBErrorResponse(placeResponse.DBError?.$metadata?.httpStatusCode, placeResponse.DBError.message);
-			}
+			response = await this.addPlaceAndAddReview(review);
 		} else {
-			placeResponse =  await this.#updatePlaceFromReview(review, getPlaceByPlaceIdResponse.place);
-			if (placeResponse.DBError) {
-				return new DBErrorResponse(placeResponse.DBError?.$metadata?.httpStatusCode, placeResponse.DBError.message);
-			}
+			response = await this.updatePlaceAndAddReview(getPlaceByPlaceIdResponse.place, review);
 		}
 
-		review.reviewId = v4();
-		const addReviewResponse = await addReview(review);
-
-		return {
-			placeResponse,
-			addReviewResponse
-		}
+		return response;
 		
 	}
 
-	/**
-	 * creates new place from values from review, 
-	 * adds place to database,
-	 * adds review to database,
-	 * and returns {
-	 * 	addPlaceResponse: {
-	 * 		success: true
-	 * 	}
-	 * }
-	 * 
-	 * @param {object} review 
-	 * @returns {object}
-	 */
-	async #addPlaceFromReview(review) {
+	async addPlaceAndAddReview(review) {
 		const place = createNewPlaceFromReview(review);
-		const validateResponse = validateBySchema(place, VALIDATE_CREATE_PLACE_SCHEMA);
-
-		if (!validateResponse.isValid) {
-			throw new SchemaError(validateResponse.error);
+		const placeIsValid = validateBySchema(place, VALIDATE_CREATE_PLACE_SCHEMA);
+		if (!placeIsValid.isValid) {
+			return new BadSchemaResponse(400, placeIsValid.error.message);
 		}
-
-		const addPlaceResponse = await addPlace(place);
-		
-		return addPlaceResponse;
+		review.reviewId = v4();
+		const response = await transactionAddPlaceAndAddReview(place, review);
+		if (response.DBError) {
+			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+		}
+		return response;
 	}
 
-	/**
-	 * updates preexisting place with values from review
-	 * and returns an object containing all reviews and all places
-	 * returns {
-	 *		updatePlaceResponse: {
-	 *  		success: boolean,
-   *  		updatedPlace: object
-	 * 		},
-	 * }
-	 * 
-	 * @param {object} review 
-	 * @returns  {object}
-	 */
-	async #updatePlaceFromReview(review, place) {
+	async updatePlaceAndAddReview(place, review) {
 		let toUpdate = recalculateRatingsForAddingReviewToPlace(review, place);
 		toUpdate.numberOfReviews++; 
 		
-		const validateResponse = validateBySchema(toUpdate, VALIDATE_UPDATE_PLACE_SCHEMA);
-
-		if (!validateResponse.isValid) {
-			throw new SchemaError(validateResponse.error);
+		const placeIsValid = validateBySchema(toUpdate, VALIDATE_UPDATE_PLACE_SCHEMA);
+		if (!placeIsValid.isValid) {
+			return new BadSchemaResponse(400, placeIsValid.error.message);
 		}
-
-		const updatePlaceResponse = await updatePlace(toUpdate);
-		return updatePlaceResponse;
+		review.reviewId = v4();
+		const response = await transactionUpdatePlaceAndAddReview(toUpdate, review);
+		if (response.DBError) {
+			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+		}
+		return response;
 	}
 }
 

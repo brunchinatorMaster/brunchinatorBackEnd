@@ -3,7 +3,7 @@ const ReviewsHandler = require('../handlers/reviewsHandler');
 const reviewsHandler = new ReviewsHandler();
 const mockReviews = require('../mockDataBase/reviews');
 
-const { docClient, QueryCommand, ScanCommand, DeleteCommand, UpdateCommand, PutCommand } = require('../aws/awsClients');
+const { docClient, QueryCommand, ScanCommand, DeleteCommand, UpdateCommand, PutCommand, TransactWriteCommand } = require('../aws/awsClients');
 const { mockClient } = require('aws-sdk-client-mock');
 const ddbMock = mockClient(docClient);
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
@@ -11,9 +11,6 @@ const { DBErrorResponse } = require('../errors/DBErrorResponse');
 const { mockGenericDynamoError } = require('./mockDynamoResponses');
 const { deepCopy } = require('../utils/utils');
 const mockPlaces = require('../mockDataBase/places');
-const { createNewPlaceFromReview } = require('../utils/placesUtils');
-const { addReview } = require('../databaseAccess/reviewsDatabaseAccess');
-const { recalculateRatingsForAddingReviewToPlace } = require('../utils/placesUtils');
 
 describe('reviewsHandler', () => {
   beforeEach(() => {
@@ -295,45 +292,27 @@ describe('reviewsHandler', () => {
         Items: []
       });
 
-      // call for addPlace
-      const place = createNewPlaceFromReview(review);
-      ddbMock.on(PutCommand, {
-        TableName: 'Places',
-        Item: place 
-      }).resolves({
-        not: 'an error'
-      });
-
-      // call for addReview
-      ddbMock.on(PutCommand, {
-        TableName: 'Reviews',
-        Item: review  
-      }).resolves({
-        not: 'an error'
+      // call for TransactWriteCommane
+      ddbMock.on(TransactWriteCommand).resolves({
+        $metadata: {
+          httpStatusCode: 200
+        }
       });
 
       const response = await reviewsHandler.addReview(review);
 
       assert.deepEqual(response, {
-        placeResponse: {
-          success: true,
-          DBError: undefined,
-        },
-        addReviewResponse: {
-          success: true,
-          DBError: undefined,
-        }
+        success: true,
+        DBError: undefined,
       });
      });
     });
 
     describe('when adding a review for a preexisting place', () => {
-      it('adds review, updates place, and returns success message', async () => {
+      it('returns success message if transaction write command succeeds', async () => {
         const review = deepCopy(mockReviews[0]);
         delete review.reviewId;
         const place = deepCopy(mockPlaces[0]);
-        const toUpdate = recalculateRatingsForAddingReviewToPlace(review, place);
-        toUpdate.numberOfReviews++; 
 
         // call for getPlaceByPlaceId
         ddbMock.on(QueryCommand, {
@@ -346,48 +325,19 @@ describe('reviewsHandler', () => {
         }).resolves({
           Items: [place]
         });
-  
-        // call for updatePlace
-        ddbMock.on(UpdateCommand, {
-          TableName: 'Places',
-          Key: {
-            placeId: toUpdate.placeId,
-            placeName: toUpdate.placeName,
-          },
-          UpdateExpression: 'set beers = :beers, bloody = :bloody, burger = :burger, benny = :benny, numberOfReviews = :numberOfReviews, overallRating = :overallRating',
-          ExpressionAttributeValues: {
-            ":beers": toUpdate.beers,
-            ":bloody": toUpdate.bloody,
-            ":burger": toUpdate.burger,
-            ":benny": toUpdate.benny,
-            ":numberOfReviews": toUpdate.numberOfReviews,
-            ":overallRating": toUpdate.overallRating,
-          },
-          ReturnValues: "ALL_NEW",
-        }).resolves({
-          Attributes: place,
-        });
-  
-        // call for addReview
-        ddbMock.on(PutCommand, {
-          TableName: 'Reviews',
-          Item: review  
-        }).resolves({
-          not: 'an error'
+
+        // call for TransactWriteCommane
+        ddbMock.on(TransactWriteCommand).resolves({
+          $metadata: {
+            httpStatusCode: 200
+          }
         });
   
         const response = await reviewsHandler.addReview(review);
   
         assert.deepEqual(response, {
-          placeResponse: {
-            success: true,
-            place: place,
-            DBError: undefined,
-          },
-          addReviewResponse: {
-            success: true,
-            DBError: undefined,
-          }
+          success: true,
+          DBError: undefined,
         });
        });
     });
