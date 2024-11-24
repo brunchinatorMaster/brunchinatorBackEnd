@@ -164,19 +164,21 @@ describe('reviewsController', () => {
   });
 
   describe('POST /createReview', () => {
-    it('returns error if review contains unsupported field', async () => {
+    it('returns appropriate response if review contains unsupported field', async () => {
       const testReview = deepCopy(mockReviews[0]);
       const response = await supertest(app)
       .post('/reviews/createReview')
       .send(testReview)
       .expect(400);
 
-      expect(response.body.errorInField?.[0]).to.equal('reviewId');
-      expect(response.body.reasonForError).to.equal('"reviewId" is not allowed');
-      assert.deepEqual(response.body.originatingRequest, testReview);
+      assert.deepEqual(response.body, {
+        success: false,
+        statusCode: 400,
+        message: '"reviewId" is not allowed'
+      });
     });
 
-    it('returns error if review contains field in wrong format', async () => {
+    it('returns appropriate response if review contains field in wrong format', async () => {
       const testReview = deepCopy(mockReviews[0]);
       delete testReview.reviewId;
       testReview.beers = true;
@@ -186,22 +188,24 @@ describe('reviewsController', () => {
       .send(testReview)
       .expect(400);
 
-      expect(response.body.errorInField?.[0]).to.equal('beers');
-      expect(response.body.reasonForError).to.equal('"beers" must be a number');
-      assert.deepEqual(response.body.originatingRequest, testReview);
+      assert.deepEqual(response.body, {
+        success: false,
+        statusCode: 400,
+        message: '"beers" must be a number'
+      });
     });
 
     it('returns correct response if review addition is successful', async () => {
+      const review = deepCopy(mockReviews[0]);
       ddbMock.on(PutCommand).resolves({
-        Items: [mockReviews[0]]
+        Items: [review]
       });
-
-      const testReview = deepCopy(mockReviews[0]);
-      delete testReview.reviewId;
+      
+      delete review.reviewId;
 
       const response = await supertest(app)
         .post('/reviews/createReview')
-        .send(testReview)
+        .send(review)
         .expect(200);
 
       assert.deepEqual(response.body, {
@@ -209,10 +213,25 @@ describe('reviewsController', () => {
           success: true,
         },
         placeResponse: {
-          addPlaceResponse: {
-            success: true
-          }
+          success: true
         }
+      });
+    });
+
+    it('returns appropriate response if dynamo throws error', async () => {
+      ddbMock.on(PutCommand).rejects(mockGenericDynamoError);
+  
+      const review = deepCopy(mockReviews[0]);
+      delete review.reviewId;
+      const response = await supertest(app)
+        .post('/reviews/createReview')
+        .send(review)
+        .expect(mockGenericDynamoError.$metadata.httpStatusCode);
+
+      assert.deepEqual(response.body, {
+        success: false,
+        statusCode: mockGenericDynamoError.$metadata.httpStatusCode,
+        message: mockGenericDynamoError.message
       });
     });
   });

@@ -1,3 +1,5 @@
+const { deepCopy } = require("./utils");
+
 /**
  * creates and returns a new place created from 
  * the data in a first time review, 
@@ -46,7 +48,8 @@ const findAverageOf = (arrayOfValues) => {
  * @param {object} toUpdate 
  * @returns {object}
  */
-const recalculateRatingsForAddingReviewToPlace = (review, toUpdate) => {
+const recalculateRatingsForAddingReviewToPlace = (review, place) => {
+  const toUpdate = deepCopy(place);
   const newBeers = addToAverage(toUpdate.beers, toUpdate.numberOfReviews, review.beers);
   const newBenny = addToAverage(toUpdate.benny, toUpdate.numberOfReviews, review.benny);
   const newBloody = addToAverage(toUpdate.bloody, toUpdate.numberOfReviews, review.bloody);
@@ -64,7 +67,7 @@ const recalculateRatingsForAddingReviewToPlace = (review, toUpdate) => {
 
 const addToAverage = (originalAverage, originalNumberOfElements, elementToAdd) => {
   if (!originalAverage || !originalNumberOfElements || !elementToAdd || typeof originalAverage !== 'number'|| typeof originalNumberOfElements !== 'number'|| typeof elementToAdd !== 'number' ) {
-    return null;
+    return originalAverage;
   }
   
   const numerator = (originalAverage * originalNumberOfElements) + elementToAdd;

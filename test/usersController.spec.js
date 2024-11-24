@@ -285,6 +285,12 @@ describe('usersController', () => {
   });
 
   describe('GET /byEmail/:email', () => {
+    it('returns 404 if userName is missing', async () => {
+      await supertest(app)
+        .get('/users/byEmail/')
+        .expect(404);
+    });
+
     it('returns error if email is invalid', async () => {
       const response = await supertest(app)
         .get('/users/byEmail/tohearstories@gmail')
@@ -515,7 +521,3 @@ describe('usersController', () => {
     });
   });
 });
-
-
-
-

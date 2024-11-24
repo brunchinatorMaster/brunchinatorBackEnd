@@ -8,6 +8,7 @@ const ddbMock = mockClient(docClient);
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
 const { DBErrorResponse } = require('../errors/DBErrorResponse');
 const { mockGenericDynamoError } = require('./mockDynamoResponses');
+const { deepCopy } = require('../utils/utils');
 
 describe('placesHandler', () => {
   beforeEach(() => {
@@ -85,7 +86,7 @@ describe('placesHandler', () => {
       
     });
 
-    it('throws error if placeName is not a string', async () => {
+    it('returns BadSchemaResponse if placeName is not a string', async () => {
       const response = await placesHandler.addPlace({
         placeId: '123',
         placeName: 1,
@@ -102,7 +103,7 @@ describe('placesHandler', () => {
       expect(response.message).to.equal('"placeName" must be a string');
     });
 
-    it('throws error if placeName is an empty string', async () => {
+    it('returns BadSchemaResponse if placeName is an empty string', async () => {
       const response = await placesHandler.addPlace({
         placeId: '123',
         placeName: '',
@@ -121,7 +122,7 @@ describe('placesHandler', () => {
 
     it('returns success upon successful addition to dynamo', async () => {
       ddbMock.on(PutCommand).resolves({
-        Items: [mockPlaces[0]]
+        not: 'an error'
       });
 
       const response = await placesHandler.addPlace({
