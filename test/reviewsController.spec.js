@@ -1,12 +1,13 @@
 const supertest = require('supertest');
-const { expect, assert } = require('chai');
+const { assert } = require('chai');
 const mockReviews = require('../mockDataBase/reviews')
 const app = require('../app');
 
-const { docClient, PutCommand, ScanCommand, QueryCommand } = require('../aws/awsClients');
+const { docClient, PutCommand, ScanCommand, QueryCommand, TransactWriteCommand } = require('../aws/awsClients');
 const { mockClient } = require('aws-sdk-client-mock');
 const { deepCopy } = require('../utils/utils');
 const { mockGenericDynamoError } = require('./mockDynamoResponses');
+const mockPlaces = require('../mockDataBase/places');
 const ddbMock = mockClient(docClient);
 
 describe('reviewsController', () => {
@@ -197,29 +198,40 @@ describe('reviewsController', () => {
 
     it('returns correct response if review addition is successful', async () => {
       const review = deepCopy(mockReviews[0]);
-      ddbMock.on(PutCommand).resolves({
-        Items: [review]
+      delete review.reviewId;
+      const place = deepCopy(mockPlaces[0]);
+
+      // call for getPlaceByPlaceId
+      ddbMock.on(QueryCommand, {
+        TableName: 'Places',
+        ExpressionAttributeValues: {
+          ':placeId': review.placeId,
+        },
+        KeyConditionExpression: 'placeId = :placeId',
+        ConsistentRead: true,
+      }).resolves({
+        Items: [place]
+      });
+
+      // call for TransactWriteCommane
+      ddbMock.on(TransactWriteCommand).resolves({
+        $metadata: {
+          httpStatusCode: 200
+        }
       });
       
-      delete review.reviewId;
-
       const response = await supertest(app)
         .post('/reviews/createReview')
         .send(review)
         .expect(200);
 
       assert.deepEqual(response.body, {
-        addReviewResponse: {
-          success: true,
-        },
-        placeResponse: {
-          success: true
-        }
+        success: true,
       });
     });
 
     it('returns appropriate response if dynamo throws error', async () => {
-      ddbMock.on(PutCommand).rejects(mockGenericDynamoError);
+      ddbMock.on(TransactWriteCommand).rejects(mockGenericDynamoError);
   
       const review = deepCopy(mockReviews[0]);
       delete review.reviewId;

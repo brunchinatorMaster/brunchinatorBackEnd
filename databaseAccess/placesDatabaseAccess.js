@@ -1,4 +1,4 @@
-const places = require('../mockDataBase/places');
+
 const { 
   docClient,
   PutCommand,
@@ -6,8 +6,6 @@ const {
   UpdateCommand,
   DeleteCommand
 } = require('../aws/awsClients');
-const { DynamoError } = require('../errors/DynamoError');
-const { deepCopy } = require('../utils/utils');
 
 /**
  * finds place that has matching placeId
