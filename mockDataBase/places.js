@@ -5,7 +5,7 @@ const mockPlaces = [
     numberOfReviews: 1,
     overallRating: 4.66,
 		beers: 4,
-		benny: null,
+		benny: 2,
 		bloody: 5,
 		burger: 5,
 	},

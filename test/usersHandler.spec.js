@@ -2,13 +2,13 @@ const { expect, assert } = require('chai');
 const UsersHandler = require('../handlers/usersHandler');
 const usersHandler = new UsersHandler();
 const mockUsers = require('../mockDataBase/users');
-const { SchemaError } = require('../errors/SchemaError');
 
 const { docClient, QueryCommand, ScanCommand, PutCommand, UpdateCommand, DeleteCommand } = require('../aws/awsClients');
 const { mockClient } = require('aws-sdk-client-mock');
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
 const { mockGenericDynamoError } = require('./mockDynamoResponses');
 const { DBErrorResponse } = require('../errors/DBErrorResponse');
+const { deepCopy } = require('../utils/utils');
 const ddbMock = mockClient(docClient);
 
 
@@ -28,8 +28,9 @@ describe('usersHandler', () => {
     });
 
     it('returns user found by dynamo', async () => {
+      const user = deepCopy(mockUsers[0]);
       ddbMock.on(QueryCommand).resolves({
-        Items: [mockUsers[0]]
+        Items: [user]
       });
   
       const response = await usersHandler.getUserByUsername('geo');
@@ -68,8 +69,9 @@ describe('usersHandler', () => {
     });
 
     it('returns user found by dynamo', async () => {
+      const user = deepCopy(mockUsers[0]);
       ddbMock.on(ScanCommand).resolves({
-        Items: [mockUsers[0]]
+        Items: [user]
       });
   
       const response = await usersHandler.getUserByEmail('tohearstories@gmail.com');
@@ -215,8 +217,9 @@ describe('usersHandler', () => {
     });
 
     it('returns success:true if user addition is successful', async () => {
+      const user = deepCopy(mockUsers[0]);
       ddbMock.on(PutCommand).resolves({
-        Items: [mockUsers[0]]
+        Items: [user]
       });
 
       const toAdd = {
@@ -370,8 +373,9 @@ describe('usersHandler', () => {
     });
 
     it('returns success:true if user update is successful', async () => {
+      const user = deepCopy(mockUsers[0]);
       ddbMock.on(UpdateCommand).resolves({
-        Attributes: mockUsers[0]
+        Attributes: user
       });
 
       const toUpdate = {

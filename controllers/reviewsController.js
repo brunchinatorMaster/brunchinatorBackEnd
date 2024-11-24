@@ -55,8 +55,8 @@ app.delete('/byReviewId/:reviewId', async (req, res) => {
 app.post('/createReview', async (req, res) => {
 	const review = req.body ?? null;
 	try {
-		const reviews = await reviewsHandler.addReview(review);
-		res.status(200).json(reviews);
+		const toReturn = await reviewsHandler.addReview(review);
+		res.status(toReturn.statusCode ?? 200).json(toReturn);
 	} catch (error) {
 		res.status(error.statusCode ?? 400).json(error);
 	}

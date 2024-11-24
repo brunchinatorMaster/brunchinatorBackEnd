@@ -217,10 +217,10 @@ class ReviewsHandler {
 	 * @returns {object}
 	 */
 	async addReview(review) {
-		const validateResponse = validateBySchema(review, VALIDATE_CREATE_REVIEW_SCHEMA);
+		const reviewIsValid = validateBySchema(review, VALIDATE_CREATE_REVIEW_SCHEMA);
 
-		if (!validateResponse.isValid) {
-			throw new SchemaError(validateResponse.error);
+		if (!reviewIsValid.isValid) {
+			return new BadSchemaResponse(400, reviewIsValid.error.message);
 		}
 
 		const getPlaceByPlaceIdResponse = await getPlaceByPlaceId(review.placeId);
@@ -231,9 +231,15 @@ class ReviewsHandler {
 
 		let placeResponse;
 		if (!placeExists) {
-			placeResponse = await this.#addPlaceFromReview(review)
+			placeResponse = await this.#addPlaceFromReview(review);
+			if (placeResponse.DBError) {
+				return new DBErrorResponse(placeResponse.DBError?.$metadata?.httpStatusCode, placeResponse.DBError.message);
+			}
 		} else {
 			placeResponse =  await this.#updatePlaceFromReview(review, getPlaceByPlaceIdResponse.place);
+			if (placeResponse.DBError) {
+				return new DBErrorResponse(placeResponse.DBError?.$metadata?.httpStatusCode, placeResponse.DBError.message);
+			}
 		}
 
 		review.reviewId = v4();
@@ -268,10 +274,8 @@ class ReviewsHandler {
 		}
 
 		const addPlaceResponse = await addPlace(place);
-
-		return {
-			addPlaceResponse,
-		};
+		
+		return addPlaceResponse;
 	}
 
 	/**
@@ -298,10 +302,7 @@ class ReviewsHandler {
 		}
 
 		const updatePlaceResponse = await updatePlace(toUpdate);
-
-		return {
-			updatePlaceResponse,
-		};
+		return updatePlaceResponse;
 	}
 }
 

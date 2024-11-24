@@ -2,9 +2,8 @@ const { expect, assert } = require('chai');
 const ReviewsHandler = require('../handlers/reviewsHandler');
 const reviewsHandler = new ReviewsHandler();
 const mockReviews = require('../mockDataBase/reviews');
-const { SchemaError } = require('../errors/SchemaError');
 
-const { docClient, QueryCommand, ScanCommand, DeleteCommand, UpdateCommand } = require('../aws/awsClients');
+const { docClient, QueryCommand, ScanCommand, DeleteCommand, UpdateCommand, PutCommand } = require('../aws/awsClients');
 const { mockClient } = require('aws-sdk-client-mock');
 const ddbMock = mockClient(docClient);
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
@@ -12,6 +11,9 @@ const { DBErrorResponse } = require('../errors/DBErrorResponse');
 const { mockGenericDynamoError } = require('./mockDynamoResponses');
 const { deepCopy } = require('../utils/utils');
 const mockPlaces = require('../mockDataBase/places');
+const { createNewPlaceFromReview } = require('../utils/placesUtils');
+const { addReview } = require('../databaseAccess/reviewsDatabaseAccess');
+const { recalculateRatingsForAddingReviewToPlace } = require('../utils/placesUtils');
 
 describe('reviewsHandler', () => {
   beforeEach(() => {
@@ -19,7 +21,7 @@ describe('reviewsHandler', () => {
   });
 
   describe('getReviews', () => {
-    it('returns reviews', async () => { 
+    it('returns reviews found by dynamo', async () => { 
       const reviews = deepCopy(mockReviews);
       ddbMock.on(ScanCommand).resolves({
         Items: reviews
@@ -277,64 +279,117 @@ describe('reviewsHandler', () => {
 
   describe('addReview', () => {
     describe('when adding a review for a new place', () => {
-      // it('adds review and adds place', async () => {
-      //   const reviewForNewPlace = {
-      //     reviewId: 'review5',
-      //     placeId: 'place4',
-      //     userName: 'geo',
-      //     placeName: 'Royal Tavern',
-      //     beers: 1,
-      //     benny: 1,
-      //     bloody: 1,
-      //     burger: 1,
-      //     reviewDate: '8/21/2018',
-      //     words: 'meh'
-      //   };
-      //   const response = await reviewsHandler.addReview(reviewForNewPlace);
-      //   expect(response.reviews).contains(reviewForNewPlace);
-  
-      //   expect(response.places[3]).includes({
-      //     placeId: 'place4',
-      //     placeName: 'Royal Tavern',
-      //     beers: 1,
-      //     benny: 1,
-      //     burger: 1,
-      //     bloody: 1,
-      //     numberOfReviews: 1,
-      //     overallRating: 1
-      //   });
-      // });
+     it('adds review, adds place, and returns success message', async () => {
+      const review = deepCopy(mockReviews[0]);
+      delete review.reviewId;
+
+      // call for getPlaceByPlaceId
+      ddbMock.on(QueryCommand, {
+        TableName: 'Places',
+        ExpressionAttributeValues: {
+          ':placeId': review.placeId,
+        },
+        KeyConditionExpression: 'placeId = :placeId',
+        ConsistentRead: true,
+      }).resolves({
+        Items: []
+      });
+
+      // call for addPlace
+      const place = createNewPlaceFromReview(review);
+      ddbMock.on(PutCommand, {
+        TableName: 'Places',
+        Item: place 
+      }).resolves({
+        not: 'an error'
+      });
+
+      // call for addReview
+      ddbMock.on(PutCommand, {
+        TableName: 'Reviews',
+        Item: review  
+      }).resolves({
+        not: 'an error'
+      });
+
+      const response = await reviewsHandler.addReview(review);
+
+      assert.deepEqual(response, {
+        placeResponse: {
+          success: true,
+          DBError: undefined,
+        },
+        addReviewResponse: {
+          success: true,
+          DBError: undefined,
+        }
+      });
+     });
     });
 
     describe('when adding a review for a preexisting place', () => {
-      // it('adds review and updates place', async () => {
-      //   const reviewForPreexistingPlace = {
-      //     reviewId: 'review5',
-      //     placeId: 'place3',
-      //     userName: 'geo',
-      //     placeName: 'White Dog Cafe',
-      //     beers: 1,
-      //     benny: 1,
-      //     bloody: 1,
-      //     burger: 1,
-      //     reviewDate: '8/21/2018',
-      //     words: 'meh'
-      //   };
-        
-      //   const response = await reviewsHandler.addReview(reviewForPreexistingPlace);
-      //   expect(response.reviews).contains(reviewForPreexistingPlace);
+      it('adds review, updates place, and returns success message', async () => {
+        const review = deepCopy(mockReviews[0]);
+        delete review.reviewId;
+        const place = deepCopy(mockPlaces[0]);
+        const toUpdate = recalculateRatingsForAddingReviewToPlace(review, place);
+        toUpdate.numberOfReviews++; 
+
+        // call for getPlaceByPlaceId
+        ddbMock.on(QueryCommand, {
+          TableName: 'Places',
+          ExpressionAttributeValues: {
+            ':placeId': review.placeId,
+          },
+          KeyConditionExpression: 'placeId = :placeId',
+          ConsistentRead: true,
+        }).resolves({
+          Items: [place]
+        });
   
-      //   expect(response.places[2]).includes({
-      //     placeId: 'place3',
-      //     placeName: 'White Dog Cafe',
-      //     beers: 2,
-      //     benny: 1,
-      //     burger: 3,
-      //     bloody: 2,
-      //     numberOfReviews: 2,
-      //     overallRating: 2
-      //   });
-      // });
+        // call for updatePlace
+        ddbMock.on(UpdateCommand, {
+          TableName: 'Places',
+          Key: {
+            placeId: toUpdate.placeId,
+            placeName: toUpdate.placeName,
+          },
+          UpdateExpression: 'set beers = :beers, bloody = :bloody, burger = :burger, benny = :benny, numberOfReviews = :numberOfReviews, overallRating = :overallRating',
+          ExpressionAttributeValues: {
+            ":beers": toUpdate.beers,
+            ":bloody": toUpdate.bloody,
+            ":burger": toUpdate.burger,
+            ":benny": toUpdate.benny,
+            ":numberOfReviews": toUpdate.numberOfReviews,
+            ":overallRating": toUpdate.overallRating,
+          },
+          ReturnValues: "ALL_NEW",
+        }).resolves({
+          Attributes: place,
+        });
+  
+        // call for addReview
+        ddbMock.on(PutCommand, {
+          TableName: 'Reviews',
+          Item: review  
+        }).resolves({
+          not: 'an error'
+        });
+  
+        const response = await reviewsHandler.addReview(review);
+  
+        assert.deepEqual(response, {
+          placeResponse: {
+            success: true,
+            place: place,
+            DBError: undefined,
+          },
+          addReviewResponse: {
+            success: true,
+            DBError: undefined,
+          }
+        });
+       });
     });
   });
 });
