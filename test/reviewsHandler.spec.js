@@ -183,29 +183,18 @@ describe('reviewsHandler', () => {
           Items: [place]
         });
 
-        // call for deleteReviewByReviewId
-        ddbMock.on(DeleteCommand, {
-          TableName: 'Reviews',
-          Key: {
-            reviewId: review.reviewId,
-          }
-        }).resolves({
-          success: true,
-        });
-
-        // call for deletePlaceByPlaceId
-        ddbMock.on(DeleteCommand, {
-          TableName: 'Places',
-          Key: {
-            placeId: place.placeId,
-          }
-        }).resolves({
-          success: true,
-        });
-
+        // call for TransactWriteCommane
+      ddbMock.on(TransactWriteCommand).resolves({
+        $metadata: {
+          httpStatusCode: 200
+        }
+      });
 
         const response = await reviewsHandler.deleteReviewByReviewId(review.reviewId);
-        assert.deepEqual(response, { success: true })
+        assert.deepEqual(response, { 
+          success: true,
+          DBError: undefined,
+         })
       });
     });
     
@@ -237,39 +226,18 @@ describe('reviewsHandler', () => {
         Items: [place]
       });
 
-      // call for deleteReviewByReviewId
-      ddbMock.on(DeleteCommand, {
-        TableName: 'Reviews',
-        Key: {
-          reviewId: review.reviewId,
+      // call for TransactWriteCommane
+      ddbMock.on(TransactWriteCommand).resolves({
+        $metadata: {
+          httpStatusCode: 200
         }
-      }).resolves({
-        success: true,
-      });
-
-      // call for updatePlace
-      ddbMock.on(UpdateCommand, {
-        TableName: 'Places',
-        Key: {
-          placeId: place.placeId,
-          placeName: place.placeName,
-        },
-        UpdateExpression: 'set beers = :beers, bloody = :bloody, burger = :burger, benny = :benny, numberOfReviews = :numberOfReviews, overallRating = :overallRating',
-        ExpressionAttributeValues: {
-          ":beers": place.beers,
-          ":bloody": place.bloody,
-          ":burger": place.burger,
-          ":benny": place.benny,
-          ":numberOfReviews": place.numberOfReviews,
-          ":overallRating": place.overallRating,
-        },
-        ReturnValues: "ALL_NEW",
-      }).resolves({
-        Attributes: place,
       });
 
       const response = await reviewsHandler.deleteReviewByReviewId(review.reviewId);
-      assert.deepEqual(response, { success: true })
+      assert.deepEqual(response, { 
+        success: true,
+        DBError: undefined
+       })
       });
     });
   });
