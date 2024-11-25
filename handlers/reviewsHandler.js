@@ -22,7 +22,7 @@ const { USERNAME_SCHEMA } = require('../schemas/usersSchemas');
 const { v4 } = require('uuid');
 const { DBErrorResponse } = require('../errors/DBErrorResponse');
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
-const { transactionAddPlaceAndAddReview, transactionUpdatePlaceAndAddReview } = require('../databaseAccess/transactDatabaseAccess');
+const { transactionAddPlaceAndAddReview, transactionUpdatePlaceAndAddReview, transactionUpdatePlaceAndDeleteReview, transactionDeletePlaceAndDeleteReview } = require('../databaseAccess/transactDatabaseAccess');
 
 class ReviewsHandler {
 
@@ -132,12 +132,12 @@ class ReviewsHandler {
 		if (!reviewIdIsValid.isValid) {
 			return new BadSchemaResponse(400, reviewIdIsValid.error.message);
 		}
-
+		
 		const getReviewByReviewIdResponse = await getReviewByReviewId(reviewId);
 		if (getReviewByReviewIdResponse.DBError) {
 			return new DBErrorResponse(getReviewByReviewIdResponse.DBError?.$metadata?.httpStatusCode, getReviewByReviewIdResponse.DBError.message);
 		}
-
+		
 		const reviewBeingDeleted = getReviewByReviewIdResponse.review;
 
 		const getPlaceByPlaceIdResponse = await getPlaceByPlaceId(reviewBeingDeleted.placeId);
@@ -146,27 +146,19 @@ class ReviewsHandler {
 		}
 		const placeToUpdate = getPlaceByPlaceIdResponse.place;
 		
-		const deleteReviewByReviewIdResponse = await deleteReviewByReviewId(reviewId);
-		if (deleteReviewByReviewIdResponse.DBError) {
-			return new DBErrorResponse(deleteReviewByReviewIdResponse.DBError?.$metadata?.httpStatusCode, deleteReviewByReviewIdResponse.DBError.message);
-		}
-
+		let response;
 		if (placeToUpdate.numberOfReviews > 1) {
 			const updatedPlace = await this.#updatePlaceForRemovingReview(reviewBeingDeleted, placeToUpdate);
-			const updatePlaceResponse = await updatePlace(updatedPlace);
-			if (updatePlaceResponse.DBError) {
-				return new DBErrorResponse(updatePlaceResponse.DBError?.$metadata?.httpStatusCode, updatePlaceResponse.DBError.message);
-			}
+			response = await transactionUpdatePlaceAndDeleteReview(updatedPlace, reviewBeingDeleted.reviewId);
 		} else {
-			const deletePlaceByPlaceIdResponse = await deletePlaceByPlaceId(placeToUpdate.placeId);
-			if (deletePlaceByPlaceIdResponse.DBError) {
-				return new DBErrorResponse(deletePlaceByPlaceIdResponse.DBError?.$metadata?.httpStatusCode, deletePlaceByPlaceIdResponse.DBError.message);
-			}
+			response = await transactionDeletePlaceAndDeleteReview(placeToUpdate.placeId, placeToUpdate.placeName, reviewBeingDeleted.reviewId);
 		}
 
-		return {
-			success: true
+		if (response.DBError) {
+			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
 		}
+
+		return response;
 	}
 
 	/**
