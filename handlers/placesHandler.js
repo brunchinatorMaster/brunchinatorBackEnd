@@ -22,9 +22,9 @@ class PlacesHandler {
 	 * @returns {object}
 	 */
 	async getPlaceByPlaceId(placeId) {
-		const placeIdIsValid = validateBySchema(placeId, PLACE_ID_SCHEMA);
-		if (!placeIdIsValid.isValid) {
-			return new BadSchemaResponse(400, placeIdIsValid.error.message);
+		const placeIdSchemaResponse = validateBySchema(placeId, PLACE_ID_SCHEMA);
+		if (!placeIdSchemaResponse.isValid) {
+			return new BadSchemaResponse(placeIdSchemaResponse);
 		}
 
 		const response = await getPlaceByPlaceId(placeId);
@@ -51,10 +51,9 @@ class PlacesHandler {
 	 * @returns {object[]}
 	 */
 	async addPlace(place) {
-		const placeIsValid = validateBySchema(place, VALIDATE_CREATE_PLACE_SCHEMA);
-
-		if (!placeIsValid.isValid) {
-			return new BadSchemaResponse(400, placeIsValid.error.message);
+		const placeSchemaReponse= validateBySchema(place, VALIDATE_CREATE_PLACE_SCHEMA);
+		if (!placeSchemaReponse.isValid) {
+			return new BadSchemaResponse(placeSchemaReponse);
 		}
 
 		const response = await addPlace(place);

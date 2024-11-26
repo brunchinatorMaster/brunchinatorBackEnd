@@ -61,9 +61,9 @@ class ReviewsHandler {
 	 * @returns {object}
 	 */
 	async getReviewByReviewId(reviewId) {
-		const reviewIdIsValid = validateBySchema(reviewId, REVIEW_ID_SCHEMA);
-		if (!reviewIdIsValid.isValid) {
-			return new BadSchemaResponse(400, reviewIdIsValid.error.message);
+		const reviewIdSchemaResponse = validateBySchema(reviewId, REVIEW_ID_SCHEMA);
+		if (!reviewIdSchemaResponse.isValid) {
+			return new BadSchemaResponse(reviewIdSchemaResponse);
 		}
 
 		const response = await getReviewByReviewId(reviewId);
@@ -92,10 +92,9 @@ class ReviewsHandler {
 	 * @returns {object[]}
 	 */
 	async getReviewsByPlaceId(placeId) {
-		const placeIdIsValid = validateBySchema(placeId, PLACE_ID_SCHEMA);
-
-		if (!placeIdIsValid.isValid) {
-			return new BadSchemaResponse(400, placeIdIsValid.error.message);
+		const placeIdSchemaResponse= validateBySchema(placeId, PLACE_ID_SCHEMA);
+		if (!placeIdSchemaResponse.isValid) {
+			return new BadSchemaResponse(placeIdSchemaResponse);
 		}
 
 		const response = await getReviewsByPlaceId(placeId);
@@ -124,10 +123,9 @@ class ReviewsHandler {
 	 * @returns {object[]}
 	 */
 	async getReviewsByUserName(userName) {
-		const usernameIsValid = validateBySchema(userName, USERNAME_SCHEMA);
-
-		if (!usernameIsValid.isValid) {
-			return new BadSchemaResponse(400, usernameIsValid.error.message);
+		const userNameSchemaResponse = validateBySchema(userName, USERNAME_SCHEMA);
+		if (!userNameSchemaResponse.isValid) {
+			return new BadSchemaResponse(userNameSchemaResponse);
 		}
 
 		const response = await getReviewsByUserName(userName);
@@ -156,9 +154,9 @@ class ReviewsHandler {
 	 * @returns {object}
 	 */
 	async deleteReviewByReviewId(reviewId) {
-		const reviewIdIsValid = validateBySchema(reviewId, REVIEW_ID_SCHEMA);
-		if (!reviewIdIsValid.isValid) {
-			return new BadSchemaResponse(400, reviewIdIsValid.error.message);
+		const reviewIdSchemaResponse = validateBySchema(reviewId, REVIEW_ID_SCHEMA);
+		if (!reviewIdSchemaResponse.isValid) {
+			return new BadSchemaResponse(reviewIdSchemaResponse);
 		}
 		
 		const getReviewByReviewIdResponse = await getReviewByReviewId(reviewId);
@@ -219,9 +217,9 @@ class ReviewsHandler {
 	 * @returns {object}
 	 */
 	async addReview(review) {
-		const reviewIsValid = validateBySchema(review, VALIDATE_CREATE_REVIEW_SCHEMA);
-		if (!reviewIsValid.isValid) {
-			return new BadSchemaResponse(400, reviewIsValid.error.message);
+		const reviewSchemaResponse = validateBySchema(review, VALIDATE_CREATE_REVIEW_SCHEMA);
+		if (!reviewSchemaResponse.isValid) {
+			return new BadSchemaResponse(reviewSchemaResponse);
 		}
 
 		const getPlaceByPlaceIdResponse = await getPlaceByPlaceId(review.placeId);
@@ -254,9 +252,9 @@ class ReviewsHandler {
 	 */
 	async addPlaceAndAddReview(review) {
 		const place = createNewPlaceFromReview(review);
-		const placeIsValid = validateBySchema(place, VALIDATE_CREATE_PLACE_SCHEMA);
-		if (!placeIsValid.isValid) {
-			return new BadSchemaResponse(400, placeIsValid.error.message);
+		const placeSchemaResponse = validateBySchema(place, VALIDATE_CREATE_PLACE_SCHEMA);
+		if (!placeSchemaResponse.isValid) {
+			return new BadSchemaResponse(placeSchemaResponse);
 		}
 		review.reviewId = v4();
 		const response = await transactionAddPlaceAndAddReview(place, review);
@@ -282,9 +280,9 @@ class ReviewsHandler {
 		let toUpdate = recalculateRatingsForAddingReviewToPlace(review, place);
 		toUpdate.numberOfReviews++; 
 		
-		const placeIsValid = validateBySchema(toUpdate, VALIDATE_UPDATE_PLACE_SCHEMA);
-		if (!placeIsValid.isValid) {
-			return new BadSchemaResponse(400, placeIsValid.error.message);
+		const placeSchemaResponse = validateBySchema(toUpdate, VALIDATE_UPDATE_PLACE_SCHEMA);
+		if (!placeSchemaResponse.isValid) {
+			return new BadSchemaResponse(placeSchemaResponse);
 		}
 		review.reviewId = v4();
 		const response = await transactionUpdatePlaceAndAddReview(toUpdate, review);

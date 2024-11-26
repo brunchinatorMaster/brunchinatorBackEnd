@@ -32,9 +32,9 @@ class ReviewsHandler {
 	 * @returns {object}
 	 */
   async getUserByUsername(userName) {
-		const userNameIsValid = validateBySchema(userName, USERNAME_SCHEMA);
-		if (!userNameIsValid.isValid) {
-			return new BadSchemaResponse(400, userNameIsValid.error.message);
+		const userNameSchemaResponse = validateBySchema(userName, USERNAME_SCHEMA);
+		if (!userNameSchemaResponse.isValid) {
+			return new BadSchemaResponse(userNameSchemaResponse);
 		}
 
 		const response = await getUserByUsername(userName);
@@ -68,9 +68,9 @@ class ReviewsHandler {
 	 * @returns {object}
 	 */
   async getUserByEmail(email) {
-		const emailIsValid = validateBySchema(email, EMAIL_SCHEMA);
-		if (!emailIsValid.isValid) {
-			return new BadSchemaResponse(400, emailIsValid.error.message);
+		const emailSchemaResponse = validateBySchema(email, EMAIL_SCHEMA);
+		if (!emailSchemaResponse.isValid) {
+			return new BadSchemaResponse(emailSchemaResponse);
 		}
 
 		const response = await getUserByEmail(email);
@@ -103,9 +103,9 @@ class ReviewsHandler {
 	 * @returns {object}
 	 */
 	async updateUser(user) {
-		const userIsValid = validateBySchema(user, VALIDATE_CREATE_USER_SCHEMA);
-		if (!userIsValid.isValid) {
-			return new BadSchemaResponse(400, userIsValid.error.message);
+		const userSchemaResponse = validateBySchema(user, VALIDATE_CREATE_USER_SCHEMA);
+		if (!userSchemaResponse.isValid) {
+			return new BadSchemaResponse(userSchemaResponse);
 		}
 
 		const response = await updateUser(user);
@@ -136,9 +136,9 @@ class ReviewsHandler {
 	 * @returns {object}
 	 */
 	async addUser(user) {
-		const userIsValid = validateBySchema(user, VALIDATE_CREATE_USER_SCHEMA);
-		if (!userIsValid.isValid) {
-			return new BadSchemaResponse(400, userIsValid.error.message);
+		const userSchemaResponse = validateBySchema(user, VALIDATE_CREATE_USER_SCHEMA);
+		if (!userSchemaResponse.isValid) {
+			return new BadSchemaResponse(userSchemaResponse);
 		}
 
 		const response = await addUser(user);
@@ -168,14 +168,14 @@ class ReviewsHandler {
 	 * @returns {object}
 	 */
 	async login(userName, password) {
-		const userNameIsValid = validateBySchema(userName, USERNAME_SCHEMA);
-		if (!userNameIsValid.isValid) {
-			return new BadSchemaResponse(400, userNameIsValid.error.message);
+		const userNameSchemaResponse = validateBySchema(userName, USERNAME_SCHEMA);
+		if (!userNameSchemaResponse.isValid) {
+			return new BadSchemaResponse(userNameSchemaResponse);
 		}
 
-		const passwordIsValid = validateBySchema(password, PASSWORD_SCHEMA);
-		if (!passwordIsValid.isValid) {
-			return new BadSchemaResponse(400, passwordIsValid.error.message);
+		const passwordSchemaResponse= validateBySchema(password, PASSWORD_SCHEMA);
+		if (!passwordSchemaResponse.isValid) {
+			return new BadSchemaResponse(passwordSchemaResponse);
 		}
 
 		const response = await getUserByUsername(userName, password);
@@ -223,10 +223,9 @@ class ReviewsHandler {
 	 * @returns {object}
 	 */
 	async deleteUser(userName) {
-		const userNameIsValid = validateBySchema(userName, USERNAME_SCHEMA);
-
-		if (!userNameIsValid.isValid) {
-			return new BadSchemaResponse(400, userNameIsValid.error.message);
+		const userNameSchemaResponse = validateBySchema(userName, USERNAME_SCHEMA);
+		if (!userNameSchemaResponse.isValid) {
+			return new BadSchemaResponse(userNameSchemaResponse);
 		}
 
 		const response = await deleteUser(userName);
