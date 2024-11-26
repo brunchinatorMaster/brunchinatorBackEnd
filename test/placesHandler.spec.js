@@ -117,7 +117,7 @@ describe('placesHandler', () => {
       expect(response).to.be.instanceof(BadSchemaResponse);
       expect(response.success).to.be.false;
       expect(response.statusCode).to.equal(400);
-      expect(response.message).to.equal('"placeName" is not allowed to be empty');
+      expect(response.message).to.equal('"placeName" cannot be an empty string');
     });
 
     it('returns success upon successful addition to dynamo', async () => {

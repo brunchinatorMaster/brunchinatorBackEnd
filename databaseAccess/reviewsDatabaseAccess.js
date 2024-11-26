@@ -9,8 +9,12 @@ const {
 const { deepCopy } = require('../utils/utils');
 
 /**
- * returns all reviews
- * 
+ * gets all reviews
+ * returns {
+ *  success: boolean,
+ *  reviews: REVIEW || null
+ *  DBError: ERROR || null
+ * }
  * @returns {object[]}
  */
 const getReviews = async () => {
@@ -39,7 +43,12 @@ const getReviews = async () => {
 }
 
 /**
- * returns review that matches reviewId
+ * finds review that matches reviewId
+ * returns {
+ *  success: boolean,
+ *  reviews: REVIEW || null
+ *  DBError: ERROR || null
+ * }
  * 
  * @param {string} reviewId 
  * @returns {object}
@@ -75,7 +84,13 @@ const getReviewByReviewId = async (reviewId) => {
 }
 
 /**
- * returns all reviews that are for place that matches placeId
+ * finds all reviews that are for place that matches placeId
+ * 
+ * returns {
+ *  success: boolean,
+ *  reviews: [REVIEW] || null
+ *  DBError: ERROR || null
+ * }
  * 
  * @param {string} placeId 
  * @returns {object[]}
@@ -111,7 +126,13 @@ const getReviewsByPlaceId = async (placeId) => {
 }
 
 /**
- * returns all reviews for user that matches userName
+ * finds all reviews for user that matches userName
+ * 
+ * returns {
+ *  success: boolean,
+ *  reviews: [REVIEW] || null
+ *  DBError: ERROR || null
+ * }
  * 
  * @param {string} userName 
  * @returns {object[]}
@@ -147,7 +168,12 @@ const getReviewsByUserName = async (userName) => {
 }
 
 /**
- * deletes review that matches reviewId and returns all remaining reviews
+ * deletes review that matches reviewId
+ * 
+ * returns {
+ *  success: boolean,
+ *  DBError: ERROR || null
+ * }
  * 
  * @param {string} reviewId 
  * @returns {object[]}
@@ -171,7 +197,6 @@ const deleteReviewByReviewId = async (reviewId) => {
   } finally {
     return {
       success,
-      review: null,
       DBError
     }
   }
@@ -181,7 +206,7 @@ const deleteReviewByReviewId = async (reviewId) => {
  * adds review to dynamo
  * returns {
  *  success: boolean,
- *  DBError:error || null
+ *  DBError: ERROR || null
  * }
  * @param {object} user 
  * @returns {object}

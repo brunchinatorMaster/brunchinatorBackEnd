@@ -20,7 +20,13 @@ const jwt = require('jsonwebtoken');
 class ReviewsHandler {
 
 	/**
-	 * returns user that matches userName
+	 * finds user that matches userName
+	 * 
+	 * returns {
+	 * 	success: boolean,
+	 * 	userExists: boolean,
+	 * 	user: USER || null
+	 * }
 	 *  
 	 * @param {string} userName 
 	 * @returns {object}
@@ -50,7 +56,13 @@ class ReviewsHandler {
 	}
 
 	/**
-	 * returns user that matches email
+	 * finds user that matches email
+	 * 
+	 * returns {
+	 * 	success: boolean,
+	 * 	userExists: boolean,
+	 * 	user: USER || null
+	 * }
 	 *  
 	 * @param {string} email 
 	 * @returns {object}
@@ -80,8 +92,12 @@ class ReviewsHandler {
 	}
 
 	/**
-	 * updates user, 
-	 * and returns an object with success: true
+	 * updates user
+	 * 
+	 * returns {
+	 * 	success: boolean,
+	 * 	updatedUser: USER || null,
+	 * }
 	 * 
 	 * @param {object} user 
 	 * @returns {object}
@@ -106,13 +122,15 @@ class ReviewsHandler {
 		return {
 			success: true,
 			updatedUser,
-			DBError: response.DBError
 		};
 	}
 
 	/**
 	 * adds user, 
-	 * and returns an object with success: true
+	 * 
+	 * returns {
+	 * 	success: boolean,
+	 * }
 	 * 
 	 * @param {object} user 
 	 * @returns {object}
@@ -131,15 +149,19 @@ class ReviewsHandler {
 
 		return {
 			success: true,
-			DBError: response.DBError
 		};
 	}
 
 	/**
 	 * checks userName and password against database, 
-	 * returns error if no user is found that matches userName
-	 * returns error if password doesn't match
-	 * returns object with cleanUser and token if login is success
+	 * returns 401 if no user is found that matches userName
+	 * returns 401 if password doesn't match
+	 * 
+	 * returns {
+	 * 	success: true,
+	 * 	user: USER(without password) || null,
+	 * 	token: jwtToken
+	 * }
 	 * 
 	 * @param {string} userName 
 	 * @param {string} password 
@@ -189,10 +211,13 @@ class ReviewsHandler {
 	}
 
 	/**
-	 * deletes user, 
-	 * and returns an object with success: true
+	 * deletes user
 	 * NOTE: purely a utility function and will
 	 * probably never actually be used
+	 * 
+	 * returns {
+	 * 	success: true
+	 * }
 	 * 
 	 * @param {string} userName 
 	 * @returns {object}

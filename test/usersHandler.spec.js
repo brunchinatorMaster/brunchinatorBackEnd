@@ -232,7 +232,6 @@ describe('usersHandler', () => {
 
       assert.deepEqual(response, {
         success: true,
-        DBError: undefined
       });
     });
 
@@ -392,7 +391,6 @@ describe('usersHandler', () => {
           email: 'tohearstories@gmail.com',
           userName: 'geo'
         },
-        DBError: undefined
       });
     });
 

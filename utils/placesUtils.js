@@ -1,4 +1,3 @@
-const { deepCopy } = require("./utils");
 
 /**
  * creates and returns a new place created from 
@@ -41,15 +40,14 @@ const findAverageOf = (arrayOfValues) => {
 
 /**
  * recalculates the individual ratings and overallRating
- * of a place(toUpdate) that already exists when a review is added.
+ * of a place that already exists when a review is added.
  * returns toUpdate with the updated values
  * 
  * @param {object} review 
  * @param {object} toUpdate 
  * @returns {object}
  */
-const recalculateRatingsForAddingReviewToPlace = (review, place) => {
-  const toUpdate = deepCopy(place);
+const recalculateRatingsForAddingReviewToPlace = (review, toUpdate) => {
   const newBeers = addToAverage(toUpdate.beers, toUpdate.numberOfReviews, review.beers);
   const newBenny = addToAverage(toUpdate.benny, toUpdate.numberOfReviews, review.benny);
   const newBloody = addToAverage(toUpdate.bloody, toUpdate.numberOfReviews, review.bloody);
@@ -65,6 +63,14 @@ const recalculateRatingsForAddingReviewToPlace = (review, place) => {
   return toUpdate;
 };
 
+/**
+ * adds elementToAdd to originalAverage and returns new average
+ * 
+ * @param {number} elementToRemove 
+ * @param {number} originalAverage 
+ * @param {number} originalNumberOfElements 
+ * @returns {number}
+ */
 const addToAverage = (originalAverage, originalNumberOfElements, elementToAdd) => {
   if (!originalAverage || !originalNumberOfElements || !elementToAdd || typeof originalAverage !== 'number'|| typeof originalNumberOfElements !== 'number'|| typeof elementToAdd !== 'number' ) {
     return originalAverage;
@@ -106,7 +112,7 @@ const recalculateRatingsForRemovingReviewFromPlace = (review, toUpdate) => {
  * @param {number} elementToRemove 
  * @param {number} originalAverage 
  * @param {number} originalNumberOfElements 
- * @returns {object}
+ * @returns {number}
  */
 const removeFromAverage = (elementToRemove, originalAverage, originalNumberOfElements) => {
   if (elementToRemove == null) {

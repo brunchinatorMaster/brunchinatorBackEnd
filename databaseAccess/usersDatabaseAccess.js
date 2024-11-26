@@ -11,8 +11,8 @@ const {
  * finds user in dynamo that has matching userName
  * returns {
  *  success: boolean,
- *  user: user || null,
- *  DBError: error || null
+ *  user: USER || null,
+ *  DBError: ERROR || null
  * }
  * 
  * @param {string} userName 
@@ -52,8 +52,8 @@ const getUserByUsername = async (userName) => {
  * returns user in dynamo that has matching email
  * returns {
  *  success: boolean,
- *  user: user || null,
- *  DBError: error || null
+ *  user: USER || null,
+ *  DBError: ERROR || null
  * }
  * 
  * @param {string} email 
@@ -91,10 +91,10 @@ const getUserByEmail = async (email) => {
 
 /**
  * updates user in dynamo
- * * returns {
+ * returns {
  *  success: boolean,
- *  user: updatedUser || null,
- *  DBError: error || null
+ *  user: USER || null,
+ *  DBError: ERROR || null
  * }
  * @param {object} user 
  * @returns {object}
@@ -172,7 +172,7 @@ const addUser = async (user) => {
  * returns {
  *  success: boolean,
  *  user: null,
- *  DBError: error || null
+ *  DBError: ERROR || null
  * }
  * NOTE: purely a utility function and will
  * probably never actually be used
