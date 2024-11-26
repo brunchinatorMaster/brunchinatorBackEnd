@@ -1,0 +1,69 @@
+@startuml Add Review
+
+participant endpoint [
+    =reviewsController
+    ----
+    /byReviewId/:reviewId
+]
+
+participant deleteReviewByReviewId [
+    =reviewsHandler
+    ----
+    deleteReviewByReviewId()
+]
+
+participant validateBySchema [
+    =utils.js
+    ----
+    validateBySchema()
+]
+
+participant getReviewByReviewId [
+    =reviewsDatabaseAccess
+    ----
+    getReviewByReviewId()
+]
+
+participant getPlaceByPlaceId [
+    =placesDatabaseAccess
+    ----
+    getPlaceByPlaceId()
+]
+
+participant updatePlaceForRemovingReview [
+  =reviewsHandler
+  ----
+  updatePlaceForRemovingReview
+]
+
+participant transactionUpdatePlaceAndDeleteReview [
+    =transactionDatabaseAccess
+    ----
+    transactionUpdatePlaceAndDeleteReview
+]
+
+== Add Review For New Place ==
+endpoint -> deleteReviewByReviewId: delete review
+deleteReviewByReviewId -> validateBySchema: is reviewId valid?
+alt reviewId is not valid
+    validateBySchema -> deleteReviewByReviewId: reviewId is not valid
+    deleteReviewByReviewId -> endpoint: return BadSchemaReponse
+end
+validateBySchema -> deleteReviewByReviewId: reviewId is valid
+deleteReviewByReviewId -> getReviewByReviewId: get review
+alt DBError
+    getReviewByReviewId -> deleteReviewByReviewId: Error encountered
+    deleteReviewByReviewId -> endpoint: return DBErrorResponse
+end
+getReviewByReviewId -> deleteReviewByReviewId: review
+deleteReviewByReviewId -> getPlaceByPlaceId: get place with review.placeId
+alt DBError
+    getPlaceByPlaceId -> deleteReviewByReviewId: Error encountered
+    deleteReviewByReviewId -> endpoint: return DBErrorResponse
+end
+getPlaceByPlaceId -> deleteReviewByReviewId: place review is for has more than 1 review
+deleteReviewByReviewId -> updatePlaceForRemovingReview: recalculate values for place
+updatePlaceForRemovingReview -> deleteReviewByReviewId: place with updated values
+deleteReviewByReviewId -> transactionUpdatePlaceAndDeleteReview: update place and delete review
+transactionUpdatePlaceAndDeleteReview -> deleteReviewByReviewId: response
+deleteReviewByReviewId -> endpoint: response

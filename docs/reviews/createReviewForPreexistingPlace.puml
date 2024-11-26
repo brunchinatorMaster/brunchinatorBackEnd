@@ -1,27 +1,21 @@
 @startuml Add Review
 
+participant endpoint [
+    =reviewsController
+    ----
+    /createReview
+]
+
 participant addReview [
     =reviewsHandler
     ----
     addReview()
 ]
 
-participant doesPlaceExist [
-    =placesUtils
+participant validateBySchema [
+    =utils.js
     ----
-    doesPlaceExist()
-]
-
-participant addReviewForPreexistingPlace [
-    =reviewsHandler
-    ----
-    addReviewForPreexistingPlace()
-]
-
-participant updatePlace [
-    =reviewsHandler
-    ----
-    updatePlace()
+    validateBySchema()
 ]
 
 participant getPlaceByPlaceId [
@@ -30,34 +24,49 @@ participant getPlaceByPlaceId [
     getPlaceByPlaceId()
 ]
 
-participant findAverageOf [
+participant updatePlaceAndAddReview [
+    =reviewsHandler
+    ----
+    updatePlaceAndAddReview()
+]
+
+participant recalculateRatingsForAddingReviewToPlace [
     =placesUtils
     ----
-    findAverageOf()
+    recalculateRatingsForAddingReviewToPlace()
 ]
 
-participant updatePlaceInDatabase [
-    =placesDatabaseAccess
+participant transactionUpdatePlaceAndAddReview [
+    =transactionDatabaseAccess
     ----
-    updatePlace()
+    transactionUpdatePlaceAndAddReview
 ]
 
-participant addReviewToDatabase [
-    =reviewsDatabaseAccess
-    ----
-    addReview()
-]
-
-== Add Review For Preexisting Place ==
-addReview -> doesPlaceExist: does place exist?
-doesPlaceExist -> addReview: yes
-addReview -> addReviewForPreexistingPlace
-addReviewForPreexistingPlace -> updatePlace
-updatePlace -> getPlaceByPlaceId: request matching place
-getPlaceByPlaceId -> updatePlace: return matching place
-updatePlace -> findAverageOf: recalculate overallRating
-findAverageOf -> updatePlace: return new overallRating
-updatePlace -> updatePlaceInDatabase: update place in database
-updatePlaceInDatabase -> updatePlace: returns all places
-updatePlace -> addReviewForPreexistingPlace: returns all places
-addReviewForPreexistingPlace -> addReviewToDatabase: add review to database
+== Add Review For New Place ==
+endpoint -> addReview: create review
+addReview -> validateBySchema: is review valid?
+alt review is not valid
+    validateBySchema -> addReview: review is not valid
+    addReview -> endpoint: return BadSchemaReponse
+end
+validateBySchema -> addReview: review is valid
+addReview -> getPlaceByPlaceId: get place with review.placeId
+alt DBError
+    getPlaceByPlaceId -> addReview: Error encountered
+    addReview -> endpoint: return DBErrorResponse
+end
+getPlaceByPlaceId -> addReview: placeExists: TRUE
+addReview -> updatePlaceAndAddReview: update place and add review
+updatePlaceAndAddReview -> recalculateRatingsForAddingReviewToPlace: place
+recalculateRatingsForAddingReviewToPlace -> updatePlaceAndAddReview: place with updated values
+updatePlaceAndAddReview -> validateBySchema: is place valid?
+alt place is not valid
+    validateBySchema -> updatePlaceAndAddReview: place is not valid
+    updatePlaceAndAddReview -> addReview: return BadSchemaReponse
+    addReview -> endpoint: return BadSchemaReponse
+end
+validateBySchema -> updatePlaceAndAddReview: place is valid
+updatePlaceAndAddReview -> transactionUpdatePlaceAndAddReview: updated place and add review
+transactionUpdatePlaceAndAddReview -> updatePlaceAndAddReview: response
+updatePlaceAndAddReview -> addReview: response
+addReview -> endpoint: response
