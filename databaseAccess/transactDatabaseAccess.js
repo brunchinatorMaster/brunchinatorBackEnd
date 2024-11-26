@@ -3,6 +3,19 @@ const {
   TransactWriteCommand
 } = require('../aws/awsClients');
 
+/**
+ * adds place and adds review in dynamo
+ * as an all or nothing transaction
+ * 
+ * returns {
+ *  success: boolean,
+ *  DBError: ERROR || null
+ * }
+ * 
+ * @param {object} place 
+ * @param {object} review 
+ * @returns {object}
+ */
 const transactionAddPlaceAndAddReview = async (place, review) => {
   const toSend = {
     TransactItems: [
@@ -39,6 +52,19 @@ const transactionAddPlaceAndAddReview = async (place, review) => {
   }
 }
 
+/**
+ * updates place and adds review in dynamo
+ * as an all or nothing transaction
+ * 
+ * returns {
+ *  success: boolean,
+ *  DBError: ERROR || null
+ * }
+ * 
+ * @param {object} place 
+ * @param {object} review 
+ * @returns {object}
+ */
 const transactionUpdatePlaceAndAddReview = async (place, review) => {
   const toSend = {
     TransactItems: [
@@ -88,6 +114,20 @@ const transactionUpdatePlaceAndAddReview = async (place, review) => {
   }
 }
 
+/**
+ * deletes place and deletes review in dynamo
+ * as an all or nothing transaction
+ * 
+ * returns {
+ *  success: boolean,
+ *  DBError: ERROR || null
+ * }
+ * 
+ * @param {string} placeId 
+ * @param {string} placeName
+ * @param {string} reviewId 
+ * @returns {object}
+ */
 const transactionDeletePlaceAndDeleteReview = async (placeId, placeName, reviewId) => {
   const toSend = {
     TransactItems: [
@@ -129,6 +169,19 @@ const transactionDeletePlaceAndDeleteReview = async (placeId, placeName, reviewI
   }
 }
 
+/**
+ * updates place and deletes review in dynamo
+ * as an all or nothing transaction
+ * 
+ * returns {
+ *  success: boolean,
+ *  DBError: ERROR || null
+ * }
+ * 
+ * @param {object} place 
+ * @param {string} reviewId 
+ * @returns {object}
+ */
 const transactionUpdatePlaceAndDeleteReview = async (place, reviewId) => {
   const toSend = {
     TransactItems: [

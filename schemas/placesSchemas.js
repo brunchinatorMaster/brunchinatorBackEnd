@@ -8,7 +8,11 @@ const PLACE_ID_SCHEMA = Joi.string().required().messages({
   'string.empty': `"placeId" cannot be an empty string`,
   'any.required': `"placeId" is a required field`
 });
-const PLACE_NAME_SCHEMA = Joi.string();
+
+const PLACE_NAME_SCHEMA = Joi.string().messages({
+  'string.base': `"placeName" must be a string`,
+  'string.empty': `"placeName" cannot be an empty string`,
+});
 
 const NUMBER_OF_REVIEWS_SCHEMA = Joi.number();
 

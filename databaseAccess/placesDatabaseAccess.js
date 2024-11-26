@@ -9,10 +9,11 @@ const {
 
 /**
  * finds place that has matching placeId
+ * 
  * returns {
  *  success: boolean,
- *  place: place || null,
- *  DBError: error || null
+ *  place: PLACE || null,
+ *  DBError: ERROR || null
  * }
  * 
  * @param {string} placeId 
@@ -50,9 +51,10 @@ const getPlaceByPlaceId = async (placeId) => {
 
 /**
  * adds place to dynamo
+ * 
  * returns {
  *  success: boolean,
- *  DBError:error || null
+ *  DBError: ERROR || null
  * }
  * @param {object} place 
  * @returns {object[]}
@@ -81,13 +83,16 @@ const addPlace = async (place) => {
 }
 
 /**
- * updates place and returns {
+ * updates place in dynamo
+ * 
+ * returns {
  *  success: boolean,
- *  updatedPlace: object
+ *  place: PLACE || NULL
+ *  DBError: ERROR || null
  * }
  * 
  * @param {object} place 
- * @returns 
+ * @returns {object}
  */
 const updatePlace = async (place) => {
   const toUpdate = new UpdateCommand({
@@ -129,10 +134,15 @@ const updatePlace = async (place) => {
 }
 
 /**
- * deletes place that has matching placeId and returns all remaining places
+ * deletes place that has matching placeId
+ * 
+ * returns {
+ *  success: boolean,
+ *  DBError: ERROR || null
+ * }
  * 
  * @param {string} placeId 
- * @returns 
+ * @returns {object}
  */
 const deletePlaceByPlaceId = async (placeId) => {
   const toDelete = new DeleteCommand({
@@ -153,7 +163,6 @@ const deletePlaceByPlaceId = async (placeId) => {
   } finally {
     return {
       success,
-      review: null,
       DBError
     }
   }

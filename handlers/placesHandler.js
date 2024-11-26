@@ -10,10 +10,12 @@ const { validateBySchema } = require('../utils/utils');
 class PlacesHandler {
 
 	/**
-	 * finds place that matches placeId and
+	 * finds place that matches placeId
+	 * 
 	 * returns {
- 	 *   placeExists: boolean,
-   *   place: object
+	 * 	success: boolean
+	*   placeExists: boolean,
+	*   place: PLACE || null
    * }
 	 * 
 	 * @param {string} placeId 
@@ -39,7 +41,11 @@ class PlacesHandler {
 	}
 
 	/**
-	 * addes place and returns all places
+	 * addes place
+	 * 
+	 * returns {
+	 * 	sucess: boolean
+	 * }
 	 * 
 	 * @param {object} place 
 	 * @returns {object[]}

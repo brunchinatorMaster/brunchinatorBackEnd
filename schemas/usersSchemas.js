@@ -1,11 +1,13 @@
 const Joi = require('joi');
 
-const EMAIL_SCHEMA = Joi.string().email();
+const EMAIL_SCHEMA = Joi.string().email()
+
 const USERNAME_SCHEMA = Joi.string().required().messages({
   'string.base': `"userName" must be a string`,
   'string.empty': `"userName" cannot be an empty string`,
   'any.required': `"userName" is a required field`
 });
+
 const PASSWORD_SCHEMA = Joi.string().messages({
   'string.base': `"password" must be a string`,
   'string.empty': `"password" cannot be an empty string`,

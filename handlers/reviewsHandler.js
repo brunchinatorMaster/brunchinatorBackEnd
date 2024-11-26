@@ -27,7 +27,12 @@ const { transactionAddPlaceAndAddReview, transactionUpdatePlaceAndAddReview, tra
 class ReviewsHandler {
 
 	/**
-	 * returns all reviews
+	 * finds all reviews
+	 * 
+	 * returns {
+	 * 	success: boolean,
+	 * 	reviews: [REVIEW] || null
+	 * }
 	 * 
 	 * @returns {object[]}
 	 */
@@ -44,7 +49,13 @@ class ReviewsHandler {
 	}
 
 	/**
-	 * returns review that matches reviewId
+	 * finds review that matches reviewId
+	 * 
+	 * returns {
+	 * 	success: boolean,
+	 * 	reviewExists: boolean,
+	 * 	review: REVIEW
+	 * }
 	 *  
 	 * @param {string} reviewId 
 	 * @returns {object}
@@ -69,7 +80,13 @@ class ReviewsHandler {
 	}
 
 	/**
-	 * returns all reviews for place that matches placeId
+	 * finds all reviews for place that matches placeId
+	 * 
+	 * returns {
+	 * 	success: boolean,
+	 * 	reviewsExists: boolean,
+	 * 	reviews: [REVIEW]
+	 * }
 	 * 
 	 * @param {string} placeId 
 	 * @returns {object[]}
@@ -95,7 +112,13 @@ class ReviewsHandler {
 	}
 
 	/**
-	 * returns reviews left by user that matches userName
+	 * finds reviews left by user that matches userName
+	 * 
+	 * returns {
+	 * 	success: boolean,
+	 * 	reviewsExists: boolean,
+	 * 	reviews: [REVIEW]
+	 * }
 	 * 
 	 * @param {string} userName 
 	 * @returns {object[]}
@@ -123,6 +146,11 @@ class ReviewsHandler {
 	/**
 	 * deletes review that matches reviewId and then
 	 * either deletes or updates the place the review was for
+	 * 
+	 * returns {
+	 * 	success: boolean,
+	 * 	DBError: ERROR || null
+	 * }
 	 * 
 	 * @param {string} reviewId 
 	 * @returns {object}
@@ -165,10 +193,12 @@ class ReviewsHandler {
 	 * updates place when a review for that place is removed.
 	 * recalculates the individual ratings,
 	 * updates the numberOfReviews,
-	 * and returns all places
 	 * 
-	 * @param {object} review 
-	 * @returns 
+	 * returns PLACE
+	 * 
+	 * @param {object} review
+	 * @param {object} placeToUpdate 
+	 * @returns  {object}
 	 */
 	async #updatePlaceForRemovingReview(review, placeToUpdate) {
 		placeToUpdate = recalculateRatingsForRemovingReviewFromPlace(review, placeToUpdate);
@@ -179,29 +209,11 @@ class ReviewsHandler {
 	/**
 	 * adds review, 
 	 * creates place or updates place that the review is for,
-	 * and returns either {
-	 * 	placesResponse: {
-	 * 			addPlaceResponse: {
-	 * 				success: true
-	 * 			}		
-	 * 		},
-	 * 		addReviewResponse: {
-	 * 			success: true
-	 * 		}
-	 * 	}
-	 * OR
-	 * 	{
-	 * 		placesResponse: {
-	 * 			updatePlaceResponse: {
-	 * 				success: true,
-	 * 				updatedPlace: PLACE OBJECT,
-	 * 			}
-	 * 		},
-	 * 		addReviewResponse: {
-	 * 			success: true
-	 * 		}
-	 * 	}
-	 * 	
+	 * 
+	 * returns {
+	 * 	success: boolean,
+	 * 	DBError: ERROR || null
+	 * }
 	 * 
 	 * @param {object} review 
 	 * @returns {object}
@@ -229,6 +241,17 @@ class ReviewsHandler {
 		
 	}
 
+	/**
+	 * adds place and adds review
+	 * 
+	 * returns {
+	 * 	success: boolean,
+	 * 	DBError: ERROR || null
+	 * }
+	 * 
+	 * @param {object} review 
+	 * @returns {object}
+	 */
 	async addPlaceAndAddReview(review) {
 		const place = createNewPlaceFromReview(review);
 		const placeIsValid = validateBySchema(place, VALIDATE_CREATE_PLACE_SCHEMA);
@@ -243,6 +266,18 @@ class ReviewsHandler {
 		return response;
 	}
 
+	/**
+	 * updates place and adds review
+	 * 
+	 * returns {
+	 * 	success: boolean,
+	 * 	DBError: ERROR || null
+	 * }
+	 * 
+	 * @param {object} place 
+	 * @param {object} review 
+	 * @returns {object}
+	 */
 	async updatePlaceAndAddReview(place, review) {
 		let toUpdate = recalculateRatingsForAddingReviewToPlace(review, place);
 		toUpdate.numberOfReviews++; 
