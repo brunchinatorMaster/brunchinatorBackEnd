@@ -39,7 +39,7 @@ class ReviewsHandler {
 	async getReviews() {
 		const response = await getReviews();
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+			return new DBErrorResponse(response.DBError);
 		}
 
 		return {
@@ -69,7 +69,7 @@ class ReviewsHandler {
 		const response = await getReviewByReviewId(reviewId);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+			return new DBErrorResponse(response.DBError);
 		}
 
 		return {
@@ -101,7 +101,7 @@ class ReviewsHandler {
 		const response = await getReviewsByPlaceId(placeId);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+			return new DBErrorResponse(response.DBError);
 		}
 
 		return {
@@ -133,7 +133,7 @@ class ReviewsHandler {
 		const response = await getReviewsByUserName(userName);
 		
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+			return new DBErrorResponse(response.DBError);
 		}
 
 		return {
@@ -163,14 +163,14 @@ class ReviewsHandler {
 		
 		const getReviewByReviewIdResponse = await getReviewByReviewId(reviewId);
 		if (getReviewByReviewIdResponse.DBError) {
-			return new DBErrorResponse(getReviewByReviewIdResponse.DBError?.$metadata?.httpStatusCode, getReviewByReviewIdResponse.DBError.message);
+			return new DBErrorResponse(getReviewByReviewIdResponse.DBError);
 		}
 		
 		const reviewBeingDeleted = getReviewByReviewIdResponse.review;
 
 		const getPlaceByPlaceIdResponse = await getPlaceByPlaceId(reviewBeingDeleted.placeId);
 		if (getPlaceByPlaceIdResponse.DBError) {
-			return new DBErrorResponse(getPlaceByPlaceIdResponse.DBError?.$metadata?.httpStatusCode, getPlaceByPlaceIdResponse.DBError.message);
+			return new DBErrorResponse(getPlaceByPlaceIdResponse.DBError);
 		}
 		const placeToUpdate = getPlaceByPlaceIdResponse.place;
 		
@@ -183,7 +183,7 @@ class ReviewsHandler {
 		}
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+			return new DBErrorResponse(response.DBError);
 		}
 
 		return response;
@@ -226,7 +226,7 @@ class ReviewsHandler {
 
 		const getPlaceByPlaceIdResponse = await getPlaceByPlaceId(review.placeId);
 		if (getPlaceByPlaceIdResponse.DBError) {
-			return new DBErrorResponse(getPlaceByPlaceIdResponse.DBError?.$metadata?.httpStatusCode, getPlaceByPlaceIdResponse.DBError.message);
+			return new DBErrorResponse(getPlaceByPlaceIdResponse.DBError);
 		}
 		const placeExists = getPlaceByPlaceIdResponse.success;
 
@@ -261,7 +261,7 @@ class ReviewsHandler {
 		review.reviewId = v4();
 		const response = await transactionAddPlaceAndAddReview(place, review);
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+			return new DBErrorResponse(response.DBError);
 		}
 		return response;
 	}
@@ -289,7 +289,7 @@ class ReviewsHandler {
 		review.reviewId = v4();
 		const response = await transactionUpdatePlaceAndAddReview(toUpdate, review);
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+			return new DBErrorResponse(response.DBError);
 		}
 		return response;
 	}

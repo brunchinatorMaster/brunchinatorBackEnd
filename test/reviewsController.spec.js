@@ -42,7 +42,10 @@ describe('reviewsController', () => {
         assert.deepEqual(response.body, {
           success: false,
           statusCode: mockGenericDynamoError.$metadata.httpStatusCode,
-          message: mockGenericDynamoError.message
+          message: mockGenericDynamoError.message,
+          error: {
+            $metadata: mockGenericDynamoError.$metadata
+          }
         });
     });
   });
@@ -81,7 +84,10 @@ describe('reviewsController', () => {
       assert.deepEqual(response.body, {
         success: false,
         statusCode: mockGenericDynamoError.$metadata.httpStatusCode,
-        message: mockGenericDynamoError.message
+        message: mockGenericDynamoError.message,
+        error: {
+          $metadata: mockGenericDynamoError.$metadata
+        }
       });
     });
   });
@@ -120,7 +126,10 @@ describe('reviewsController', () => {
       assert.deepEqual(response.body, {
         success: false,
         statusCode: mockGenericDynamoError.$metadata.httpStatusCode,
-        message: mockGenericDynamoError.message
+        message: mockGenericDynamoError.message,
+        error: {
+          $metadata: mockGenericDynamoError.$metadata
+        }
       });
     });
   });
@@ -159,7 +168,10 @@ describe('reviewsController', () => {
       assert.deepEqual(response.body, {
         success: false,
         statusCode: mockGenericDynamoError.$metadata.httpStatusCode,
-        message: mockGenericDynamoError.message
+        message: mockGenericDynamoError.message,
+        error: {
+          $metadata: mockGenericDynamoError.$metadata
+        }
       });
     });
   });
@@ -243,7 +255,10 @@ describe('reviewsController', () => {
       assert.deepEqual(response.body, {
         success: false,
         statusCode: mockGenericDynamoError.$metadata.httpStatusCode,
-        message: mockGenericDynamoError.message
+        message: mockGenericDynamoError.message,
+        error: {
+          $metadata: mockGenericDynamoError.$metadata
+        }
       });
     });
   });

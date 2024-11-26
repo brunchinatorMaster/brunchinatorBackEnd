@@ -40,7 +40,7 @@ class ReviewsHandler {
 		const response = await getUserByUsername(userName);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+			return new DBErrorResponse(response.DBError);
 		}
 
 		let user;
@@ -76,7 +76,7 @@ class ReviewsHandler {
 		const response = await getUserByEmail(email);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+			return new DBErrorResponse(response.DBError);
 		}
 
 		let user;
@@ -111,7 +111,7 @@ class ReviewsHandler {
 		const response = await updateUser(user);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+			return new DBErrorResponse(response.DBError);
 		}
 
 		let updatedUser;
@@ -144,7 +144,7 @@ class ReviewsHandler {
 		const response = await addUser(user);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+			return new DBErrorResponse(response.DBError);
 		}
 
 		return {
@@ -181,7 +181,7 @@ class ReviewsHandler {
 		const response = await getUserByUsername(userName, password);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+			return new DBErrorResponse(response.DBError);
 		}
 
 		if (!response.success) {
@@ -232,7 +232,7 @@ class ReviewsHandler {
 		const response = await deleteUser(userName);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+			return new DBErrorResponse(response.DBError);
 		}
 		return {
 			success: true
