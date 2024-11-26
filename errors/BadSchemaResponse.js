@@ -1,8 +1,8 @@
 class BadSchemaResponse {
-  constructor(SchemaResponse) {
+  constructor(schemaResponse) {
     this.success = false;
     this.statusCode = 400;
-    this.message = SchemaResponse?.error?.message;
+    this.message = schemaResponse?.error?.message;
   }
 }
 

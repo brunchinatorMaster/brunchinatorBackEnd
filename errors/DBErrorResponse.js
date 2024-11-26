@@ -1,9 +1,9 @@
 class DBErrorResponse {
-  constructor(DBError) {
+  constructor(dbError) {
     this.success = false;
-    this.statusCode = DBError?.$metadata?.httpStatusCode;
-    this.message = DBError.message;
-    this.error = DBError;
+    this.statusCode = dbError?.$metadata?.httpStatusCode;
+    this.message = dbError.message;
+    this.error = dbError;
   }
 }
 
