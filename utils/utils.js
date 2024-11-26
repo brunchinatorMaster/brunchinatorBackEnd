@@ -25,6 +25,12 @@ const validateBySchema = (toValidate, schema) => {
   };
 };
 
+/**
+ * copies an object by value
+ * 
+ * @param {object} toCopy 
+ * @returns {object}
+ */
 const deepCopy = (toCopy) => {
   return JSON.parse(JSON.stringify(toCopy));
 };

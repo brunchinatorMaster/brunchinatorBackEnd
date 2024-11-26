@@ -30,7 +30,7 @@ class PlacesHandler {
 		const response = await getPlaceByPlaceId(placeId);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
+			return new DBErrorResponse(response.DBError);
 		}
 
 		return {
@@ -60,8 +60,7 @@ class PlacesHandler {
 		const response = await addPlace(place);
 		
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError?.$metadata?.httpStatusCode, response.DBError.message);
-		}
+			return new DBErrorResponse(response.DBError);		}
 
 		return {
 			success: true

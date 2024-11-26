@@ -142,7 +142,10 @@ describe('usersController', () => {
       assert.deepEqual(response.body, {
         success: false,
         statusCode: mockGenericDynamoError.$metadata.httpStatusCode,
-        message: mockGenericDynamoError.message
+        message: mockGenericDynamoError.message,
+        error: {
+          $metadata: mockGenericDynamoError.$metadata
+        }
       });
     });
   });
@@ -279,7 +282,10 @@ describe('usersController', () => {
       assert.deepEqual(response.body, {
         success: false,
         statusCode: mockGenericDynamoError.$metadata.httpStatusCode,
-        message: mockGenericDynamoError.message
+        message: mockGenericDynamoError.message,
+        error: {
+          $metadata: mockGenericDynamoError.$metadata
+        }
       });
     });
   });
@@ -330,7 +336,10 @@ describe('usersController', () => {
       assert.deepEqual(response.body, {
         success: false,
         statusCode: mockGenericDynamoError.$metadata.httpStatusCode,
-        message: mockGenericDynamoError.message
+        message: mockGenericDynamoError.message,
+        error: {
+          $metadata: mockGenericDynamoError.$metadata
+        }
       });
     });
   });
@@ -372,7 +381,10 @@ describe('usersController', () => {
       assert.deepEqual(response.body, {
         success: false,
         statusCode: mockGenericDynamoError.$metadata.httpStatusCode,
-        message: mockGenericDynamoError.message
+        message: mockGenericDynamoError.message,
+        error: {
+          $metadata: mockGenericDynamoError.$metadata
+        }
       });
     });
   });
@@ -516,7 +528,10 @@ describe('usersController', () => {
       assert.deepEqual(response.body, {
         success: false,
         statusCode: mockGenericDynamoError.$metadata.httpStatusCode,
-        message: mockGenericDynamoError.message
+        message: mockGenericDynamoError.message,
+        error: {
+          $metadata: mockGenericDynamoError.$metadata
+        }
       });
     });
   });
