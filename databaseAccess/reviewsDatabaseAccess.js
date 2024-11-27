@@ -1,4 +1,3 @@
-const reviews = require('../mockDataBase/reviews');
 const { 
   docClient,
   PutCommand,
@@ -6,7 +5,6 @@ const {
   ScanCommand,
   DeleteCommand,
 } = require('../aws/awsClients');
-const { deepCopy } = require('../utils/utils');
 
 /**
  * gets all reviews

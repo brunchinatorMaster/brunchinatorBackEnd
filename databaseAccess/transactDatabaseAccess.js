@@ -233,9 +233,84 @@ const transactionUpdatePlaceAndDeleteReview = async (place, reviewId) => {
   }
 }
 
+/**
+ * updates place and updates review in dynamo
+ * as an all or nothing transaction
+ * 
+ * returns {
+ *  success: boolean,
+ *  DBError: ERROR || null
+ * }
+ * 
+ * @param {object} place 
+ * @param {object} review
+ * @returns {object}
+ */
+const transactionUpdatePlaceAndUpdateReview = async (place, review) => {
+  const toSend = {
+    TransactItems: [
+      {
+        Update: {
+          TableName: 'Places',
+          Key: {
+            placeId: place.placeId,
+            placeName: place.placeName,
+          },
+          UpdateExpression: 'set beers = :beers, bloody = :bloody, burger = :burger, benny = :benny, numberOfReviews = :numberOfReviews, overallRating = :overallRating',
+          ExpressionAttributeValues: {
+            ":beers": place.beers,
+            ":bloody": place.bloody,
+            ":burger": place.burger,
+            ":benny": place.benny,
+            ":numberOfReviews": place.numberOfReviews,
+            ":overallRating": place.overallRating,
+          },
+          ReturnValues: "ALL_NEW",
+        }
+      },
+      {
+        Update: {
+          TableName: 'Reviews',
+          Key: {
+            reviewId: review.reviewId,
+          },
+          UpdateExpression: 'set beers = :beers, bloody = :bloody, burger = :burger, benny = :benny, words = :words, reviewDate = :reviewDate',
+          ExpressionAttributeValues: {
+            ":beers": review.beers,
+            ":bloody": review.bloody,
+            ":burger": review.burger,
+            ":benny": review.benny,
+            ":words": review.words,
+            ":reviewDate": review.reviewDate,
+          },
+          ReturnValues: "ALL_NEW",
+        }
+      },
+    ]
+  }
+  
+  let success = false;
+  let DBError;
+  try {
+    const command = new TransactWriteCommand(toSend);
+    const response = await docClient.send(command);
+    if(response?.$metadata?.httpStatusCode == 200) {
+      success = true;
+    }
+  } catch (error) {
+    DBError = error;
+  } finally {
+    return {
+      success,
+      DBError
+    }
+  }
+}
+
 module.exports = {
   transactionAddPlaceAndAddReview,
   transactionUpdatePlaceAndAddReview,
   transactionDeletePlaceAndDeleteReview,
-  transactionUpdatePlaceAndDeleteReview
+  transactionUpdatePlaceAndDeleteReview,
+  transactionUpdatePlaceAndUpdateReview
 }

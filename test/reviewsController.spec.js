@@ -225,7 +225,7 @@ describe('reviewsController', () => {
         Items: [place]
       });
 
-      // call for TransactWriteCommane
+      // call for TransactWriteCommand
       ddbMock.on(TransactWriteCommand).resolves({
         $metadata: {
           httpStatusCode: 200
@@ -243,10 +243,24 @@ describe('reviewsController', () => {
     });
 
     it('returns appropriate response if dynamo throws error', async () => {
-      ddbMock.on(TransactWriteCommand).rejects(mockGenericDynamoError);
-  
       const review = deepCopy(mockReviews[0]);
       delete review.reviewId;
+      const place = deepCopy(mockPlaces[0]);
+
+      // call for getPlaceByPlaceId
+      ddbMock.on(QueryCommand, {
+        TableName: 'Places',
+        ExpressionAttributeValues: {
+          ':placeId': review.placeId,
+        },
+        KeyConditionExpression: 'placeId = :placeId',
+        ConsistentRead: true,
+      }).resolves({
+        Items: [place]
+      });
+      
+      ddbMock.on(TransactWriteCommand).rejects(mockGenericDynamoError);
+  
       const response = await supertest(app)
         .post('/reviews/createReview')
         .send(review)

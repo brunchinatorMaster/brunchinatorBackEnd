@@ -26,8 +26,22 @@ const VALIDATE_CREATE_REVIEW_SCHEMA = Joi.object({
   reviewDate: REVIEW_DATE_SCHEMA.required(),
 });
 
+const VALIDATE_UPDATE_REVIEW_SCHEMA = Joi.object({
+  reviewId: REVIEW_ID_SCHEMA,
+  placeId: PLACE_ID_SCHEMA,
+  userName: USERNAME_SCHEMA.required(),
+  placeName: PLACE_NAME_SCHEMA.required(),
+  beers: RATINGS_SCHEMA,
+  benny: RATINGS_SCHEMA,
+  bloody: RATINGS_SCHEMA,
+  burger: RATINGS_SCHEMA,
+  words: WORDS_SCHEMA,
+  reviewDate: REVIEW_DATE_SCHEMA.required(),
+});
+
 
 module.exports = {
   REVIEW_ID_SCHEMA,
-  VALIDATE_CREATE_REVIEW_SCHEMA
+  VALIDATE_CREATE_REVIEW_SCHEMA,
+  VALIDATE_UPDATE_REVIEW_SCHEMA
 }

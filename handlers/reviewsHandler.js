@@ -1,28 +1,26 @@
 const {
 	createNewPlaceFromReview,
 	recalculateRatingsForAddingReviewToPlace,
-	recalculateRatingsForRemovingReviewFromPlace
+	recalculateRatingsForRemovingReviewFromPlace,
+	recalculateRatingsForUpdatingReviewOnPlace
 } = require('../utils/placesUtils');
 const {
 	getReviews,
 	getReviewByReviewId,
 	getReviewsByPlaceId,
 	getReviewsByUserName,
-	deleteReviewByReviewId,
 } = require('../databaseAccess/reviewsDatabaseAccess');
 const {
 	getPlaceByPlaceId,
-	updatePlace,
-	deletePlaceByPlaceId
 } = require('../databaseAccess/placesDatabaseAccess');
 const { validateBySchema } = require('../utils/utils');
-const { REVIEW_ID_SCHEMA, VALIDATE_CREATE_REVIEW_SCHEMA } = require('../schemas/reviewsSchemas');
+const { REVIEW_ID_SCHEMA, VALIDATE_CREATE_REVIEW_SCHEMA, VALIDATE_UPDATE_REVIEW_SCHEMA } = require('../schemas/reviewsSchemas');
 const { PLACE_ID_SCHEMA, VALIDATE_CREATE_PLACE_SCHEMA, VALIDATE_UPDATE_PLACE_SCHEMA } = require('../schemas/placesSchemas');
 const { USERNAME_SCHEMA } = require('../schemas/usersSchemas');
 const { v4 } = require('uuid');
 const { DBErrorResponse } = require('../errors/DBErrorResponse');
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
-const { transactionAddPlaceAndAddReview, transactionUpdatePlaceAndAddReview, transactionUpdatePlaceAndDeleteReview, transactionDeletePlaceAndDeleteReview } = require('../databaseAccess/transactDatabaseAccess');
+const { transactionAddPlaceAndAddReview, transactionUpdatePlaceAndAddReview, transactionUpdatePlaceAndDeleteReview, transactionDeletePlaceAndDeleteReview, transactionUpdatePlaceAndUpdateReview } = require('../databaseAccess/transactDatabaseAccess');
 
 class ReviewsHandler {
 
@@ -221,20 +219,22 @@ class ReviewsHandler {
 		if (!reviewSchemaResponse.isValid) {
 			return new BadSchemaResponse(reviewSchemaResponse);
 		}
-
+		
 		const getPlaceByPlaceIdResponse = await getPlaceByPlaceId(review.placeId);
 		if (getPlaceByPlaceIdResponse.DBError) {
 			return new DBErrorResponse(getPlaceByPlaceIdResponse.DBError);
 		}
 		const placeExists = getPlaceByPlaceIdResponse.success;
-
+		
 		let response;
 		if (!placeExists) {
 			response = await this.addPlaceAndAddReview(review);
 		} else {
 			response = await this.updatePlaceAndAddReview(getPlaceByPlaceIdResponse.place, review);
 		}
-
+		if (response.DBError) {
+			return new DBErrorResponse(response.DBError);
+		}
 		return response;
 		
 	}
@@ -258,9 +258,6 @@ class ReviewsHandler {
 		}
 		review.reviewId = v4();
 		const response = await transactionAddPlaceAndAddReview(place, review);
-		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);
-		}
 		return response;
 	}
 
@@ -286,6 +283,40 @@ class ReviewsHandler {
 		}
 		review.reviewId = v4();
 		const response = await transactionUpdatePlaceAndAddReview(toUpdate, review);
+		return response;
+	}
+
+	/**
+	 * updates review and updates place that the review is for,
+	 * 
+	 * returns {
+	 * 	success: boolean,
+	 * 	DBError: ERROR || null
+	 * }
+	 * 
+	 * @param {object} newReview 
+	 * @returns {object}
+	 */
+	async updateReview(newReview) {
+		const reviewSchemaResponse = validateBySchema(newReview, VALIDATE_UPDATE_REVIEW_SCHEMA);
+		if (!reviewSchemaResponse.isValid) {
+			return new BadSchemaResponse(reviewSchemaResponse);
+		}
+		
+		const oldReviewResponse = await getReviewByReviewId(newReview.reviewId);
+		if (oldReviewResponse.DBError) {
+			return new DBErrorResponse(oldReviewResponse.DBError);
+		}
+		const oldReview = oldReviewResponse.review;
+
+		const getPlaceByPlaceIdResponse = await getPlaceByPlaceId(newReview.placeId);
+		if (getPlaceByPlaceIdResponse.DBError) {
+			return new DBErrorResponse(getPlaceByPlaceIdResponse.DBError);
+		}
+		const toUpdate = getPlaceByPlaceIdResponse.place;
+		const newPlace = recalculateRatingsForUpdatingReviewOnPlace(oldReview, newReview, toUpdate);
+		
+		const response = await transactionUpdatePlaceAndUpdateReview(newPlace, newReview);
 		if (response.DBError) {
 			return new DBErrorResponse(response.DBError);
 		}

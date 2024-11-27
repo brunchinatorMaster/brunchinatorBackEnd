@@ -123,10 +123,47 @@ const removeFromAverage = (elementToRemove, originalAverage, originalNumberOfEle
   return +(numerator /  denominator).toFixed(2);
 };
 
+const updateAverage = (originalAverage, numberOfReviews, valueBeingRemoved, valueBeingAdded) => {
+  if (!originalAverage || !numberOfReviews || !valueBeingRemoved || !valueBeingAdded || typeof originalAverage !== 'number'|| typeof numberOfReviews !== 'number'|| typeof valueBeingRemoved !== 'number' || typeof valueBeingAdded !== 'number' ) {
+    return originalAverage;
+  }
+
+  const numerator = (originalAverage * numberOfReviews) - valueBeingRemoved + valueBeingAdded;
+  const denominator = numberOfReviews;
+  return +(numerator /  denominator).toFixed(2);
+}
+
+/**
+ * recalculates the individual ratings and overallRating
+ * of a place when a review is updated.
+ * returns place with the updated values
+ * 
+ * @param {object} oldReview
+ * @param {object} newReview 
+ * @param {object} toUpdate 
+ * @returns {object}
+ */
+const recalculateRatingsForUpdatingReviewOnPlace = (oldReview, newReview, toUpdate) => {
+  const newBeers = updateAverage(toUpdate.beers, toUpdate.numberOfReviews, oldReview.beers, newReview.beers);
+  const newBenny = updateAverage(toUpdate.benny, toUpdate.numberOfReviews, oldReview.benny, newReview.benny);
+  const newBloody = updateAverage(toUpdate.bloody, toUpdate.numberOfReviews, oldReview.bloody, newReview.bloody);
+  const newBurger = updateAverage(toUpdate.burger, toUpdate.numberOfReviews, oldReview.burger, newReview.burger);
+  const newOverallRating = findAverageOf([newBeers, newBenny, newBloody, newBurger]);
+
+  toUpdate.beers = newBeers;
+  toUpdate.benny = newBenny;
+  toUpdate.bloody = newBloody;
+  toUpdate.burger = newBurger;
+  toUpdate.overallRating = newOverallRating;
+  
+  return toUpdate;
+};
+
 module.exports = {
   findAverageOf,
   createNewPlaceFromReview,
   recalculateRatingsForAddingReviewToPlace,
   recalculateRatingsForRemovingReviewFromPlace,
+  recalculateRatingsForUpdatingReviewOnPlace,
   removeFromAverage
 }

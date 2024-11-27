@@ -183,7 +183,7 @@ describe('reviewsHandler', () => {
           Items: [place]
         });
 
-        // call for TransactWriteCommane
+        // call for TransactWriteCommand
       ddbMock.on(TransactWriteCommand).resolves({
         $metadata: {
           httpStatusCode: 200
@@ -226,7 +226,7 @@ describe('reviewsHandler', () => {
         Items: [place]
       });
 
-      // call for TransactWriteCommane
+      // call for TransactWriteCommand
       ddbMock.on(TransactWriteCommand).resolves({
         $metadata: {
           httpStatusCode: 200
@@ -244,7 +244,7 @@ describe('reviewsHandler', () => {
 
   describe('addReview', () => {
     describe('when adding a review for a new place', () => {
-     it('adds review, adds place, and returns success message', async () => {
+     it('returns success message if transaction write command succeeds', async () => {
       const review = deepCopy(mockReviews[0]);
       delete review.reviewId;
 
@@ -260,7 +260,7 @@ describe('reviewsHandler', () => {
         Items: []
       });
 
-      // call for TransactWriteCommane
+      // call for TransactWriteCommand
       ddbMock.on(TransactWriteCommand).resolves({
         $metadata: {
           httpStatusCode: 200
@@ -274,6 +274,33 @@ describe('reviewsHandler', () => {
         DBError: undefined,
       });
      });
+
+     it('returns DBErrorResponse if transaction write command returns error', async () => {
+      const review = deepCopy(mockReviews[0]);
+      delete review.reviewId;
+
+      // call for getPlaceByPlaceId
+      ddbMock.on(QueryCommand, {
+        TableName: 'Places',
+        ExpressionAttributeValues: {
+          ':placeId': review.placeId,
+        },
+        KeyConditionExpression: 'placeId = :placeId',
+        ConsistentRead: true,
+      }).resolves({
+        Items: []
+      });
+  
+        // call for TransactWriteCommand
+        ddbMock.on(TransactWriteCommand).rejects(mockGenericDynamoError);
+  
+        const response = await reviewsHandler.addReview(review);
+        
+        expect(response).to.be.instanceof(DBErrorResponse);
+        expect(response.success).to.be.false;
+        expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
+        expect(response.message).to.equal(mockGenericDynamoError.message);
+      });
     });
 
     describe('when adding a review for a preexisting place', () => {
@@ -294,7 +321,7 @@ describe('reviewsHandler', () => {
           Items: [place]
         });
 
-        // call for TransactWriteCommane
+        // call for TransactWriteCommand
         ddbMock.on(TransactWriteCommand).resolves({
           $metadata: {
             httpStatusCode: 200
@@ -307,7 +334,119 @@ describe('reviewsHandler', () => {
           success: true,
           DBError: undefined,
         });
-       });
+      });
+
+      it('returns DBErrorResponse if transaction write command returns error', async () => {
+        const review = deepCopy(mockReviews[0]);
+        delete review.reviewId;
+        const place = deepCopy(mockPlaces[0]);
+
+        // call for getPlaceByPlaceId
+        ddbMock.on(QueryCommand, {
+          TableName: 'Places',
+          ExpressionAttributeValues: {
+            ':placeId': review.placeId,
+          },
+          KeyConditionExpression: 'placeId = :placeId',
+          ConsistentRead: true,
+        }).resolves({
+          Items: [place]
+        });
+  
+        // call for TransactWriteCommand
+        ddbMock.on(TransactWriteCommand).rejects(mockGenericDynamoError);
+  
+        const response = await reviewsHandler.addReview(review);
+        
+        expect(response).to.be.instanceof(DBErrorResponse);
+        expect(response.success).to.be.false;
+        expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
+        expect(response.message).to.equal(mockGenericDynamoError.message);
+      });
     });
   });
+
+  describe('updateReview', () => {
+    it('returns success message if transaction write command succeeds', async () => {
+      const review = deepCopy(mockReviews[0]);
+      const place = deepCopy(mockPlaces[0]);
+
+      // call for getReviewByReviewId
+      ddbMock.on(QueryCommand, {
+        TableName: 'Reviews',
+        ExpressionAttributeValues: {
+          ':reviewId': review.reviewId,
+        },
+        KeyConditionExpression: 'reviewId = :reviewId',
+        ConsistentRead: true,
+      }).resolves({
+        Items: [review]
+      });
+
+      // call for getPlaceByPlaceId
+      ddbMock.on(QueryCommand, {
+        TableName: 'Places',
+        ExpressionAttributeValues: {
+          ':placeId': review.placeId,
+        },
+        KeyConditionExpression: 'placeId = :placeId',
+        ConsistentRead: true,
+      }).resolves({
+        Items: [place]
+      });
+
+      // call for TransactWriteCommand
+      ddbMock.on(TransactWriteCommand).resolves({
+        $metadata: {
+          httpStatusCode: 200
+        }
+      });
+
+      const response = await reviewsHandler.updateReview(review);
+
+      assert.deepEqual(response, {
+        success: true,
+        DBError: undefined,
+      });
+    });
+
+    it('returns DBErrorResponse if transaction write command returns error', async () => {
+      const review = deepCopy(mockReviews[0]);
+      const place = deepCopy(mockPlaces[0]);
+
+      // call for getReviewByReviewId
+      ddbMock.on(QueryCommand, {
+        TableName: 'Reviews',
+        ExpressionAttributeValues: {
+          ':reviewId': review.reviewId,
+        },
+        KeyConditionExpression: 'reviewId = :reviewId',
+        ConsistentRead: true,
+      }).resolves({
+        Items: [review]
+      });
+
+      // call for getPlaceByPlaceId
+      ddbMock.on(QueryCommand, {
+        TableName: 'Places',
+        ExpressionAttributeValues: {
+          ':placeId': review.placeId,
+        },
+        KeyConditionExpression: 'placeId = :placeId',
+        ConsistentRead: true,
+      }).resolves({
+        Items: [place]
+      });
+
+      // call for TransactWriteCommand
+      ddbMock.on(TransactWriteCommand).rejects(mockGenericDynamoError);
+
+      const response = await reviewsHandler.updateReview(review);
+      
+      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
+      expect(response.message).to.equal(mockGenericDynamoError.message);
+    });
+  })
 });
