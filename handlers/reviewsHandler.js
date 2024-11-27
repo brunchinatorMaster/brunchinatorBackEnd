@@ -282,7 +282,7 @@ class ReviewsHandler {
 			return new BadSchemaResponse(placeSchemaResponse);
 		}
 		review.reviewId = v4();
-		const response = await transactionUpdatePlaceAndAddReview(toUpdate, review);console.log(response)
+		const response = await transactionUpdatePlaceAndAddReview(toUpdate, review);
 		return response;
 	}
 
@@ -294,7 +294,7 @@ class ReviewsHandler {
 	 * 	DBError: ERROR || null
 	 * }
 	 * 
-	 * @param {object} review 
+	 * @param {object} newReview 
 	 * @returns {object}
 	 */
 	async updateReview(newReview) {

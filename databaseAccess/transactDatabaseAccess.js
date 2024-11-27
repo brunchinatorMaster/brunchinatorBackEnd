@@ -243,7 +243,7 @@ const transactionUpdatePlaceAndDeleteReview = async (place, reviewId) => {
  * }
  * 
  * @param {object} place 
- * @param {string} reviewId 
+ * @param {object} review
  * @returns {object}
  */
 const transactionUpdatePlaceAndUpdateReview = async (place, review) => {
