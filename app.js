@@ -3,6 +3,9 @@
 const express = require('express');
 const app = express();
 
+const cors = require('cors');
+app.use(cors());
+
 const reviewsController = require('./controllers/reviewsController');
 const usersController = require('./controllers/usersController');
 const placesController = require('./controllers/placesController');
