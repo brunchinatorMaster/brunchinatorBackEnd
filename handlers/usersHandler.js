@@ -201,12 +201,12 @@ class ReviewsHandler {
 		}
 			
 		const cleanUser = removePassswordFromUser(response.user);
-
 		const token = jwt.sign(cleanUser, JWT_SECRET);
+		cleanUser.token = token;
+
 		return {
 			success: true,
-			user: cleanUser,
-			token
+			user: cleanUser
 		};
 	}
 

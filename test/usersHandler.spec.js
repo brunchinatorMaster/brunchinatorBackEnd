@@ -8,8 +8,9 @@ const { mockClient } = require('aws-sdk-client-mock');
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
 const { mockGenericDynamoError } = require('./mockDynamoResponses');
 const { DBErrorResponse } = require('../errors/DBErrorResponse');
-const { deepCopy } = require('../utils/utils');
+const { deepCopy, JWT_SECRET } = require('../utils/utils');
 const ddbMock = mockClient(docClient);
+const jwt = require('jsonwebtoken');
 
 
 describe('usersHandler', () => {
@@ -470,10 +471,16 @@ describe('usersHandler', () => {
         }]
       });
 
+      const token = jwt.sign({
+        userName: 'geo',
+        email: 'tohearstories@gmail.com',
+      }, JWT_SECRET);
+
       const response = await usersHandler.login('geo', 'geoPassword');
       assert.deepEqual(response.user, {
           userName: 'geo',
-          email: 'tohearstories@gmail.com'
+          email: 'tohearstories@gmail.com',
+          token,
       });
       expect(response.token).to.be.not.null;
     });
