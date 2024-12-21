@@ -16,10 +16,8 @@ describe('createNewPlaceFromReview', () => {
   //   review = {
   //     placeId: '123',
   //     placeName: 'some place',
-  //     beers: 1,
   //     bloody: 2,
   //     burger: 3,
-  //     benny: null,
   //   };
 
   //   const response = createNewPlaceFromReview(review);
@@ -27,10 +25,8 @@ describe('createNewPlaceFromReview', () => {
   //   assert.deepEqual(response, {
   //     placeId: '123',
   //     placeName: 'some place',
-  //     beers: 1,
   //     bloody: 2,
   //     burger: 3,
-  //     benny: null,
   //     numberOfReviews: 1,
   //     overallRating: 2,
   //   });
@@ -40,14 +36,10 @@ describe('createNewPlaceFromReview', () => {
 describe('recalculateRatingsForAddingReviewToPlace', () => {
   it('returns toUpdate with correctly calculated individual and overall ratings', () => {
     const review = {
-      beers: 1,
-      benny: 1,
       bloody: 1,
       burger: 1,
     };
     const toUpdate = {
-      beers: 2,
-      benny: 2,
       bloody: 2,
       burger: 2,
       overallRating: 2,
@@ -55,8 +47,6 @@ describe('recalculateRatingsForAddingReviewToPlace', () => {
     }
   
     const response = recalculateRatingsForAddingReviewToPlace(review, toUpdate);
-    expect(response.beers).to.equal(1.5);
-    expect(response.benny).to.equal(1.5);
     expect(response.bloody).to.equal(1.5);
     expect(response.burger).to.equal(1.5);
     expect(response.overallRating).to.equal(1.5);
@@ -86,24 +76,18 @@ describe('removeFromAverage', () => {
   describe('recalculateRatingsForRemovingReviewFromPlace', () => {
     it('returns correctly updated place', () => {
       const toUpdate = {
-        beers: 4.66,
-        benny: 3,
         bloody: 2,
         burger: 2.66,
         numberOfReviews: 3
       };
       const review = {
-        beers: 5,
-        benny: 2,
         bloody: 3,
         burger: 2,
       };
       const response = recalculateRatingsForRemovingReviewFromPlace(review, toUpdate);
-      expect(response.beers).to.equal(4.49);
-      expect(response.benny).to.equal(3.5);
       expect(response.bloody).to.equal(1.5);
       expect(response.burger).to.equal(2.99);
-      expect(response.overallRating).to.equal(3.12);
+      expect(response.overallRating).to.equal(2.25);
     });
   });
 });
