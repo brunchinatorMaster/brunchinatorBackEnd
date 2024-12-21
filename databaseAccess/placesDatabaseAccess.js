@@ -101,12 +101,10 @@ const updatePlace = async (place) => {
       placeId: place.placeId,
       placeName: place.placeName,
     },
-    UpdateExpression: 'set beers = :beers, bloody = :bloody, burger = :burger, benny = :benny, numberOfReviews = :numberOfReviews, overallRating = :overallRating',
+    UpdateExpression: 'set bloody = :bloody, burger = :burger, numberOfReviews = :numberOfReviews, overallRating = :overallRating',
     ExpressionAttributeValues: {
-      ":beers": place.beers,
       ":bloody": place.bloody,
       ":burger": place.burger,
-      ":benny": place.benny,
       ":numberOfReviews": place.numberOfReviews,
       ":overallRating": place.overallRating,
     },

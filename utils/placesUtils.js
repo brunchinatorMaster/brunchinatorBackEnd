@@ -10,12 +10,10 @@ const createNewPlaceFromReview = (review) => {
   const place = {};
   place.placeId = review.placeId;
   place.placeName = review.placeName;
-  place.beers = review.beers;
-  place.benny = review.benny;
   place.burger = review.burger;
   place.bloody = review.bloody;
   place.numberOfReviews = 1;
-  place.overallRating = findAverageOf([place.beers, place.benny, place.burger, place.bloody]);
+  place.overallRating = findAverageOf([place.burger, place.bloody]);
   return place;
 };
 
@@ -48,14 +46,10 @@ const findAverageOf = (arrayOfValues) => {
  * @returns {object}
  */
 const recalculateRatingsForAddingReviewToPlace = (review, toUpdate) => {
-  const newBeers = addToAverage(toUpdate.beers, toUpdate.numberOfReviews, review.beers);
-  const newBenny = addToAverage(toUpdate.benny, toUpdate.numberOfReviews, review.benny);
   const newBloody = addToAverage(toUpdate.bloody, toUpdate.numberOfReviews, review.bloody);
   const newBurger = addToAverage(toUpdate.burger, toUpdate.numberOfReviews, review.burger);
-  const newOverallRating = findAverageOf([newBeers, newBenny, newBloody, newBurger]);
+  const newOverallRating = findAverageOf([newBloody, newBurger]);
 
-  toUpdate.beers = newBeers;
-  toUpdate.benny = newBenny;
   toUpdate.bloody = newBloody;
   toUpdate.burger = newBurger;
   toUpdate.overallRating = newOverallRating;
@@ -91,14 +85,10 @@ const addToAverage = (originalAverage, originalNumberOfElements, elementToAdd) =
  * @returns {object}
  */
 const recalculateRatingsForRemovingReviewFromPlace = (review, toUpdate) => {
-  const newBeers = removeFromAverage(review.beers, toUpdate.beers, toUpdate.numberOfReviews);
-  const newBenny = removeFromAverage(review.benny, toUpdate.benny, toUpdate.numberOfReviews);
   const newBloody = removeFromAverage(review.bloody, toUpdate.bloody, toUpdate.numberOfReviews);
   const newBurger = removeFromAverage(review.burger, toUpdate.burger, toUpdate.numberOfReviews);
-  const newOverallRating = findAverageOf([newBeers, newBenny, newBloody, newBurger]);
+  const newOverallRating = findAverageOf([newBloody, newBurger]);
 
-  toUpdate.beers = newBeers;
-  toUpdate.benny = newBenny;
   toUpdate.bloody = newBloody;
   toUpdate.burger = newBurger;
   toUpdate.overallRating = newOverallRating;
@@ -144,14 +134,10 @@ const updateAverage = (originalAverage, numberOfReviews, valueBeingRemoved, valu
  * @returns {object}
  */
 const recalculateRatingsForUpdatingReviewOnPlace = (oldReview, newReview, toUpdate) => {
-  const newBeers = updateAverage(toUpdate.beers, toUpdate.numberOfReviews, oldReview.beers, newReview.beers);
-  const newBenny = updateAverage(toUpdate.benny, toUpdate.numberOfReviews, oldReview.benny, newReview.benny);
   const newBloody = updateAverage(toUpdate.bloody, toUpdate.numberOfReviews, oldReview.bloody, newReview.bloody);
   const newBurger = updateAverage(toUpdate.burger, toUpdate.numberOfReviews, oldReview.burger, newReview.burger);
-  const newOverallRating = findAverageOf([newBeers, newBenny, newBloody, newBurger]);
+  const newOverallRating = findAverageOf([newBloody, newBurger]);
 
-  toUpdate.beers = newBeers;
-  toUpdate.benny = newBenny;
   toUpdate.bloody = newBloody;
   toUpdate.burger = newBurger;
   toUpdate.overallRating = newOverallRating;

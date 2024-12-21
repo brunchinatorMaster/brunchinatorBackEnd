@@ -18,7 +18,7 @@ const {
 const getReviews = async () => {
   const scanCommand = new ScanCommand({
     TableName: "Reviews",
-    ProjectionExpression: 'reviewId, placeId, userName, placeName, beers, bloody, burger, reviewDate, words',
+    ProjectionExpression: 'reviewId, placeId, userName, placeName, bloody, burger, reviewDate, words',
   });
   let success = false;
   let reviews;
@@ -100,7 +100,7 @@ const getReviewsByPlaceId = async (placeId) => {
       ':placeId': placeId,
     },
     FilterExpression: 'placeId = :placeId',
-    ProjectionExpression: 'reviewId, placeId, userName, placeName, beers, bloody, burger, reviewDate, words',
+    ProjectionExpression: 'reviewId, placeId, userName, placeName, bloody, burger, reviewDate, words',
   });
 
   let success = false;
@@ -142,7 +142,7 @@ const getReviewsByUserName = async (userName) => {
       ':userName': userName,
     },
     FilterExpression: 'userName = :userName',
-    ProjectionExpression: 'reviewId, placeId, userName, placeName, beers, bloody, burger, reviewDate, words',
+    ProjectionExpression: 'reviewId, placeId, userName, placeName, bloody, burger, reviewDate, words',
   });
 
   let success = false;

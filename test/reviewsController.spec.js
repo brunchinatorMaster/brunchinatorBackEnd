@@ -194,7 +194,7 @@ describe('reviewsController', () => {
     it('returns appropriate response if review contains field in wrong format', async () => {
       const testReview = deepCopy(mockReviews[0]);
       delete testReview.reviewId;
-      testReview.beers = true;
+      testReview.burger = true;
 
       const response = await supertest(app)
       .post('/reviews/createReview')
@@ -204,7 +204,7 @@ describe('reviewsController', () => {
       assert.deepEqual(response.body, {
         success: false,
         statusCode: 400,
-        message: '"beers" must be a number'
+        message: '"burger" must be a number'
       });
     });
 
