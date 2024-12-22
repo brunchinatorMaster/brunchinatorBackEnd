@@ -15,7 +15,7 @@ const REVIEW_ID_SCHEMA = Joi.string().required().messages({
 const REVIEW_DATE_SCHEMA = Joi.date();
 
 const VALIDATE_CREATE_REVIEW_SCHEMA = Joi.object({
-  placeId: PLACE_ID_SCHEMA,
+  placeId: PLACE_ID_SCHEMA.required(),
   userName: USERNAME_SCHEMA.required(),
   placeName: PLACE_NAME_SCHEMA.required(),
   bloody: RATINGS_SCHEMA,
@@ -26,7 +26,7 @@ const VALIDATE_CREATE_REVIEW_SCHEMA = Joi.object({
 
 const VALIDATE_UPDATE_REVIEW_SCHEMA = Joi.object({
   reviewId: REVIEW_ID_SCHEMA,
-  placeId: PLACE_ID_SCHEMA,
+  placeId: PLACE_ID_SCHEMA.required(),
   userName: USERNAME_SCHEMA.required(),
   placeName: PLACE_NAME_SCHEMA.required(),
   bloody: RATINGS_SCHEMA,

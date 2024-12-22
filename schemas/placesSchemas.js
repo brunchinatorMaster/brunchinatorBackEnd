@@ -1,7 +1,7 @@
 const Joi = require('joi');
 
-const RATINGS_SCHEMA = Joi.number().greater(-1).less(6);
-const WORDS_SCHEMA = Joi.string();
+const RATINGS_SCHEMA = Joi.number().greater(-1).less(6).allow(null);
+const WORDS_SCHEMA = Joi.string().allow(null, '');
 
 const PLACE_ID_SCHEMA = Joi.string().required().messages({
   'string.base': `"placeId" must be a string`,
