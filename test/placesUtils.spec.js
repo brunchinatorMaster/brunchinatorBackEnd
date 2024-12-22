@@ -1,5 +1,5 @@
 const { expect, assert } = require('chai');
-const { findAverageOf, recalculateRatingsForAddingReviewToPlace, removeFromAverage, recalculateRatingsForRemovingReviewFromPlace } = require('../utils/placesUtils');
+const { findAverageOf, recalculateRatingsForAddingReviewToPlace, removeFromAverage, recalculateRatingsForRemovingReviewFromPlace, createNewPlaceFromReview } = require('../utils/placesUtils');
 
 describe('findAverageOf', () => {
   it('calculates average', () => {
@@ -12,25 +12,25 @@ describe('findAverageOf', () => {
 });
 
 describe('createNewPlaceFromReview', () => {
-  // it('correctly calculates overall Rating', () => {
-  //   review = {
-  //     placeId: '123',
-  //     placeName: 'some place',
-  //     bloody: 2,
-  //     burger: 3,
-  //   };
+  it('correctly calculates overall Rating', () => {
+    review = {
+      placeId: '123',
+      placeName: 'some place',
+      bloody: 2,
+      burger: 3,
+    };
 
-  //   const response = createNewPlaceFromReview(review);
+    const response = createNewPlaceFromReview(review);
 
-  //   assert.deepEqual(response, {
-  //     placeId: '123',
-  //     placeName: 'some place',
-  //     bloody: 2,
-  //     burger: 3,
-  //     numberOfReviews: 1,
-  //     overallRating: 2,
-  //   });
-  // });
+    assert.deepEqual(response, {
+      placeId: '123',
+      placeName: 'some place',
+      bloody: 2,
+      burger: 3,
+      numberOfReviews: 1,
+      overallRating: 2.5,
+    });
+  });
 });
 
 describe('recalculateRatingsForAddingReviewToPlace', () => {
@@ -63,6 +63,7 @@ describe('removeFromAverage', () => {
     const response = removeFromAverage(elementToRemove, originalAverage, originalNumberOfElements);
     expect(response).to.equal(4.33)
   });
+
   it('correctly recalculates average after an element is removed for an array of size 2', () => {
     // originalArray = [7,3];
     const elementToRemove = 7;
