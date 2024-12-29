@@ -1,6 +1,7 @@
 const { 
 	getPlaceByPlaceId,
 	addPlace,
+	getPlaces,
 } = require('../databaseAccess/placesDatabaseAccess');
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
 const { DBErrorResponse } = require('../errors/DBErrorResponse');
@@ -8,6 +9,28 @@ const { PLACE_ID_SCHEMA, VALIDATE_CREATE_PLACE_SCHEMA } = require('../schemas/pl
 const { validateBySchema } = require('../utils/utils');
 
 class PlacesHandler {
+
+	/**
+	 * finds all places
+	 * 
+	 * returns {
+	 * 	success: boolean,
+	 * 	places: [PLACE] || null
+	 * }
+	 * 
+	 * @returns {object[]}
+	 */
+	async getPlaces() {console.log('handler heard')
+		const response = await getPlaces();
+		if (response.DBError) {
+			return new DBErrorResponse(response.DBError);
+		}
+
+		return {
+			success: true,
+			places: response.places
+		}
+	}
 
 	/**
 	 * finds place that matches placeId
