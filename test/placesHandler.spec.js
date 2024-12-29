@@ -2,7 +2,7 @@ const { expect, assert } = require('chai');
 const PlacesHandler = require('../handlers/placesHandler');
 const placesHandler = new PlacesHandler();
 const mockPlaces = require('../mockDataBase/places');
-const { docClient, QueryCommand, PutCommand } = require('../aws/awsClients');
+const { docClient, QueryCommand, PutCommand, ScanCommand } = require('../aws/awsClients');
 const { mockClient } = require('aws-sdk-client-mock');
 const ddbMock = mockClient(docClient);
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
@@ -13,6 +13,32 @@ const { deepCopy } = require('../utils/utils');
 describe('placesHandler', () => {
   beforeEach(() => {
     ddbMock.reset();
+  });
+
+  describe('getPlaces', () => {
+    it('returns places found by dynamo', async () => { 
+      const places = deepCopy(mockPlaces);
+      ddbMock.on(ScanCommand).resolves({
+        Items: places
+      });
+
+      const response = await placesHandler.getPlaces();
+      assert.deepEqual(response, {
+        success: true,
+        places: places
+      });
+    });
+
+    it('returns DBErrorResponse if dynamo throws error', async () => {
+      ddbMock.on(ScanCommand).rejects(mockGenericDynamoError);
+
+      const response = await placesHandler.getPlaces();
+
+      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
+      expect(response.message).to.equal(mockGenericDynamoError.message);
+    });
   });
 
   describe('getPlaceByPlaceId', () => {

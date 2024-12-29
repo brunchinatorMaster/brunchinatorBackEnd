@@ -3,15 +3,51 @@ const { assert, expect } = require('chai');
 const mockPlaces = require('../mockDataBase/places');
 const app = require('../app');
 
-const { docClient, QueryCommand } = require('../aws/awsClients');
+const { docClient, QueryCommand, ScanCommand } = require('../aws/awsClients');
 const { mockClient } = require('aws-sdk-client-mock');
 const { deepCopy } = require('../utils/utils');
+const { mockGenericDynamoError } = require('./mockDynamoResponses');
 const ddbMock = mockClient(docClient);
 
 
 describe('placesController', () => {
   beforeEach(() => {
     ddbMock.reset();
+  });
+
+  describe('GET /ALL', () => {
+    it('returns places', async () => { 
+      const places = deepCopy(mockPlaces);
+      ddbMock.on(ScanCommand).resolves({
+        Items: places
+      });
+
+      const response = await supertest(app)
+        .get('/places/all')
+        .expect(200);
+
+      assert.deepEqual(response.body, {
+        success: true,
+        places: places
+      });
+    });
+
+    it('returns appropriate response if dynamo throws error', async () => {
+      ddbMock.on(ScanCommand).rejects(mockGenericDynamoError);
+
+      const response = await supertest(app)
+        .get('/places/all')
+        .expect(403);
+
+        assert.deepEqual(response.body, {
+          success: false,
+          statusCode: mockGenericDynamoError.$metadata.httpStatusCode,
+          message: mockGenericDynamoError.message,
+          error: {
+            $metadata: mockGenericDynamoError.$metadata
+          }
+        });
+    });
   });
 
   describe('GET /byPlaceId/:placeId', () => {

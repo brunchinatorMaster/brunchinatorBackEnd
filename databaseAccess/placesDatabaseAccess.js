@@ -4,8 +4,43 @@ const {
   PutCommand,
   QueryCommand,
   UpdateCommand,
-  DeleteCommand
+  DeleteCommand,
+  ScanCommand,
 } = require('../aws/awsClients');
+
+/**
+ * gets all reviews
+ * returns {
+ *  success: boolean,
+ *  reviews: REVIEW || null
+ *  DBError: ERROR || null
+ * }
+ * @returns {object[]}
+ */
+const getPlaces = async () => {console.log('databaseAccess heard')
+  const scanCommand = new ScanCommand({
+    TableName: "Places",
+    ProjectionExpression: 'placeId, placeName, bloody, burger, numberOfReviews, overallRating',
+  });
+  let success = false;
+  let places;
+  let DBError;
+  try {
+    const response = await docClient.send(scanCommand);console.log('response');console.log(response);
+    if (response?.Items?.length > 0) {
+      success = true;
+      places = response.Items
+    }
+  } catch (error) {console.log('got an error')
+    DBError = error;
+  } finally {
+    return {
+      success,
+      places,
+      DBError
+    }
+  }
+}
 
 /**
  * finds place that has matching placeId
@@ -171,4 +206,5 @@ module.exports = {
   addPlace,
   updatePlace,
   deletePlaceByPlaceId,
+  getPlaces,
 }
