@@ -1,5 +1,9 @@
 const express = require('express');
 const app = express();
+
+const multer = require('multer');
+const { uploadImageToS3 } = require('../s3Access/s3');
+
 const UsersHandler = require('../handlers/usersHandler');
 const usersHandler = new UsersHandler();
 
@@ -48,6 +52,17 @@ app.post('/login', async (req, res) => {
 	const password = req.body?.password ?? null;
 	try {
 		const toReturn = await usersHandler.login(userName, password);
+		res.status(toReturn.statusCode ?? 200).json(toReturn);
+	} catch (error) {
+		res.status(error.statusCode ?? 400).json(error);
+	}
+});
+
+app.post('/userProfilePicture', multer().any(), async (req, res) => {
+	const key = req.body?.userName ?? 'test'
+	try {
+		const file = req.files[0];
+		const toReturn = await usersHandler.uploadUserProfilePicture(key, file);
 		res.status(toReturn.statusCode ?? 200).json(toReturn);
 	} catch (error) {
 		res.status(error.statusCode ?? 400).json(error);

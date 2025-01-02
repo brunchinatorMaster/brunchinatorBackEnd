@@ -7,6 +7,7 @@ const {
  } = require('../databaseAccess/usersDatabaseAccess');
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
 const { DBErrorResponse } = require('../errors/DBErrorResponse');
+const { uploadImageToS3 } = require('../s3Access/s3');
 const { 
 	VALIDATE_CREATE_USER_SCHEMA,
 	EMAIL_SCHEMA,
@@ -235,6 +236,33 @@ class ReviewsHandler {
 		}
 		return {
 			success: true
+		};
+	}
+
+	/**
+	 * uploads file to s3 with key userName
+	 * @param {string} userName 
+	 * @param {file} file 
+	 * @returns {
+	 * 	success: true
+	* }
+	 */
+	async uploadUserProfilePicture(userName, file){
+		const userNameSchemaResponse = validateBySchema(userName, USERNAME_SCHEMA);
+		if (!userNameSchemaResponse.isValid) {
+			return new BadSchemaResponse(userNameSchemaResponse);
+		}
+
+		//TODO validate file is an image
+
+		const response = await uploadImageToS3(userName, file);
+
+		if (response.DBError) {
+			return new DBErrorResponse(response.DBError);
+		}
+
+		return {
+			success: response.success,
 		};
 	}
 }

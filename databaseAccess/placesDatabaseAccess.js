@@ -17,7 +17,7 @@ const {
  * }
  * @returns {object[]}
  */
-const getPlaces = async () => {console.log('databaseAccess heard')
+const getPlaces = async () => {
   const scanCommand = new ScanCommand({
     TableName: "Places",
     ProjectionExpression: 'placeId, placeName, bloody, burger, numberOfReviews, overallRating',
@@ -26,12 +26,12 @@ const getPlaces = async () => {console.log('databaseAccess heard')
   let places;
   let DBError;
   try {
-    const response = await docClient.send(scanCommand);console.log('response');console.log(response);
+    const response = await docClient.send(scanCommand);
     if (response?.Items?.length > 0) {
       success = true;
       places = response.Items
     }
-  } catch (error) {console.log('got an error')
+  } catch (error) {
     DBError = error;
   } finally {
     return {
