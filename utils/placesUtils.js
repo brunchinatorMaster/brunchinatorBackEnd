@@ -10,6 +10,7 @@ const createNewPlaceFromReview = (review) => {
   const place = {};
   place.placeId = review.placeId;
   place.placeName = review.placeName;
+  place.vicinity = review.vicinity;
   place.burger = review.burger;
   place.bloody = review.bloody;
   place.numberOfReviews = 1;

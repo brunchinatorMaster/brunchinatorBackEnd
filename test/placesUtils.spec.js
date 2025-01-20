@@ -16,6 +16,7 @@ describe('createNewPlaceFromReview', () => {
     review = {
       placeId: '123',
       placeName: 'some place',
+      vicinity: '123 Main St, Philadelphia',
       bloody: 2,
       burger: 3,
     };
@@ -25,6 +26,7 @@ describe('createNewPlaceFromReview', () => {
     assert.deepEqual(response, {
       placeId: '123',
       placeName: 'some place',
+      vicinity: '123 Main St, Philadelphia',
       bloody: 2,
       burger: 3,
       numberOfReviews: 1,
