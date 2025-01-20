@@ -20,7 +20,7 @@ const {
 const getPlaces = async () => {
   const scanCommand = new ScanCommand({
     TableName: "Places",
-    ProjectionExpression: 'placeId, placeName, bloody, burger, numberOfReviews, overallRating',
+    ProjectionExpression: 'placeId, placeName, vicinity, bloody, burger, numberOfReviews, overallRating',
   });
   let success = false;
   let places;

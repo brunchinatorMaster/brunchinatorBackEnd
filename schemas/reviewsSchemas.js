@@ -13,11 +13,13 @@ const REVIEW_ID_SCHEMA = Joi.string().required().messages({
   'any.required': `"reviewId" is a required field`
 });;
 const REVIEW_DATE_SCHEMA = Joi.date();
+const VICINITY_SCHEMA = Joi.string();
 
 const VALIDATE_CREATE_REVIEW_SCHEMA = Joi.object({
   placeId: PLACE_ID_SCHEMA.required(),
   userName: USERNAME_SCHEMA.required(),
   placeName: PLACE_NAME_SCHEMA.required(),
+  vicinity: VICINITY_SCHEMA,
   bloody: RATINGS_SCHEMA,
   burger: RATINGS_SCHEMA,
   words: WORDS_SCHEMA,

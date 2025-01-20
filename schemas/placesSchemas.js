@@ -14,11 +14,14 @@ const PLACE_NAME_SCHEMA = Joi.string().messages({
   'string.empty': `"placeName" cannot be an empty string`,
 });
 
+const VICINITY_SCHEMA = Joi.string();
+
 const NUMBER_OF_REVIEWS_SCHEMA = Joi.number();
 
 const VALIDATE_CREATE_PLACE_SCHEMA = Joi.object({
   placeId: PLACE_ID_SCHEMA,
   placeName: PLACE_NAME_SCHEMA.required(),
+  vicinity: VICINITY_SCHEMA,
   bloody: RATINGS_SCHEMA,
   burger: RATINGS_SCHEMA,
   words: WORDS_SCHEMA,
@@ -28,6 +31,7 @@ const VALIDATE_CREATE_PLACE_SCHEMA = Joi.object({
 const VALIDATE_UPDATE_PLACE_SCHEMA = Joi.object({
   placeId: PLACE_ID_SCHEMA,
   placeName: PLACE_NAME_SCHEMA.required(),
+  vicinity: VICINITY_SCHEMA,
   bloody: RATINGS_SCHEMA,
   burger: RATINGS_SCHEMA,
   words: WORDS_SCHEMA,
