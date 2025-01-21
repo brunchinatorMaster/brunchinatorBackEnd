@@ -149,7 +149,6 @@ class ReviewsHandler {
 		}
 
 		const cleanUser = removePassswordFromUser(user);
-		console.log('FUCK');console.log(cleanUser)
 		const token = jwt.sign(cleanUser, JWT_SECRET);
 		cleanUser.token = token;
 
