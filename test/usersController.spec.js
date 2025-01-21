@@ -114,7 +114,7 @@ describe('usersController', () => {
         expect(response.body.message).to.equal('"password" must be a string');
     });
 
-    it('returns success:true if user addition is successful', async () => {
+    it('returns passwordless user, token, and success:true if user addition is successful', async () => {
       const toSend = deepCopy(mockUsers[0]);
       ddbMock.on(PutCommand).resolves({
         Items: [toSend]
@@ -125,9 +125,8 @@ describe('usersController', () => {
         .send(toSend)
         .expect(200);
 
-      assert.deepEqual(response.body, {
-        success: true,
-      });
+      assert.deepEqual(response.body.success, true);
+      expect(response.body.token).not.to.be.null;
     });
 
     it('returns appropriate response if dynamo throws error', async () => {
@@ -496,7 +495,7 @@ describe('usersController', () => {
         });
     });
 
-    it('returns success:true if user login is successful', async () => {
+    it('returns passwordless user, token, and success:true if user login is successful', async () => {
       const toSend = deepCopy(mockUsers[0]);
       ddbMock.on(QueryCommand).resolves({
         Items: [toSend]
