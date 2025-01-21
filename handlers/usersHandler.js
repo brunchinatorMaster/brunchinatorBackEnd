@@ -148,8 +148,13 @@ class ReviewsHandler {
 			return new DBErrorResponse(response.DBError);
 		}
 
+		const cleanUser = removePassswordFromUser(user);
+		const token = jwt.sign(cleanUser, JWT_SECRET);
+		cleanUser.token = token;
+
 		return {
 			success: true,
+			user: cleanUser
 		};
 	}
 

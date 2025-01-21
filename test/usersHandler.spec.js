@@ -217,11 +217,16 @@ describe('usersHandler', () => {
       expect(response.message).to.equal('"password" cannot be an empty string');
     });
 
-    it('returns success:true if user addition is successful', async () => {
+    it('returns passwordless user and token upon successful user creation', async () => {
       const user = deepCopy(mockUsers[0]);
       ddbMock.on(PutCommand).resolves({
         Items: [user]
       });
+
+      const token = jwt.sign({
+        userName: 'someName',
+        email: 'tohearstories@gmail.com'
+      }, JWT_SECRET);
 
       const toAdd = {
         userName: 'someName',
@@ -231,9 +236,12 @@ describe('usersHandler', () => {
 
       const response = await usersHandler.addUser(toAdd);
 
-      assert.deepEqual(response, {
-        success: true,
+      assert.deepEqual(response.user, {
+        userName: 'someName',
+        email: 'tohearstories@gmail.com',
+        token,
       });
+      expect(response.token).to.be.not.null;
     });
 
     it('returns DBErrorResponse if dynamo throws error', async () => {
