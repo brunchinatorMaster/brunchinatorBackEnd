@@ -4,6 +4,7 @@ const {
 	addUser,
 	deleteUser,
 	updateUser,
+	addResetCodeToUser,
  } = require('../databaseAccess/usersDatabaseAccess');
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
 const { DBErrorResponse } = require('../errors/DBErrorResponse');
@@ -14,7 +15,7 @@ const {
 	USERNAME_SCHEMA,
 	PASSWORD_SCHEMA,
  } = require('../schemas/usersSchemas');
-const { removePassswordFromUser } = require('../utils/usersUtils');
+const { removePassswordFromUser, sendResetPasswordEmail } = require('../utils/usersUtils');
 const { validateBySchema, JWT_SECRET } = require('../utils/utils');
 const jwt = require('jsonwebtoken');
 
@@ -269,6 +270,50 @@ class ReviewsHandler {
 		return {
 			success: response.success,
 		};
+	}
+
+	/**
+	 * resets password for userName, 
+	 * 
+	 * returns {
+	 * 	success: boolean,
+	 * }
+	 * 
+	 * @param {object} user 
+	 * @returns {object}
+	 */
+	async sendResetPasswordEmail(userName) {
+		const userNameSchemaResponse = validateBySchema(userName, USERNAME_SCHEMA);
+		if (!userNameSchemaResponse.isValid) {
+			return new BadSchemaResponse(userNameSchemaResponse);
+		}
+
+		let response = await getUserByUsername(userName);
+
+		if (response.DBError) {
+			return new DBErrorResponse(response.DBError);
+		}
+
+		if (!response.success) {
+			return {
+				success: false,
+				statusCode: 401,
+				message: 'No User Found'
+			}
+		}
+
+		const user = response.user;
+		user.resetCode  = Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000;
+
+		response = await addResetCodeToUser(user);
+
+		if (response.DBError) {
+			return new DBErrorResponse(response.DBError);
+		}
+
+		const emailResponse = await sendResetPasswordEmail(user);
+
+		return emailResponse;
 	}
 }
 
