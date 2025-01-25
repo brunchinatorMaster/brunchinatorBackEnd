@@ -15,7 +15,7 @@ const {
 	USERNAME_SCHEMA,
 	PASSWORD_SCHEMA,
  } = require('../schemas/usersSchemas');
-const { removePassswordFromUser, sendResetPasswordEmail } = require('../utils/usersUtils');
+const { sanitizeUser, sendResetPasswordEmail } = require('../utils/usersUtils');
 const { validateBySchema, JWT_SECRET } = require('../utils/utils');
 const jwt = require('jsonwebtoken');
 
@@ -47,7 +47,7 @@ class ReviewsHandler {
 
 		let user;
 		if (response.success && response.user) {
-			user = removePassswordFromUser(response.user);
+			user = sanitizeUser(response.user);
 		}
 
 		return {
@@ -83,7 +83,7 @@ class ReviewsHandler {
 
 		let user;
 		if (response.success && response.user) {
-			user = removePassswordFromUser(response.user);
+			user = sanitizeUser(response.user);
 		}
 
 		return {
@@ -118,7 +118,7 @@ class ReviewsHandler {
 
 		let updatedUser;
 		if (response.success && response.user) {
-			updatedUser = removePassswordFromUser(response.user);
+			updatedUser = sanitizeUser(response.user);
 		}
 
 		return {
@@ -149,7 +149,7 @@ class ReviewsHandler {
 			return new DBErrorResponse(response.DBError);
 		}
 
-		const cleanUser = removePassswordFromUser(user);
+		const cleanUser = sanitizeUser(user);
 		const token = jwt.sign(cleanUser, JWT_SECRET);
 		cleanUser.token = token;
 
@@ -207,7 +207,7 @@ class ReviewsHandler {
 			}
 		}
 			
-		const cleanUser = removePassswordFromUser(response.user);
+		const cleanUser = sanitizeUser(response.user);
 		const token = jwt.sign(cleanUser, JWT_SECRET);
 		cleanUser.token = token;
 
