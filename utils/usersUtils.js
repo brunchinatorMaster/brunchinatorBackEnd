@@ -10,7 +10,7 @@ const credentials = require('../emailCredentials/emailCredentials');
 const removePassswordFromArrayOfUsers = (users) => {
   const toReturn = []
   users.forEach(user => {
-    toReturn.push(removePassswordFromUser(user));
+    toReturn.push(sanitizeUser(user));
   });
   return toReturn;
 }
@@ -22,8 +22,9 @@ const removePassswordFromArrayOfUsers = (users) => {
  * @param {object} user
  * @returns {object}
  */
-const removePassswordFromUser = (user) => {
+const sanitizeUser = (user) => {
   delete user.password;
+  delete user.resetCode;
   return user;
 }
 
@@ -71,6 +72,6 @@ const sendResetPasswordEmail = async (user) => {
 
 module.exports = {
   removePassswordFromArrayOfUsers,
-  removePassswordFromUser,
+  sanitizeUser,
   sendResetPasswordEmail
 }
