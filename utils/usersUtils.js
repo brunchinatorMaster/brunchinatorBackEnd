@@ -39,8 +39,8 @@ const sendResetPasswordEmail = async (user) => {
   });
   const mailData = {
     from: 'brunchinatorMaster@gmail.com',
-    to: 'foo',//user.email,
-    subject: 'localServer Brunchinator Password Test',
+    to: user.email,
+    subject: 'Brunchinator Password Reset',
     html: `Hello there, fellow bruncher.
     <br/><br/>
     Your password reset code is ${user.resetCode}
