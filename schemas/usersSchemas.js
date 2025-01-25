@@ -20,8 +20,15 @@ const VALIDATE_CREATE_USER_SCHEMA = Joi.object({
   password: PASSWORD_SCHEMA.required()
 });
 
+const VALIDATE_CHANGE_USER_PASSWORD_SCHEMA = Joi.object({
+  userName: USERNAME_SCHEMA.required(),
+  password: PASSWORD_SCHEMA.required(),
+  resetCode: Joi.number(),
+});
+
 module.exports = {
   VALIDATE_CREATE_USER_SCHEMA,
+  VALIDATE_CHANGE_USER_PASSWORD_SCHEMA,
   EMAIL_SCHEMA,
   USERNAME_SCHEMA,
   PASSWORD_SCHEMA
