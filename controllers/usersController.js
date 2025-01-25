@@ -69,4 +69,15 @@ app.post('/userProfilePicture', multer().any(), async (req, res) => {
 	}
 });
 
+app.post('/sendResetPasswordEmail/:userName', async (req, res) => {
+	const userName = req.params.userName ?? null;
+	try {
+		const toReturn = await usersHandler.sendResetPasswordEmail(userName);
+		res.status(toReturn.statusCode ?? 200).json(toReturn);
+	} catch (error) {
+		res.status(error.statusCode ?? 400).json(error);
+	}
+});
+
+
 module.exports = app;

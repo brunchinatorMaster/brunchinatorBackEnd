@@ -136,6 +136,50 @@ const updateUser = async (user) => {
 }
 
 /**
+ * adds resetCode to user in dynamo
+ * returns {
+ *  success: boolean,
+ *  user: USER || null,
+ *  DBError: ERROR || null
+ * }
+ * @param {object} user 
+ * @returns {object}
+ */
+const addResetCodeToUser = async (user) => {
+  const toUpdate = new UpdateCommand({
+    TableName: 'Users',
+    Key: {
+      userName: user.userName,
+    },
+    UpdateExpression: 'set resetCode = :resetCode',
+    ConditionExpression: 'attribute_exists(userName)',
+    ExpressionAttributeValues: {
+      ":resetCode": user.resetCode,
+    },
+    ReturnValues: "ALL_NEW",
+  });
+
+  let success = false;
+  let updatedUser;
+  let DBError;
+  
+  try {
+    const response = await docClient.send(toUpdate);
+    if (response?.Attributes) {
+      success = true;
+      updatedUser = response.Attributes;
+    }
+  } catch (error) {
+    DBError = error;
+  } finally {
+    return {
+      success,
+      user: updatedUser,
+      DBError
+    }
+  }
+}
+/**
  * adds user to dynamo
  * returns {
  *  success: boolean,
@@ -209,5 +253,6 @@ module.exports = {
   getUserByEmail,
   addUser,
   deleteUser,
-  updateUser
+  updateUser,
+  addResetCodeToUser
 }
