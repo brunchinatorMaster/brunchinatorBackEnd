@@ -105,7 +105,7 @@ const updateUserPassword = async (user) => {
     Key: {
       userName: user.userName,
     },
-    UpdateExpression: 'set password = :password',
+    UpdateExpression: 'set password = :password remove resetCode',
     ConditionExpression: 'attribute_exists(userName)',
     ExpressionAttributeValues: {
       ":password": user.password,
