@@ -4,7 +4,7 @@ const PlacesHandler = require('../handlers/placesHandler');
 const placesHandler = new PlacesHandler();
 
 app.get('/all', async (req, res) => {
-	try {console.log('controller heard')
+	try {
 		const toReturn = await placesHandler.getPlaces();
 		res.status(toReturn.statusCode ?? 200).json(toReturn);
 	} catch (error) {
