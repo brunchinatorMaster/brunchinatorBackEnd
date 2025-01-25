@@ -7,7 +7,9 @@ const { docClient, QueryCommand, PutCommand, UpdateCommand, ScanCommand } = requ
 const { mockClient } = require('aws-sdk-client-mock');
 const ddbMock = mockClient(docClient);
 const { mockGenericDynamoError } = require('./mockDynamoResponses');
-const { deepCopy } = require('../utils/utils');
+const { deepCopy, JWT_SECRET } = require('../utils/utils');
+const { sanitizeUser } = require('../utils/usersUtils');
+const jwt = require('jsonwebtoken');
 
 describe('usersController', () => {
   beforeEach(() => {
@@ -114,7 +116,7 @@ describe('usersController', () => {
         expect(response.body.message).to.equal('"password" must be a string');
     });
 
-    it('returns passwordless user, token, and success:true if user addition is successful', async () => {
+    it('returns success:true if user addition is successful', async () => {
       const toSend = deepCopy(mockUsers[0]);
       ddbMock.on(PutCommand).resolves({
         Items: [toSend]
@@ -125,8 +127,17 @@ describe('usersController', () => {
         .send(toSend)
         .expect(200);
 
-      assert.deepEqual(response.body.success, true);
-      expect(response.body.token).not.to.be.null;
+      const cleanUser = sanitizeUser(toSend);
+      const token = jwt.sign(cleanUser, JWT_SECRET);
+
+      assert.deepEqual(response.body, {
+        success: true,
+        user: {
+          email: toSend.email,
+          userName: toSend.userName,
+          token,
+        }
+      });
     });
 
     it('returns appropriate response if dynamo throws error', async () => {
@@ -149,48 +160,15 @@ describe('usersController', () => {
     });
   });
 
-  describe('POST /updateUser', () => {
-    it('returns error if email is missing', async () => {
-      const toSend = {
-        userName: 'some username',
-        password: 'somePassword'
-      };
-  
-      const response = await supertest(app)
-        .post('/users/updateUser')
-        .send(toSend)
-        .expect(400);
-  
-        expect(response.body.success).to.equal(false);
-        expect(response.body.statusCode).to.equal(400);
-        expect(response.body.message).to.equal('"email" is required');
-    });
-
-    it('returns error if email is not a valid email', async () => {
-      const toSend = {
-        userName: 'some username',
-        password: 'somePassword',
-        email: 'address@domain'
-      };
-  
-      const response = await supertest(app)
-        .post('/users/updateUser')
-        .send(toSend)
-        .expect(400);
-  
-        expect(response.body.success).to.equal(false);
-        expect(response.body.statusCode).to.equal(400);
-        expect(response.body.message).to.equal('"email" must be a valid email');
-    });
-  
+  describe('POST /updateUserPassword', () => {
     it('returns error if userName is missing', async () => {
       const toSend = {
         password: 'somePassword',
-        email: 'address@domain.com'
+        resetCode: 12345,
       };
   
       const response = await supertest(app)
-        .post('/users/createUser')
+        .post('/users/updateUserPassword')
         .send(toSend)
         .expect(400);
   
@@ -203,11 +181,11 @@ describe('usersController', () => {
       const toSend = {
         userName: 123,
         password: 'somePassword',
-        email: 'address@domain.com'
+        resetCode: 12345,
       };
   
       const response = await supertest(app)
-        .post('/users/updateUser')
+        .post('/users/updateUserPassword')
         .send(toSend)
         .expect(400);
   
@@ -219,11 +197,11 @@ describe('usersController', () => {
     it('returns error if password is missing', async () => {
       const toSend = {
         userName: 'someName',
-        email: 'address@domain.com'
+        resetCode: 12345,
       };
   
       const response = await supertest(app)
-        .post('/users/updateUser')
+        .post('/users/updateUserPassword')
         .send(toSend)
         .expect(400);
   
@@ -236,11 +214,11 @@ describe('usersController', () => {
       const toSend = {
         userName: 'someName',
         password: 123,
-        email: 'address@domain.com'
+        resetCode: 12345,
       };
   
       const response = await supertest(app)
-        .post('/users/updateUser')
+        .post('/users/updateUserPassword')
         .send(toSend)
         .expect(400);
   
@@ -250,31 +228,46 @@ describe('usersController', () => {
     });
 
     it('returns success:true if user update is successful', async () => {
+      const user = deepCopy(mockUsers[0]);
+      user.resetCode = 12345;
+      ddbMock.on(QueryCommand).resolves({
+        Items: [user]
+      });
+
       const toSend = deepCopy(mockUsers[0]);
+      delete toSend.email;
+      toSend.resetCode = 12345;
       ddbMock.on(UpdateCommand).resolves({
         Attributes: toSend
       });
 
       const response = await supertest(app)
-        .post('/users/updateUser')
+        .post('/users/updateUserPassword')
         .send(toSend)
         .expect(200);
 
       assert.deepEqual(response.body, {
         success: true,
         updatedUser: {
-          email: 'tohearstories@gmail.com',
           userName: 'geo'
         }
       });
     });
 
     it('returns appropriate response if dynamo throws error', async () => {
+      const user = deepCopy(mockUsers[0]);
+      user.resetCode = 12345;
+      ddbMock.on(QueryCommand).resolves({
+        Items: [user]
+      });
+
       const toSend = deepCopy(mockUsers[0]);
+      delete toSend.email;
+      toSend.resetCode = 12345;
       ddbMock.on(UpdateCommand).rejects(mockGenericDynamoError);
   
       const response = await supertest(app)
-        .post('/users/updateUser')
+        .post('/users/updateUserPassword')
         .send(toSend)
         .expect(mockGenericDynamoError.$metadata.httpStatusCode);
 
@@ -495,7 +488,7 @@ describe('usersController', () => {
         });
     });
 
-    it('returns passwordless user, token, and success:true if user login is successful', async () => {
+    it('returns success:true if user login is successful', async () => {
       const toSend = deepCopy(mockUsers[0]);
       ddbMock.on(QueryCommand).resolves({
         Items: [toSend]

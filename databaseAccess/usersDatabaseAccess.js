@@ -90,7 +90,7 @@ const getUserByEmail = async (email) => {
 }
 
 /**
- * updates user in dynamo
+ * updates user password in dynamo
  * returns {
  *  success: boolean,
  *  user: USER || null,
@@ -99,17 +99,16 @@ const getUserByEmail = async (email) => {
  * @param {object} user 
  * @returns {object}
  */
-const updateUser = async (user) => {
+const updateUserPassword = async (user) => {
   const toUpdate = new UpdateCommand({
     TableName: 'Users',
     Key: {
       userName: user.userName,
     },
-    UpdateExpression: 'set password = :password, email = :email',
+    UpdateExpression: 'set password = :password',
     ConditionExpression: 'attribute_exists(userName)',
     ExpressionAttributeValues: {
       ":password": user.password,
-      ":email": user.email
     },
     ReturnValues: "ALL_NEW",
   });
@@ -253,6 +252,6 @@ module.exports = {
   getUserByEmail,
   addUser,
   deleteUser,
-  updateUser,
+  updateUserPassword,
   addResetCodeToUser
 }

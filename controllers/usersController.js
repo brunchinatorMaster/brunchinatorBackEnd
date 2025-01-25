@@ -27,10 +27,10 @@ app.get('/byEmail/:email', async (req, res) => {
 	}
 });
 
-app.post('/updateUser', async (req, res) => {
+app.post('/updateUserPassword', async (req, res) => {
 	const user = req.body;
 	try {
-		const toReturn = await usersHandler.updateUser(user);
+		const toReturn = await usersHandler.updateUserPassword(user);
 		res.status(toReturn.statusCode ?? 200).json(toReturn);
 	} catch (error) {
 		res.status(error.statusCode ?? 400).json(error);

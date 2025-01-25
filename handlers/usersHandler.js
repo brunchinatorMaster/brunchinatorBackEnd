@@ -3,7 +3,7 @@ const {
 	getUserByEmail,
 	addUser,
 	deleteUser,
-	updateUser,
+	updateUserPassword,
 	addResetCodeToUser,
  } = require('../databaseAccess/usersDatabaseAccess');
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
@@ -11,6 +11,7 @@ const { DBErrorResponse } = require('../errors/DBErrorResponse');
 const { uploadImageToS3 } = require('../s3Access/s3');
 const { 
 	VALIDATE_CREATE_USER_SCHEMA,
+	VALIDATE_CHANGE_USER_PASSWORD_SCHEMA,
 	EMAIL_SCHEMA,
 	USERNAME_SCHEMA,
 	PASSWORD_SCHEMA,
@@ -94,7 +95,7 @@ class ReviewsHandler {
 	}
 
 	/**
-	 * updates user
+	 * updates user password
 	 * 
 	 * returns {
 	 * 	success: boolean,
@@ -104,13 +105,35 @@ class ReviewsHandler {
 	 * @param {object} user 
 	 * @returns {object}
 	 */
-	async updateUser(user) {
-		const userSchemaResponse = validateBySchema(user, VALIDATE_CREATE_USER_SCHEMA);
+	async updateUserPassword(user) {
+		const userSchemaResponse = validateBySchema(user, VALIDATE_CHANGE_USER_PASSWORD_SCHEMA);
 		if (!userSchemaResponse.isValid) {
 			return new BadSchemaResponse(userSchemaResponse);
 		}
 
-		const response = await updateUser(user);
+		let userResponse = await getUserByUsername(user.userName);
+
+		if (userResponse.DBError) {
+			return new DBErrorResponse(userResponse.DBError);
+		}
+
+		if (!userResponse.success) {
+			return {
+				success: false,
+				statusCode: 401,
+				message: 'No User Found'
+			}
+		}
+
+		if (user.resetCode !== userResponse.user.resetCode) {
+			return {
+				success: false,
+				statusCode: 401,
+				message: 'Reset Code is wrong.'
+			}
+		}
+
+		const response = await updateUserPassword(user);
 
 		if (response.DBError) {
 			return new DBErrorResponse(response.DBError);

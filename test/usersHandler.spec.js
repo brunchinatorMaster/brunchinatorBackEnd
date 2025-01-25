@@ -262,43 +262,15 @@ describe('usersHandler', () => {
     });
   });
 
-  describe('updateUser', () => {
-    it('returns BadSchemaResponse if email is missing', async () => {
-      const toUpdate = {
-        userName: 'some username',
-        password: 'somePassword'
-      };
-      
-      const response = await usersHandler.updateUser(toUpdate);
-
-      expect(response).to.be.instanceof(BadSchemaResponse);
-      expect(response.success).to.be.false;
-      expect(response.statusCode).to.equal(400);
-      expect(response.message).to.equal('"email" is required');
-    });
-
-    it('returns BadSchemaResponse if email is not a valid email', async () => {
-      const toUpdate = {
-        userName: 'some username',
-        password: 'somePassword',
-        email: 'tohearstories@gmail'
-      };
-      
-      const response = await usersHandler.updateUser(toUpdate);
-
-      expect(response).to.be.instanceof(BadSchemaResponse);
-      expect(response.success).to.be.false;
-      expect(response.statusCode).to.equal(400);
-      expect(response.message).to.equal('"email" must be a valid email');
-    });
-
+  describe('updateUserPassword', () => {
     it('returns BadSchemaResponse if userName is missing', async () => {
       const toUpdate = {
         password: 'somePassword',
-        email: 'tohearstories@gmail.com'
+        email: 'tohearstories@gmail.com',
+        resetCode: 12345,
       };
       
-      const response = await usersHandler.updateUser(toUpdate);
+      const response = await usersHandler.updateUserPassword(toUpdate);
 
       expect(response).to.be.instanceof(BadSchemaResponse);
       expect(response.success).to.be.false;
@@ -313,7 +285,7 @@ describe('usersHandler', () => {
         email: 'tohearstories@gmail.com'
       };
       
-      const response = await usersHandler.updateUser(toUpdate);
+      const response = await usersHandler.updateUserPassword(toUpdate);
 
       expect(response).to.be.instanceof(BadSchemaResponse);
       expect(response.success).to.be.false;
@@ -328,7 +300,7 @@ describe('usersHandler', () => {
         email: 'tohearstories@gmail.com'
       };
       
-      const response = await usersHandler.updateUser(toUpdate);
+      const response = await usersHandler.updateUserPassword(toUpdate);
 
       expect(response).to.be.instanceof(BadSchemaResponse);
       expect(response.success).to.be.false;
@@ -342,7 +314,7 @@ describe('usersHandler', () => {
         email: 'tohearstories@gmail.com'
       };
       
-      const response = await usersHandler.updateUser(toUpdate);
+      const response = await usersHandler.updateUserPassword(toUpdate);
 
       expect(response).to.be.instanceof(BadSchemaResponse);
       expect(response.success).to.be.false;
@@ -357,7 +329,7 @@ describe('usersHandler', () => {
         email: 'tohearstories@gmail.com'
       };
       
-      const response = await usersHandler.updateUser(toUpdate);
+      const response = await usersHandler.updateUserPassword(toUpdate);
 
       expect(response).to.be.instanceof(BadSchemaResponse);
       expect(response.success).to.be.false;
@@ -372,7 +344,7 @@ describe('usersHandler', () => {
         email: 'tohearstories@gmail.com'
       };
       
-      const response = await usersHandler.updateUser(toUpdate);
+      const response = await usersHandler.updateUserPassword(toUpdate);
 
       expect(response).to.be.instanceof(BadSchemaResponse);
       expect(response.success).to.be.false;
@@ -382,37 +354,41 @@ describe('usersHandler', () => {
 
     it('returns success:true if user update is successful', async () => {
       const user = deepCopy(mockUsers[0]);
-      ddbMock.on(UpdateCommand).resolves({
-        Attributes: user
+      user.resetCode = 12345;
+      ddbMock.on(QueryCommand).resolves({
+        Items: [user]
       });
 
-      const toUpdate = {
-        userName: 'someName',
-        password: 'password',
-        email: 'tohearstories@gmail.com'
-      };
+      const toSend = deepCopy(mockUsers[0]);
+      delete toSend.email;
+      toSend.resetCode = 12345;
+      ddbMock.on(UpdateCommand).resolves({
+        Attributes: toSend
+      });
 
-      const response = await usersHandler.updateUser(toUpdate);
+      const response = await usersHandler.updateUserPassword(toSend);
 
       assert.deepEqual(response, {
         success: true,
         updatedUser: {
-          email: 'tohearstories@gmail.com',
           userName: 'geo'
         },
       });
     });
 
     it('returns DBErrorResponse if dynamo throws error', async () => {
+      const user = deepCopy(mockUsers[0]);
+      user.resetCode = 12345;
+      ddbMock.on(QueryCommand).resolves({
+        Items: [user]
+      });
+
+      const toSend = deepCopy(mockUsers[0]);
+      delete toSend.email;
+      toSend.resetCode = 12345;
       ddbMock.on(UpdateCommand).rejects(mockGenericDynamoError);
 
-      const toUpdate = {
-        userName: 'someName',
-        password: 'password',
-        email: 'tohearstories@gmail.com'
-      };
-
-      const response = await usersHandler.updateUser(toUpdate);
+      const response = await usersHandler.updateUserPassword(toSend);
 
       expect(response).to.be.instanceof(DBErrorResponse);
       expect(response.success).to.be.false;
