@@ -20,7 +20,7 @@ class PlacesHandler {
 	 * 
 	 * @returns {object[]}
 	 */
-	async getPlaces() {console.log('handler heard')
+	async getPlaces() {
 		const response = await getPlaces();
 		if (response.DBError) {
 			return new DBErrorResponse(response.DBError);
