@@ -7,7 +7,7 @@ const credentials = require('../emailCredentials/emailCredentials');
  * @param {array} users 
  * @returns {array}
  */
-const removePassswordFromArrayOfUsers = (users) => {
+const sanitizeArrayOfUsers = (users) => {
   const toReturn = []
   users.forEach(user => {
     toReturn.push(sanitizeUser(user));
@@ -71,7 +71,7 @@ const sendResetPasswordEmail = async (user) => {
 }
 
 module.exports = {
-  removePassswordFromArrayOfUsers,
+  sanitizeArrayOfUsers,
   sanitizeUser,
   sendResetPasswordEmail
 }
