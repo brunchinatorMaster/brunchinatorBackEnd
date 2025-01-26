@@ -139,14 +139,17 @@ class ReviewsHandler {
 			return new DBErrorResponse(response.DBError);
 		}
 
-		let updatedUser;
+		let cleanUser;
+		let token;
 		if (response.success && response.user) {
-			updatedUser = sanitizeUser(response.user);
+			cleanUser = sanitizeUser(response.user);
+			token = jwt.sign(cleanUser, JWT_SECRET);
+			cleanUser.token = token;
 		}
 
 		return {
 			success: true,
-			updatedUser,
+			user: cleanUser,
 		};
 	}
 
