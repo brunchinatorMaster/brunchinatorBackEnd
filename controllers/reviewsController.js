@@ -3,7 +3,7 @@ const app = express();
 const ReviewsHandler = require('../handlers/reviewsHandler');
 const reviewsHandler = new ReviewsHandler();
 
-app.get('/all', async (req, res) => {
+app.get('/api/v1/all', async (req, res) => {
 	try {
 		const toReturn = await reviewsHandler.getReviews();
 		res.status(toReturn.statusCode ?? 200).json(toReturn);
@@ -12,7 +12,7 @@ app.get('/all', async (req, res) => {
 	}
 });
 
-app.get('/byReviewId/:reviewId', async (req, res) => {
+app.get('/api/v1/byReviewId/:reviewId', async (req, res) => {
 	const reviewId = req.params.reviewId ?? null;
 	try {
 		const toReturn = await reviewsHandler.getReviewByReviewId(reviewId);
@@ -22,7 +22,7 @@ app.get('/byReviewId/:reviewId', async (req, res) => {
 	}
 });
 
-app.get('/byPlaceId/:placeId', async (req, res) => {
+app.get('/api/v1/byPlaceId/:placeId', async (req, res) => {
 	const placeId = req.params.placeId ?? null;
 	try {
 		const toReturn = await reviewsHandler.getReviewsByPlaceId(placeId);
@@ -32,7 +32,7 @@ app.get('/byPlaceId/:placeId', async (req, res) => {
 	}
 });
 
-app.get('/byUserName/:userName', async (req, res) => {
+app.get('/api/v1/byUserName/:userName', async (req, res) => {
 	const userName = req.params.userName ?? null;
 	try {
 		const toReturn = await reviewsHandler.getReviewsByUserName(userName);
@@ -42,7 +42,7 @@ app.get('/byUserName/:userName', async (req, res) => {
 	}
 });
 
-app.delete('/byReviewId/:reviewId', async (req, res) => {
+app.delete('/api/v1/byReviewId/:reviewId', async (req, res) => {
 	const reviewId = req.params.reviewId ?? null;
 	try {
 		const toReturn = await reviewsHandler.deleteReviewByReviewId(reviewId);
@@ -52,7 +52,7 @@ app.delete('/byReviewId/:reviewId', async (req, res) => {
 	}
 });
 
-app.post('/createReview', async (req, res) => {
+app.post('/api/v1/createReview', async (req, res) => {
 	const review = req.body ?? null;
 	try {
 		const toReturn = await reviewsHandler.addReview(review);
@@ -62,7 +62,7 @@ app.post('/createReview', async (req, res) => {
 	}
 });
 
-app.post('/updateReview', async (req, res) => {
+app.post('/api/v1/updateReview', async (req, res) => {
 	const review = req.body ?? null;
 	try {
 		const toReturn = await reviewsHandler.updateReview(review);

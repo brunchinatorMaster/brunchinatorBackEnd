@@ -23,7 +23,7 @@ describe('placesController', () => {
       });
 
       const response = await supertest(app)
-        .get('/places/all')
+        .get('/brunchinatorBackend/places/api/v1/all')
         .expect(200);
 
       assert.deepEqual(response.body, {
@@ -36,7 +36,7 @@ describe('placesController', () => {
       ddbMock.on(ScanCommand).rejects(mockGenericDynamoError);
 
       const response = await supertest(app)
-        .get('/places/all')
+        .get('/brunchinatorBackend/places/api/v1/all')
         .expect(403);
 
         assert.deepEqual(response.body, {
@@ -53,7 +53,7 @@ describe('placesController', () => {
   describe('GET /byPlaceId/:placeId', () => {
     it('returns 404 if placeId is missing', async () => {
       await supertest(app)
-        .get('/places/byPlaceId/')
+        .get('/brunchinatorBackend/places/api/v1/byPlaceId/')
         .expect(404);
     });
 
@@ -63,7 +63,7 @@ describe('placesController', () => {
         Items: [place]
       })
       const response = await supertest(app)
-        .get('/places/byPlaceId/place1')
+        .get('/brunchinatorBackend/places/api/v1/byPlaceId/place1')
         .expect(200);
         
       assert.deepEqual(response.body, {
@@ -79,7 +79,7 @@ describe('placesController', () => {
       })
       
       const response = await supertest(app)
-      .get('/places/byPlaceId/place1')
+      .get('/brunchinatorBackend/places/api/v1/byPlaceId/place1')
       .expect(200);
 
       assert.deepEqual(response.body, {

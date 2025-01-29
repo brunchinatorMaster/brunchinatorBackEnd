@@ -1,5 +1,3 @@
-// const  { PORT = 3000} = process.env;
-
 const express = require('express');
 const app = express();
 
@@ -11,12 +9,12 @@ const usersController = require('./controllers/usersController');
 const placesController = require('./controllers/placesController');
 
 app.use(express.json());
-app.use('/reviews', reviewsController);
-app.use('/users', usersController);
-app.use('/places', placesController);
+app.use('/brunchinatorBackend/reviews', reviewsController);
+app.use('/brunchinatorBackend/users', usersController);
+app.use('/brunchinatorBackend/places', placesController);
 
-app.get('/', (req, res)=>{
-	res.send('Hello, World!!');
+app.get('/brunchinatorBackend/', (req, res)=>{
+	res.send('Hello, Brunch!');
 });
 
 module.exports = app;

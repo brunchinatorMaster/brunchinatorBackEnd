@@ -11,6 +11,7 @@ const { DBErrorResponse } = require('../errors/DBErrorResponse');
 const { deepCopy, JWT_SECRET } = require('../utils/utils');
 const ddbMock = mockClient(docClient);
 const jwt = require('jsonwebtoken');
+const { sanitizeUser } = require('../utils/usersUtils');
 
 
 describe('usersHandler', () => {
@@ -368,11 +369,14 @@ describe('usersHandler', () => {
 
       const response = await usersHandler.updateUserPassword(toSend);
 
+      delete user.email;
+      const updatedUser = sanitizeUser(user);
+			token = jwt.sign(updatedUser, JWT_SECRET);
+			updatedUser.token = token;
+
       assert.deepEqual(response, {
         success: true,
-        updatedUser: {
-          userName: 'geo'
-        },
+        user: updatedUser,
       });
     });
 

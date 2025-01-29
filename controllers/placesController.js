@@ -3,7 +3,7 @@ const app = express();
 const PlacesHandler = require('../handlers/placesHandler');
 const placesHandler = new PlacesHandler();
 
-app.get('/all', async (req, res) => {
+app.get('/api/v1/all', async (req, res) => {
 	try {
 		const toReturn = await placesHandler.getPlaces();
 		res.status(toReturn.statusCode ?? 200).json(toReturn);
@@ -12,7 +12,7 @@ app.get('/all', async (req, res) => {
 	}
 });
 
-app.get('/byPlaceId/:placeId', async (req, res) => {
+app.get('/api/v1/byPlaceId/:placeId', async (req, res) => {
 	const placeId = req.params.placeId ?? null;
 	try {
 		const toReturn = await placesHandler.getPlaceByPlaceId(placeId);

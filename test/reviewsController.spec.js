@@ -23,7 +23,7 @@ describe('reviewsController', () => {
       });
 
       const response = await supertest(app)
-        .get('/reviews/all')
+        .get('/brunchinatorBackend/reviews/api/v1/all')
         .expect(200);
 
       assert.deepEqual(response.body, {
@@ -36,7 +36,7 @@ describe('reviewsController', () => {
       ddbMock.on(ScanCommand).rejects(mockGenericDynamoError);
 
       const response = await supertest(app)
-        .get('/reviews/all')
+        .get('/brunchinatorBackend/reviews/api/v1/all')
         .expect(403);
 
         assert.deepEqual(response.body, {
@@ -53,7 +53,7 @@ describe('reviewsController', () => {
   describe('GET /byReviewId/:reviewId', () => {
     it('returns 404 if reviewId is missing', async () => {
       await supertest(app)
-        .get('/reviews/byReviewId/')
+        .get('/brunchinatorBackend/reviews/api/v1/byReviewId')
         .expect(404);
     });
 
@@ -64,7 +64,7 @@ describe('reviewsController', () => {
       });
   
       const response = await supertest(app)
-        .get('/reviews/byReviewId/review1')
+        .get('/brunchinatorBackend/reviews/api/v1/byReviewId/review1')
         .expect(200);
 
       assert.deepEqual(response.body, {
@@ -78,7 +78,7 @@ describe('reviewsController', () => {
       ddbMock.on(QueryCommand).rejects(mockGenericDynamoError);
   
       const response = await supertest(app)
-      .get('/reviews/byReviewId/review1')
+      .get('/brunchinatorBackend/reviews/api/v1/byReviewId/review1')
         .expect(mockGenericDynamoError.$metadata.httpStatusCode);
 
       assert.deepEqual(response.body, {
@@ -95,7 +95,7 @@ describe('reviewsController', () => {
   describe('GET /byPlaceId/:placeId', () => {
     it('returns 404 if placeId is missing', async () => {
       await supertest(app)
-        .get('/reviews/byPlaceId/')
+        .get('/brunchinatorBackend/reviews/api/v1/byPlaceId/')
         .expect(404);
     });
 
@@ -106,7 +106,7 @@ describe('reviewsController', () => {
       });
   
       const response = await supertest(app)
-        .get('/reviews/byPlaceId/place2')
+        .get('/brunchinatorBackend/reviews/api/v1/byPlaceId/place2')
         .expect(200);
 
       assert.deepEqual(response.body, {
@@ -120,7 +120,7 @@ describe('reviewsController', () => {
       ddbMock.on(ScanCommand).rejects(mockGenericDynamoError);
   
       const response = await supertest(app)
-      .get('/reviews/byPlaceId/place1')
+      .get('/brunchinatorBackend/reviews/api/v1/byPlaceId/place1')
         .expect(mockGenericDynamoError.$metadata.httpStatusCode);
 
       assert.deepEqual(response.body, {
@@ -137,7 +137,7 @@ describe('reviewsController', () => {
   describe('GET /byUserName/:userName', () => {
     it('returns 404 if placeId is missing', async () => {
       await supertest(app)
-        .get('/reviews/byUserName/')
+        .get('/brunchinatorBackend/reviews/api/v1/byUserName/')
         .expect(404);
     });
 
@@ -148,7 +148,7 @@ describe('reviewsController', () => {
       });
   
       const response = await supertest(app)
-        .get('/reviews/byUserName/geo')
+        .get('/brunchinatorBackend/reviews/api/v1/byUserName/geo')
         .expect(200);
 
       assert.deepEqual(response.body, {
@@ -162,7 +162,7 @@ describe('reviewsController', () => {
       ddbMock.on(ScanCommand).rejects(mockGenericDynamoError);
   
       const response = await supertest(app)
-      .get('/reviews/byUserName/geo')
+      .get('/brunchinatorBackend/reviews/api/v1/byUserName/geo')
         .expect(mockGenericDynamoError.$metadata.httpStatusCode);
 
       assert.deepEqual(response.body, {
@@ -180,7 +180,7 @@ describe('reviewsController', () => {
     it('returns appropriate response if review contains unsupported field', async () => {
       const testReview = deepCopy(mockReviews[0]);
       const response = await supertest(app)
-      .post('/reviews/createReview')
+      .post('/brunchinatorBackend/reviews/api/v1/createReview')
       .send(testReview)
       .expect(400);
 
@@ -197,7 +197,7 @@ describe('reviewsController', () => {
       testReview.burger = true;
 
       const response = await supertest(app)
-      .post('/reviews/createReview')
+      .post('/brunchinatorBackend/reviews/api/v1/createReview')
       .send(testReview)
       .expect(400);
 
@@ -233,7 +233,7 @@ describe('reviewsController', () => {
       });
       
       const response = await supertest(app)
-        .post('/reviews/createReview')
+        .post('/brunchinatorBackend/reviews/api/v1/createReview')
         .send(review)
         .expect(200);
 
@@ -262,7 +262,7 @@ describe('reviewsController', () => {
       ddbMock.on(TransactWriteCommand).rejects(mockGenericDynamoError);
   
       const response = await supertest(app)
-        .post('/reviews/createReview')
+        .post('/brunchinatorBackend/reviews/api/v1/createReview')
         .send(review)
         .expect(mockGenericDynamoError.$metadata.httpStatusCode);
 
