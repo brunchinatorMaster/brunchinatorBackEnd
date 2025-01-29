@@ -24,7 +24,7 @@ describe('usersController', () => {
       };
   
       const response = await supertest(app)
-        .post('/users/createUser')
+        .post('/brunchinatorBackend/users/api/v1/createUser')
         .send(toSend)
         .expect(400);
   
@@ -41,7 +41,7 @@ describe('usersController', () => {
       };
   
       const response = await supertest(app)
-        .post('/users/createUser')
+        .post('/brunchinatorBackend/users/api/v1/createUser')
         .send(toSend)
         .expect(400);
   
@@ -57,7 +57,7 @@ describe('usersController', () => {
       };
   
       const response = await supertest(app)
-        .post('/users/createUser')
+        .post('/brunchinatorBackend/users/api/v1/createUser')
         .send(toSend)
         .expect(400);
   
@@ -74,7 +74,7 @@ describe('usersController', () => {
       };
   
       const response = await supertest(app)
-        .post('/users/createUser')
+        .post('/brunchinatorBackend/users/api/v1/createUser')
         .send(toSend)
         .expect(400);
   
@@ -90,7 +90,7 @@ describe('usersController', () => {
       };
   
       const response = await supertest(app)
-        .post('/users/createUser')
+        .post('/brunchinatorBackend/users/api/v1/createUser')
         .send(toSend)
         .expect(400);
   
@@ -107,7 +107,7 @@ describe('usersController', () => {
       };
   
       const response = await supertest(app)
-        .post('/users/createUser')
+        .post('/brunchinatorBackend/users/api/v1/createUser')
         .send(toSend)
         .expect(400);
   
@@ -123,7 +123,7 @@ describe('usersController', () => {
       });
 
       const response = await supertest(app)
-        .post('/users/createUser')
+        .post('/brunchinatorBackend/users/api/v1/createUser')
         .send(toSend)
         .expect(200);
 
@@ -145,7 +145,7 @@ describe('usersController', () => {
       ddbMock.on(PutCommand).rejects(mockGenericDynamoError);
   
       const response = await supertest(app)
-      .post('/users/createUser')
+      .post('/brunchinatorBackend/users/api/v1/createUser')
         .send(toSend)
         .expect(mockGenericDynamoError.$metadata.httpStatusCode);
 
@@ -168,7 +168,7 @@ describe('usersController', () => {
       };
   
       const response = await supertest(app)
-        .post('/users/updateUserPassword')
+        .post('/brunchinatorBackend/users/api/v1/updateUserPassword')
         .send(toSend)
         .expect(400);
   
@@ -185,7 +185,7 @@ describe('usersController', () => {
       };
   
       const response = await supertest(app)
-        .post('/users/updateUserPassword')
+        .post('/brunchinatorBackend/users/api/v1/updateUserPassword')
         .send(toSend)
         .expect(400);
   
@@ -201,7 +201,7 @@ describe('usersController', () => {
       };
   
       const response = await supertest(app)
-        .post('/users/updateUserPassword')
+        .post('/brunchinatorBackend/users/api/v1/updateUserPassword')
         .send(toSend)
         .expect(400);
   
@@ -218,7 +218,7 @@ describe('usersController', () => {
       };
   
       const response = await supertest(app)
-        .post('/users/updateUserPassword')
+        .post('/brunchinatorBackend/users/api/v1/updateUserPassword')
         .send(toSend)
         .expect(400);
   
@@ -242,15 +242,18 @@ describe('usersController', () => {
       });
 
       const response = await supertest(app)
-        .post('/users/updateUserPassword')
+        .post('/brunchinatorBackend/users/api/v1/updateUserPassword')
         .send(toSend)
         .expect(200);
 
+      delete user.email;
+      const updatedUser = sanitizeUser(user);
+			token = jwt.sign(updatedUser, JWT_SECRET);
+			updatedUser.token = token;
+
       assert.deepEqual(response.body, {
         success: true,
-        updatedUser: {
-          userName: 'geo'
-        }
+        user: updatedUser,
       });
     });
 
@@ -267,7 +270,7 @@ describe('usersController', () => {
       ddbMock.on(UpdateCommand).rejects(mockGenericDynamoError);
   
       const response = await supertest(app)
-        .post('/users/updateUserPassword')
+        .post('/brunchinatorBackend/users/api/v1/updateUserPassword')
         .send(toSend)
         .expect(mockGenericDynamoError.$metadata.httpStatusCode);
 
@@ -285,13 +288,13 @@ describe('usersController', () => {
   describe('GET /byEmail/:email', () => {
     it('returns 404 if userName is missing', async () => {
       await supertest(app)
-        .get('/users/byEmail/')
+        .get('/brunchinatorBackend/users/api/v1/byEmail/')
         .expect(404);
     });
 
     it('returns error if email is invalid', async () => {
       const response = await supertest(app)
-        .get('/users/byEmail/tohearstories@gmail')
+        .get('/brunchinatorBackend/users/api/v1/byEmail/tohearstories@gmail')
         .expect(400);
         
         expect(response.body.message).to.equal('"value" must be a valid email');
@@ -305,7 +308,7 @@ describe('usersController', () => {
       });
   
       const response = await supertest(app)
-        .get('/users/byEmail/tohearstories@gmail.com')
+        .get('/brunchinatorBackend/users/api/v1/byEmail/tohearstories@gmail.com')
         .expect(200);
 
       assert.deepEqual(response.body, {
@@ -322,7 +325,7 @@ describe('usersController', () => {
       ddbMock.on(ScanCommand).rejects(mockGenericDynamoError);
   
       const response = await supertest(app)
-      .get('/users/byEmail/tohearstories@gmail.com')
+      .get('/brunchinatorBackend/users/api/v1/byEmail/tohearstories@gmail.com')
         .expect(mockGenericDynamoError.$metadata.httpStatusCode);
 
       assert.deepEqual(response.body, {
@@ -339,7 +342,7 @@ describe('usersController', () => {
   describe('GET /byUsername/:userName', () => {
     it('returns 404 if userName is missing', async () => {
       await supertest(app)
-        .get('/users/byUsername/')
+        .get('/brunchinatorBackend/users/api/v1/byUsername/')
         .expect(404);
     });
 
@@ -350,7 +353,7 @@ describe('usersController', () => {
       });
   
       const response = await supertest(app)
-        .get('/users/byUsername/geo')
+        .get('/brunchinatorBackend/users/api/v1/byUsername/geo')
         .expect(200);
 
       assert.deepEqual(response.body, {
@@ -367,7 +370,7 @@ describe('usersController', () => {
       ddbMock.on(QueryCommand).rejects(mockGenericDynamoError);
   
       const response = await supertest(app)
-        .get('/users/byUsername/geo')
+        .get('/brunchinatorBackend/users/api/v1/byUsername/geo')
         .expect(mockGenericDynamoError.$metadata.httpStatusCode);
 
       assert.deepEqual(response.body, {
@@ -388,7 +391,7 @@ describe('usersController', () => {
       };
   
       const response = await supertest(app)
-        .post('/users/login')
+        .post('/brunchinatorBackend/users/api/v1/login')
         .send(toSend)
         .expect(400);
 
@@ -406,7 +409,7 @@ describe('usersController', () => {
       };
   
       const response = await supertest(app)
-        .post('/users/login')
+        .post('/brunchinatorBackend/users/api/v1/login')
         .send(toSend)
         .expect(400);
 
@@ -424,7 +427,7 @@ describe('usersController', () => {
       };
   
       const response = await supertest(app)
-        .post('/users/login')
+        .post('/brunchinatorBackend/users/api/v1/login')
         .send(toSend)
         .expect(400);
 
@@ -441,7 +444,7 @@ describe('usersController', () => {
       };
   
       const response = await supertest(app)
-        .post('/users/login')
+        .post('/brunchinatorBackend/users/api/v1/login')
         .send(toSend)
         .expect(400);
 
@@ -459,7 +462,7 @@ describe('usersController', () => {
       };
   
       const response = await supertest(app)
-        .post('/users/login')
+        .post('/brunchinatorBackend/users/api/v1/login')
         .send(toSend)
         .expect(400);
 
@@ -477,7 +480,7 @@ describe('usersController', () => {
       };
   
       const response = await supertest(app)
-        .post('/users/login')
+        .post('/brunchinatorBackend/users/api/v1/login')
         .send(toSend)
         .expect(400);
 
@@ -495,7 +498,7 @@ describe('usersController', () => {
       });
 
       const response = await supertest(app)
-        .post('/users/login')
+        .post('/brunchinatorBackend/users/api/v1/login')
         .send({
           userName: 'geo',
           password: 'geoPassword'
@@ -510,7 +513,7 @@ describe('usersController', () => {
       ddbMock.on(QueryCommand).rejects(mockGenericDynamoError);
   
       const response = await supertest(app)
-      .post('/users/login')
+      .post('/brunchinatorBackend/users/api/v1/login')
         .send({
           userName: 'geo',
           password: 'geoPassword'
