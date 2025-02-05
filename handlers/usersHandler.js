@@ -16,7 +16,7 @@ const {
 	USERNAME_SCHEMA,
 	PASSWORD_SCHEMA,
  } = require('../schemas/usersSchemas');
-const { sanitizeUser, sendResetPasswordEmail } = require('../utils/usersUtils');
+const { sanitizeUser, sendResetPasswordEmail, sendSignUpEmail } = require('../utils/usersUtils');
 const { validateBySchema, JWT_SECRET } = require('../utils/utils');
 const jwt = require('jsonwebtoken');
 
@@ -174,7 +174,7 @@ class ReviewsHandler {
 		if (response.DBError) {
 			return new DBErrorResponse(response.DBError);
 		}
-
+		sendSignUpEmail(user);
 		const cleanUser = sanitizeUser(user);
 		const token = jwt.sign(cleanUser, JWT_SECRET);
 		cleanUser.token = token;
