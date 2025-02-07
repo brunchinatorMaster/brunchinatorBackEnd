@@ -169,6 +169,20 @@ class ReviewsHandler {
 			return new BadSchemaResponse(userSchemaResponse);
 		}
 
+		let userResponse = await getUserByUsername(user.userName);
+
+		if (userResponse.DBError) {
+			return new DBErrorResponse(userResponse.DBError);
+		}
+
+		if (userResponse.success) {
+			return {
+				success: false,
+				statusCode: 409,
+				message: 'That username is already taken.'
+			}
+		}
+
 		const response = await addUser(user);
 
 		if (response.DBError) {
