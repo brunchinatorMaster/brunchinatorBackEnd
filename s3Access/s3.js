@@ -43,9 +43,9 @@ const getImagesCountForReview = async (reviewId) => {
   let numberOfImages = 0;
   let S3Error;
   try {
-    response = await s3Client.send(command);console.log('#$%#$%#$%#$%#$%#$%#$%#$%$#');console.log(response)
+    response = await s3Client.send(command);
     if (response?.$metadata?.httpStatusCode === 200) {
-      success = true;console.log('right here')
+      success = true;
       numberOfImages = response?.KeyCount ?? 0;
     }
   } catch (error) {
