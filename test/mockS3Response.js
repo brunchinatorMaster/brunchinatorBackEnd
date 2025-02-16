@@ -32,9 +32,23 @@ const mockListObjectsVSCommandResponse = {
   Prefix: 'gzurple123/'
 }
 
+const mockS3CreateFolderResponse = {
+  '$metadata': {
+    httpStatusCode: 200,
+    requestId: 'Z21E5CNRT9BJMV5S',
+    extendedRequestId: '2lMluGJ+VtFx8vZ0OC/I563P7UVC0EY1wpCEV+QrFU5nOxWcIuG6uyIsOn9VqyhxFDLfGz+yBv7ItyNIpxPBOg==',
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  ETag: '"d41d8cd98f00b204e9800998ecf8427e"',
+  ServerSideEncryption: 'AES256'
+}
+
 
 module.exports = {
   mockS3SuccssResponse,
   mockGenericS3Error,
-  mockListObjectsVSCommandResponse
+  mockListObjectsVSCommandResponse,
+  mockS3CreateFolderResponse
 }

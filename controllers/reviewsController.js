@@ -80,6 +80,6 @@ app.get('/api/v2/imagesCount/:reviewId', async (req, res) => {
 	} catch (error) {
 		res.status(error.statusCode ?? 400).json(error);
 	}
-})
+});
 
 module.exports = app;

@@ -1,9 +1,9 @@
 const { assert } = require('chai');
-const { mockS3SuccssResponse, mockGenericS3Error, mockListObjectsVSCommandResponse } = require('../test/mockS3Response');
+const { mockS3SuccssResponse, mockGenericS3Error, mockListObjectsVSCommandResponse, mockS3CreateFolderResponse } = require('../test/mockS3Response');
 const { s3Client, PutObjectCommand, ListObjectsV2Command } = require('../aws/awsClients');
 const { mockClient } = require('aws-sdk-client-mock');
 const s3ClientMock = mockClient(s3Client);
-const { uploadUserProfileImageToS3, getImagesCountForReview } = require('../s3Access/s3');
+const { uploadUserProfileImageToS3, getImagesCountForReview, createFolder } = require('../s3Access/s3');
 
 describe('s3.js', () => {
   beforeEach(() => {
@@ -60,6 +60,30 @@ describe('s3.js', () => {
       assert.deepEqual(response, {
         success: false,
         numberOfImages: 0,
+        S3Error: mockGenericS3Error,
+      });
+    });
+  });
+
+  describe('createFolder', () => {
+    it('creates folder', async () => {
+      s3ClientMock.on(PutObjectCommand).resolves(mockS3CreateFolderResponse);
+      
+      const response = await createFolder('reviewId');
+
+      assert.deepEqual(response, {
+        success: true,
+        S3Error: undefined,
+      });
+    });
+
+    it('returns error if s3 throws error', async () => {
+      s3ClientMock.on(PutObjectCommand).rejects(mockGenericS3Error);
+      
+      const response = await createFolder('reviewId');
+
+      assert.deepEqual(response, {
+        success: false,
         S3Error: mockGenericS3Error,
       });
     });

@@ -58,7 +58,31 @@ const getImagesCountForReview = async (reviewId) => {
   };
 }
 
+const createFolder = async (folderName, bucket) => {
+  const command = new PutObjectCommand({
+    Bucket: bucket,
+    Key: folderName,
+  });
+
+  let response;
+  let success = false;
+  let S3Error;
+  try {
+    response = await s3Client.send(command);
+    if(response?.$metadata?.httpStatusCode === 200) {
+      success = true;
+    }
+  } catch (error) {
+    S3Error = error;
+  }
+  return {
+    success,
+    S3Error
+  };
+};
+
 module.exports = {
   uploadUserProfileImageToS3,
-  getImagesCountForReview
+  getImagesCountForReview,
+  createFolder
 }
