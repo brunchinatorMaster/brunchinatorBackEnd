@@ -2,7 +2,6 @@ const express = require('express');
 const app = express();
 
 const multer = require('multer');
-const { uploadImageToS3 } = require('../s3Access/s3');
 
 const UsersHandler = require('../handlers/usersHandler');
 const usersHandler = new UsersHandler();

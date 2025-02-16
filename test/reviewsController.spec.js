@@ -3,16 +3,27 @@ const { assert } = require('chai');
 const mockReviews = require('../mockDataBase/reviews')
 const app = require('../app');
 
-const { docClient, PutCommand, ScanCommand, QueryCommand, TransactWriteCommand } = require('../aws/awsClients');
+const {
+  docClient,
+  PutCommand,
+  ScanCommand,
+  QueryCommand,
+  TransactWriteCommand,
+  s3Client,
+  ListObjectsV2Command
+} = require('../aws/awsClients');
 const { mockClient } = require('aws-sdk-client-mock');
 const { deepCopy } = require('../utils/utils');
 const { mockGenericDynamoError } = require('./mockDynamoResponses');
 const mockPlaces = require('../mockDataBase/places');
+const { mockListObjectsVSCommandResponse, mockGenericS3Error } = require('./mockS3Response');
 const ddbMock = mockClient(docClient);
+const s3ClientMock = mockClient(s3Client);
 
 describe('reviewsController', () => {
   beforeEach(() => {
     ddbMock.reset();
+    s3ClientMock.reset();
   });
 
   describe('GET /ALL', () => {
@@ -129,6 +140,45 @@ describe('reviewsController', () => {
         message: mockGenericDynamoError.message,
         error: {
           $metadata: mockGenericDynamoError.$metadata
+        }
+      });
+    });
+  });
+
+  describe('GET /api/v2/imagesCount/:reviewId', () => {
+    it('returns 404 if reviewId is missing', async () => {
+      await supertest(app)
+        .get('/brunchinatorBackend/reviews/api/v2/imagesCount/')
+        .expect(404);
+    });
+
+    it('returns images count found by s3', async () => {
+      s3ClientMock.on(ListObjectsV2Command).resolves(mockListObjectsVSCommandResponse);
+
+  
+      const response = await supertest(app)
+      .get('/brunchinatorBackend/reviews/api/v2/imagesCount/reviewId')
+        .expect(200);
+
+      assert.deepEqual(response.body, {
+        success: true,
+        numberOfImages: 1,
+      });
+    });
+
+    it('returns appropriate response if s3 throws error', async () => {
+      s3ClientMock.on(ListObjectsV2Command).rejects(mockGenericS3Error);
+  
+      const response = await supertest(app)
+      .get('/brunchinatorBackend/reviews/api/v2/imagesCount/reviewId')
+        .expect(mockGenericDynamoError.$metadata.httpStatusCode);
+
+      assert.deepEqual(response.body, {
+        success: false,
+        statusCode: mockGenericS3Error.$metadata.httpStatusCode,
+        message: mockGenericS3Error.message,
+        error: {
+          $metadata: mockGenericS3Error.$metadata
         }
       });
     });

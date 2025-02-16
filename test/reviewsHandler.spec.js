@@ -3,18 +3,31 @@ const ReviewsHandler = require('../handlers/reviewsHandler');
 const reviewsHandler = new ReviewsHandler();
 const mockReviews = require('../mockDataBase/reviews');
 
-const { docClient, QueryCommand, ScanCommand, DeleteCommand, UpdateCommand, PutCommand, TransactWriteCommand } = require('../aws/awsClients');
+const {
+  docClient,
+  QueryCommand,
+  ScanCommand,
+  DeleteCommand,
+  UpdateCommand,
+  PutCommand,
+  TransactWriteCommand,
+  s3Client,
+  ListObjectsV2Command
+} = require('../aws/awsClients');
 const { mockClient } = require('aws-sdk-client-mock');
 const ddbMock = mockClient(docClient);
+const s3ClientMock = mockClient(s3Client);
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
-const { DBErrorResponse } = require('../errors/DBErrorResponse');
+const { AWSErrorResponse } = require('../errors/AWSErrorResponse');
 const { mockGenericDynamoError } = require('./mockDynamoResponses');
 const { deepCopy } = require('../utils/utils');
 const mockPlaces = require('../mockDataBase/places');
+const { mockListObjectsVSCommandResponse, mockGenericS3Error } = require('./mockS3Response');
 
 describe('reviewsHandler', () => {
   beforeEach(() => {
     ddbMock.reset();
+    s3ClientMock.reset();
   });
 
   describe('getReviews', () => {
@@ -31,12 +44,12 @@ describe('reviewsHandler', () => {
       });
     });
 
-    it('returns DBErrorResponse if dynamo throws error', async () => {
+    it('returns AWSErrorResponse if dynamo throws error', async () => {
       ddbMock.on(ScanCommand).rejects(mockGenericDynamoError);
 
       const response = await reviewsHandler.getReviews();
 
-      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response).to.be.instanceof(AWSErrorResponse);
       expect(response.success).to.be.false;
       expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
       expect(response.message).to.equal(mockGenericDynamoError.message);
@@ -68,12 +81,12 @@ describe('reviewsHandler', () => {
       });
     });
 
-    it('returns DBErrorResponse if dynamo throws error', async () => {
+    it('returns AWSErrorResponse if dynamo throws error', async () => {
       ddbMock.on(QueryCommand).rejects(mockGenericDynamoError);
 
       const response = await reviewsHandler.getReviewByReviewId('123');
 
-      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response).to.be.instanceof(AWSErrorResponse);
       expect(response.success).to.be.false;
       expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
       expect(response.message).to.equal(mockGenericDynamoError.message);
@@ -105,15 +118,48 @@ describe('reviewsHandler', () => {
       });
     });
 
-    it('returns DBErrorResponse if dynamo throws error', async () => {
+    it('returns AWSErrorResponse if dynamo throws error', async () => {
       ddbMock.on(ScanCommand).rejects(mockGenericDynamoError);
 
       const response = await reviewsHandler.getReviewsByPlaceId('123');
 
-      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response).to.be.instanceof(AWSErrorResponse);
       expect(response.success).to.be.false;
       expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
       expect(response.message).to.equal(mockGenericDynamoError.message);
+    });
+  });
+
+  describe('getImagesCountForReview', () => {
+    it('returns BadSchemaResponse is reviewId is invalid', async () => {
+      const response = await reviewsHandler.getImagesCountForReview(12345);
+
+      expect(response).to.be.instanceof(BadSchemaResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(400);
+      expect(response.message).to.equal('"reviewId" must be a string');
+    });
+
+    it('returns count found by s3', async () => {
+      s3ClientMock.on(ListObjectsV2Command).resolves(mockListObjectsVSCommandResponse);
+  
+      const response = await reviewsHandler.getImagesCountForReview('reviewId');
+
+      assert.deepEqual(response, {
+        success: true,
+        numberOfImages: 1,
+      });
+    });
+
+    it('returns AWSErrorResponse if s3 throws error', async () => {
+      s3ClientMock.on(ListObjectsV2Command).rejects(mockGenericS3Error);
+
+      const response = await reviewsHandler.getImagesCountForReview('reviewId');
+
+      expect(response).to.be.instanceof(AWSErrorResponse);
+      expect(response.success).to.be.false;
+      expect(response.statusCode).to.equal(mockGenericS3Error.$metadata.httpStatusCode);
+      expect(response.message).to.equal(mockGenericS3Error.message);
     });
   });
 
@@ -142,12 +188,12 @@ describe('reviewsHandler', () => {
       });
     });
 
-    it('returns DBErrorResponse if dynamo throws error', async () => {
+    it('returns AWSErrorResponse if dynamo throws error', async () => {
       ddbMock.on(ScanCommand).rejects(mockGenericDynamoError);
 
       const response = await reviewsHandler.getReviewsByUserName('123');
 
-      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response).to.be.instanceof(AWSErrorResponse);
       expect(response.success).to.be.false;
       expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
       expect(response.message).to.equal(mockGenericDynamoError.message);
@@ -275,7 +321,7 @@ describe('reviewsHandler', () => {
       });
      });
 
-     it('returns DBErrorResponse if transaction write command returns error', async () => {
+     it('returns AWSErrorResponse if transaction write command returns error', async () => {
       const review = deepCopy(mockReviews[0]);
       delete review.reviewId;
 
@@ -296,7 +342,7 @@ describe('reviewsHandler', () => {
   
         const response = await reviewsHandler.addReview(review);
         
-        expect(response).to.be.instanceof(DBErrorResponse);
+        expect(response).to.be.instanceof(AWSErrorResponse);
         expect(response.success).to.be.false;
         expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
         expect(response.message).to.equal(mockGenericDynamoError.message);
@@ -336,7 +382,7 @@ describe('reviewsHandler', () => {
         });
       });
 
-      it('returns DBErrorResponse if transaction write command returns error', async () => {
+      it('returns AWSErrorResponse if transaction write command returns error', async () => {
         const review = deepCopy(mockReviews[0]);
         delete review.reviewId;
         const place = deepCopy(mockPlaces[0]);
@@ -358,7 +404,7 @@ describe('reviewsHandler', () => {
   
         const response = await reviewsHandler.addReview(review);
         
-        expect(response).to.be.instanceof(DBErrorResponse);
+        expect(response).to.be.instanceof(AWSErrorResponse);
         expect(response.success).to.be.false;
         expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
         expect(response.message).to.equal(mockGenericDynamoError.message);
@@ -410,7 +456,7 @@ describe('reviewsHandler', () => {
       });
     });
 
-    it('returns DBErrorResponse if transaction write command returns error', async () => {
+    it('returns AWSErrorResponse if transaction write command returns error', async () => {
       const review = deepCopy(mockReviews[0]);
       const place = deepCopy(mockPlaces[0]);
 
@@ -443,7 +489,7 @@ describe('reviewsHandler', () => {
 
       const response = await reviewsHandler.updateReview(review);
       
-      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response).to.be.instanceof(AWSErrorResponse);
       expect(response.success).to.be.false;
       expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
       expect(response.message).to.equal(mockGenericDynamoError.message);
