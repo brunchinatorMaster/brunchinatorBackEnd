@@ -1,35 +1,64 @@
 const {
   s3Client,
   PutObjectCommand,
-  s3Bucket
+  ListObjectsV2Command,
+  USER_PROFILE_IMAGES_BUCKET,
+  REVIEW_IMAGES_BUCKET
 } = require('../aws/awsClients');
 
-const uploadImageToS3 = async (userName, file) => {
+const uploadUserProfileImageToS3 = async (userName, file) => {
 
   const command = new PutObjectCommand({
-    Bucket: s3Bucket,
+    Bucket: USER_PROFILE_IMAGES_BUCKET,
     Key: userName,
     Body: Buffer.from(file.buffer),
   });
 
   let response;
   let success = false;
-  let DBError;
+  let S3Error;
   try {
     response = await s3Client.send(command);
     if(response?.$metadata?.httpStatusCode === 200) {
       success = true;
     }
   } catch (error) {
-    DBError = error;
+    S3Error = error;
   }
   return {
     success,
-    DBError
+    S3Error
   };
+}
 
+const getImagesCountForReview = async (reviewId) => {
+  const command = new ListObjectsV2Command({
+    Bucket: REVIEW_IMAGES_BUCKET,
+    Prefix: `${reviewId}/`,
+    MaxKeys: 1,
+  });
+
+  let response;
+  let success = false;
+  let numberOfImages = 0;
+  let S3Error;
+  try {
+    response = await s3Client.send(command);
+    if (response?.$metadata?.httpStatusCode === 200) {
+      success = true;
+      numberOfImages = response?.KeyCount ?? 0;
+    }
+  } catch (error) {
+    S3Error = error;
+  }
+  return {
+    success,
+    numberOfImages,
+    S3Error
+  };
 }
 
 module.exports = {
-  uploadImageToS3
+  uploadUserProfileImageToS3,
+  getImagesCountForReview
 }

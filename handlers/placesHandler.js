@@ -4,7 +4,7 @@ const {
 	getPlaces,
 } = require('../databaseAccess/placesDatabaseAccess');
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
-const { DBErrorResponse } = require('../errors/DBErrorResponse');
+const { AWSErrorResponse } = require('../errors/AWSErrorResponse');
 const { PLACE_ID_SCHEMA, VALIDATE_CREATE_PLACE_SCHEMA } = require('../schemas/placesSchemas');
 const { validateBySchema } = require('../utils/utils');
 
@@ -23,7 +23,7 @@ class PlacesHandler {
 	async getPlaces() {
 		const response = await getPlaces();
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);
+			return new AWSErrorResponse(response.DBError);
 		}
 
 		return {
@@ -53,7 +53,7 @@ class PlacesHandler {
 		const response = await getPlaceByPlaceId(placeId);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);
+			return new AWSErrorResponse(response.DBError);
 		}
 
 		return {
@@ -82,7 +82,7 @@ class PlacesHandler {
 		const response = await addPlace(place);
 		
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);		}
+			return new AWSErrorResponse(response.DBError);		}
 
 		return {
 			success: true

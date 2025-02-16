@@ -10,6 +10,7 @@ const {
 	getReviewsByPlaceId,
 	getReviewsByUserName,
 } = require('../databaseAccess/reviewsDatabaseAccess');
+const { getImagesCountForReview } = require('../s3Access/s3');
 const {
 	getPlaceByPlaceId,
 } = require('../databaseAccess/placesDatabaseAccess');
@@ -18,7 +19,7 @@ const { REVIEW_ID_SCHEMA, VALIDATE_CREATE_REVIEW_SCHEMA, VALIDATE_UPDATE_REVIEW_
 const { PLACE_ID_SCHEMA, VALIDATE_CREATE_PLACE_SCHEMA, VALIDATE_UPDATE_PLACE_SCHEMA } = require('../schemas/placesSchemas');
 const { USERNAME_SCHEMA } = require('../schemas/usersSchemas');
 const { v4 } = require('uuid');
-const { DBErrorResponse } = require('../errors/DBErrorResponse');
+const { AWSErrorResponse } = require('../errors/AWSErrorResponse');
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
 const { transactionAddPlaceAndAddReview, transactionUpdatePlaceAndAddReview, transactionUpdatePlaceAndDeleteReview, transactionDeletePlaceAndDeleteReview, transactionUpdatePlaceAndUpdateReview } = require('../databaseAccess/transactDatabaseAccess');
 
@@ -37,7 +38,7 @@ class ReviewsHandler {
 	async getReviews() {
 		const response = await getReviews();
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);
+			return new AWSErrorResponse(response.DBError);
 		}
 
 		return {
@@ -67,7 +68,7 @@ class ReviewsHandler {
 		const response = await getReviewByReviewId(reviewId);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);
+			return new AWSErrorResponse(response.DBError);
 		}
 
 		return {
@@ -98,13 +99,31 @@ class ReviewsHandler {
 		const response = await getReviewsByPlaceId(placeId);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);
+			return new AWSErrorResponse(response.DBError);
 		}
 
 		return {
 			success: true,
 			reviewsExist: response.success,
 			reviews: response.reviews,
+		}
+	}
+
+	async getImagesCountForReview(reviewId) {
+		const reviewIdSchemaResponse= validateBySchema(reviewId, REVIEW_ID_SCHEMA);
+		if (!reviewIdSchemaResponse.isValid) {
+			return new BadSchemaResponse(reviewIdSchemaResponse);
+		}
+
+		const response = await getImagesCountForReview(reviewId);
+
+		if (response.S3Error) {
+			return new AWSErrorResponse(response.S3Error);
+		}
+
+		return {
+			success: response.success,
+			numberOfImages: response.numberOfImages,
 		}
 	}
 
@@ -129,7 +148,7 @@ class ReviewsHandler {
 		const response = await getReviewsByUserName(userName);
 		
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);
+			return new AWSErrorResponse(response.DBError);
 		}
 
 		return {
@@ -159,14 +178,14 @@ class ReviewsHandler {
 		
 		const getReviewByReviewIdResponse = await getReviewByReviewId(reviewId);
 		if (getReviewByReviewIdResponse.DBError) {
-			return new DBErrorResponse(getReviewByReviewIdResponse.DBError);
+			return new AWSErrorResponse(getReviewByReviewIdResponse.DBError);
 		}
 		
 		const reviewBeingDeleted = getReviewByReviewIdResponse.review;
 
 		const getPlaceByPlaceIdResponse = await getPlaceByPlaceId(reviewBeingDeleted.placeId);
 		if (getPlaceByPlaceIdResponse.DBError) {
-			return new DBErrorResponse(getPlaceByPlaceIdResponse.DBError);
+			return new AWSErrorResponse(getPlaceByPlaceIdResponse.DBError);
 		}
 		const placeToUpdate = getPlaceByPlaceIdResponse.place;
 		
@@ -179,7 +198,7 @@ class ReviewsHandler {
 		}
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);
+			return new AWSErrorResponse(response.DBError);
 		}
 
 		return response;
@@ -222,7 +241,7 @@ class ReviewsHandler {
 		
 		const getPlaceByPlaceIdResponse = await getPlaceByPlaceId(review.placeId);
 		if (getPlaceByPlaceIdResponse.DBError) {
-			return new DBErrorResponse(getPlaceByPlaceIdResponse.DBError);
+			return new AWSErrorResponse(getPlaceByPlaceIdResponse.DBError);
 		}
 		const placeExists = getPlaceByPlaceIdResponse.success;
 		
@@ -233,7 +252,7 @@ class ReviewsHandler {
 			response = await this.updatePlaceAndAddReview(getPlaceByPlaceIdResponse.place, review);
 		}
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);
+			return new AWSErrorResponse(response.DBError);
 		}
 		return response;
 		
@@ -305,20 +324,20 @@ class ReviewsHandler {
 		
 		const oldReviewResponse = await getReviewByReviewId(newReview.reviewId);
 		if (oldReviewResponse.DBError) {
-			return new DBErrorResponse(oldReviewResponse.DBError);
+			return new AWSErrorResponse(oldReviewResponse.DBError);
 		}
 		const oldReview = oldReviewResponse.review;
 
 		const getPlaceByPlaceIdResponse = await getPlaceByPlaceId(newReview.placeId);
 		if (getPlaceByPlaceIdResponse.DBError) {
-			return new DBErrorResponse(getPlaceByPlaceIdResponse.DBError);
+			return new AWSErrorResponse(getPlaceByPlaceIdResponse.DBError);
 		}
 		const toUpdate = getPlaceByPlaceIdResponse.place;
 		const newPlace = recalculateRatingsForUpdatingReviewOnPlace(oldReview, newReview, toUpdate);
 		
 		const response = await transactionUpdatePlaceAndUpdateReview(newPlace, newReview);
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);
+			return new AWSErrorResponse(response.DBError);
 		}
 		return response;
 	}

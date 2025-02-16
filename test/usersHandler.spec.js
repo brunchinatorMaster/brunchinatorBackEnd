@@ -7,7 +7,7 @@ const { docClient, QueryCommand, ScanCommand, PutCommand, UpdateCommand, DeleteC
 const { mockClient } = require('aws-sdk-client-mock');
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
 const { mockGenericDynamoError } = require('./mockDynamoResponses');
-const { DBErrorResponse } = require('../errors/DBErrorResponse');
+const { AWSErrorResponse } = require('../errors/AWSErrorResponse');
 const { deepCopy, JWT_SECRET } = require('../utils/utils');
 const ddbMock = mockClient(docClient);
 const jwt = require('jsonwebtoken');
@@ -47,12 +47,12 @@ describe('usersHandler', () => {
       });
     });
 
-    it('returns DBErrorResponse if dynamo throws error', async () => {
+    it('returns AWSErrorResponse if dynamo throws error', async () => {
       ddbMock.on(QueryCommand).rejects(mockGenericDynamoError);
 
       const response = await usersHandler.getUserByUsername('geo');
 
-      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response).to.be.instanceof(AWSErrorResponse);
       expect(response.success).to.be.false;
       expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
       expect(response.message).to.equal(mockGenericDynamoError.message);
@@ -88,12 +88,12 @@ describe('usersHandler', () => {
       });
     });
 
-    it('returns DBErrorResponse if dynamo throws error', async () => {
+    it('returns AWSErrorResponse if dynamo throws error', async () => {
       ddbMock.on(ScanCommand).rejects(mockGenericDynamoError);
 
       const response = await usersHandler.getUserByEmail('tohearstories@gmail.com');
 
-      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response).to.be.instanceof(AWSErrorResponse);
       expect(response.success).to.be.false;
       expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
       expect(response.message).to.equal(mockGenericDynamoError.message);
@@ -245,7 +245,7 @@ describe('usersHandler', () => {
       expect(response.token).to.be.not.null;
     });
 
-    it('returns DBErrorResponse if dynamo throws error', async () => {
+    it('returns AWSErrorResponse if dynamo throws error', async () => {
       ddbMock.on(PutCommand).rejects(mockGenericDynamoError);
 
       const toAdd = {
@@ -256,7 +256,7 @@ describe('usersHandler', () => {
 
       const response = await usersHandler.addUser(toAdd);
 
-      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response).to.be.instanceof(AWSErrorResponse);
       expect(response.success).to.be.false;
       expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
       expect(response.message).to.equal(mockGenericDynamoError.message);
@@ -380,7 +380,7 @@ describe('usersHandler', () => {
       });
     });
 
-    it('returns DBErrorResponse if dynamo throws error', async () => {
+    it('returns AWSErrorResponse if dynamo throws error', async () => {
       const user = deepCopy(mockUsers[0]);
       user.resetCode = 12345;
       ddbMock.on(QueryCommand).resolves({
@@ -394,7 +394,7 @@ describe('usersHandler', () => {
 
       const response = await usersHandler.updateUserPassword(toSend);
 
-      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response).to.be.instanceof(AWSErrorResponse);
       expect(response.success).to.be.false;
       expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
       expect(response.message).to.equal(mockGenericDynamoError.message);
@@ -473,12 +473,12 @@ describe('usersHandler', () => {
       expect(response.token).to.be.not.null;
     });
 
-    it('returns DBErrorResponse if dynamo throws error', async () => {
+    it('returns AWSErrorResponse if dynamo throws error', async () => {
       ddbMock.on(QueryCommand).rejects(mockGenericDynamoError);
 
       const response = await usersHandler.login('geo', 'geoPassword');
 
-      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response).to.be.instanceof(AWSErrorResponse);
       expect(response.success).to.be.false;
       expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
       expect(response.message).to.equal(mockGenericDynamoError.message);
@@ -514,12 +514,12 @@ describe('usersHandler', () => {
       assert.deepEqual(response, {success: true});
     });
 
-    it('returns DBErrorResponse if dynamo throws error', async () => {
+    it('returns AWSErrorResponse if dynamo throws error', async () => {
       ddbMock.on(DeleteCommand).rejects(mockGenericDynamoError);
 
       const response = await usersHandler.deleteUser('someUserName');
 
-      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response).to.be.instanceof(AWSErrorResponse);
       expect(response.success).to.be.false;
       expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
       expect(response.message).to.equal(mockGenericDynamoError.message);

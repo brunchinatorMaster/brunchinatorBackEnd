@@ -7,8 +7,8 @@ const {
 	addResetCodeToUser,
  } = require('../databaseAccess/usersDatabaseAccess');
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
-const { DBErrorResponse } = require('../errors/DBErrorResponse');
-const { uploadImageToS3 } = require('../s3Access/s3');
+const { AWSErrorResponse } = require('../errors/AWSErrorResponse');
+const { uploadUserProfileImageToS3 } = require('../s3Access/s3');
 const { 
 	VALIDATE_CREATE_USER_SCHEMA,
 	VALIDATE_CHANGE_USER_PASSWORD_SCHEMA,
@@ -43,7 +43,7 @@ class ReviewsHandler {
 		const response = await getUserByUsername(userName);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);
+			return new AWSErrorResponse(response.DBError);
 		}
 
 		let user;
@@ -79,7 +79,7 @@ class ReviewsHandler {
 		const response = await getUserByEmail(email);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);
+			return new AWSErrorResponse(response.DBError);
 		}
 
 		let user;
@@ -114,7 +114,7 @@ class ReviewsHandler {
 		let userResponse = await getUserByUsername(user.userName);
 
 		if (userResponse.DBError) {
-			return new DBErrorResponse(userResponse.DBError);
+			return new AWSErrorResponse(userResponse.DBError);
 		}
 
 		if (!userResponse.success) {
@@ -136,7 +136,7 @@ class ReviewsHandler {
 		const response = await updateUserPassword(user);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);
+			return new AWSErrorResponse(response.DBError);
 		}
 
 		let cleanUser;
@@ -172,7 +172,7 @@ class ReviewsHandler {
 		let userResponse = await getUserByUsername(user.userName);
 
 		if (userResponse.DBError) {
-			return new DBErrorResponse(userResponse.DBError);
+			return new AWSErrorResponse(userResponse.DBError);
 		}
 
 		if (userResponse.success) {
@@ -186,7 +186,7 @@ class ReviewsHandler {
 		const response = await addUser(user);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);
+			return new AWSErrorResponse(response.DBError);
 		}
 		sendSignUpEmail(user);
 		const cleanUser = sanitizeUser(user);
@@ -228,7 +228,7 @@ class ReviewsHandler {
 		const response = await getUserByUsername(userName, password);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);
+			return new AWSErrorResponse(response.DBError);
 		}
 
 		if (!response.success) {
@@ -278,7 +278,7 @@ class ReviewsHandler {
 		const response = await deleteUser(userName);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);
+			return new AWSErrorResponse(response.DBError);
 		}
 		return {
 			success: true
@@ -301,10 +301,10 @@ class ReviewsHandler {
 
 		//TODO validate file is an image
 
-		const response = await uploadImageToS3(userName, file);
+		const response = await uploadUserProfileImageToS3(userName, file);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);
+			return new AWSErrorResponse(response.DBError);
 		}
 
 		return {
@@ -331,7 +331,7 @@ class ReviewsHandler {
 		let response = await getUserByUsername(userName);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);
+			return new AWSErrorResponse(response.DBError);
 		}
 
 		if (!response.success) {
@@ -348,7 +348,7 @@ class ReviewsHandler {
 		response = await addResetCodeToUser(user);
 
 		if (response.DBError) {
-			return new DBErrorResponse(response.DBError);
+			return new AWSErrorResponse(response.DBError);
 		}
 
 		const emailResponse = await sendResetPasswordEmail(user);

@@ -6,7 +6,7 @@ const { docClient, QueryCommand, PutCommand, ScanCommand } = require('../aws/aws
 const { mockClient } = require('aws-sdk-client-mock');
 const ddbMock = mockClient(docClient);
 const { BadSchemaResponse } = require('../errors/BadSchemaResponse');
-const { DBErrorResponse } = require('../errors/DBErrorResponse');
+const { AWSErrorResponse } = require('../errors/AWSErrorResponse');
 const { mockGenericDynamoError } = require('./mockDynamoResponses');
 const { deepCopy } = require('../utils/utils');
 
@@ -29,12 +29,12 @@ describe('placesHandler', () => {
       });
     });
 
-    it('returns DBErrorResponse if dynamo throws error', async () => {
+    it('returns AWSErrorResponse if dynamo throws error', async () => {
       ddbMock.on(ScanCommand).rejects(mockGenericDynamoError);
 
       const response = await placesHandler.getPlaces();
 
-      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response).to.be.instanceof(AWSErrorResponse);
       expect(response.success).to.be.false;
       expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
       expect(response.message).to.equal(mockGenericDynamoError.message);
@@ -82,12 +82,12 @@ describe('placesHandler', () => {
       });
     });
 
-    it('returns DBErrorResponse if dynamo throws error', async () => {
+    it('returns AWSErrorResponse if dynamo throws error', async () => {
       ddbMock.on(QueryCommand).rejects(mockGenericDynamoError);
 
       const response = await placesHandler.getPlaceByPlaceId('place1');
 
-      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response).to.be.instanceof(AWSErrorResponse);
       expect(response.success).to.be.false;
       expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
       expect(response.message).to.equal(mockGenericDynamoError.message);
@@ -156,7 +156,7 @@ describe('placesHandler', () => {
       assert.deepEqual(response, {success: true});
     });
 
-    it('returns DBErrorResponse if dynamo throws error', async () => {
+    it('returns AWSErrorResponse if dynamo throws error', async () => {
       ddbMock.on(PutCommand).rejects(mockGenericDynamoError);
       const response = await placesHandler.addPlace({
         placeId: '123',
@@ -166,7 +166,7 @@ describe('placesHandler', () => {
         words: 'some words'
       });
 
-      expect(response).to.be.instanceof(DBErrorResponse);
+      expect(response).to.be.instanceof(AWSErrorResponse);
       expect(response.success).to.be.false;
       expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
       expect(response.message).to.equal(mockGenericDynamoError.message);

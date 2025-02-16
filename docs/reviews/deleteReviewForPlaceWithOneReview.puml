@@ -47,13 +47,13 @@ validateBySchema -> deleteReviewByReviewId: reviewId is valid
 deleteReviewByReviewId -> getReviewByReviewId: get review
 alt DBError
     getReviewByReviewId -> deleteReviewByReviewId: Error encountered
-    deleteReviewByReviewId -> endpoint: return DBErrorResponse
+    deleteReviewByReviewId -> endpoint: return AWSErrorResponse
 end
 getReviewByReviewId -> deleteReviewByReviewId: review
 deleteReviewByReviewId -> getPlaceByPlaceId: get place with review.placeId
 alt DBError
     getPlaceByPlaceId -> deleteReviewByReviewId: Error encountered
-    deleteReviewByReviewId -> endpoint: return DBErrorResponse
+    deleteReviewByReviewId -> endpoint: return AWSErrorResponse
 end
 getPlaceByPlaceId -> deleteReviewByReviewId: place review is for has only 1 review
 deleteReviewByReviewId -> transactionDeletePlaceAndDeleteReview: delete place and delete review

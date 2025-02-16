@@ -72,4 +72,14 @@ app.post('/api/v1/updateReview', async (req, res) => {
 	}
 });
 
+app.get('/api/v2/imagesCount/:reviewId', async (req, res) => {
+	const reviewId = req.params.reviewId ?? null;
+	try {
+		const toReturn = await reviewsHandler.getImagesCountForReview(reviewId);
+		res.status(toReturn.statusCode ?? 200).json(toReturn);
+	} catch (error) {
+		res.status(error.statusCode ?? 400).json(error);
+	}
+})
+
 module.exports = app;

@@ -53,7 +53,7 @@ validateBySchema -> addReview: review is valid
 addReview -> getPlaceByPlaceId: get place with review.placeId
 alt DBError
     getPlaceByPlaceId -> addReview: Error encountered
-    addReview -> endpoint: return DBErrorResponse
+    addReview -> endpoint: return AWSErrorResponse
 end
 getPlaceByPlaceId -> addReview: placeExists: TRUE
 addReview -> updatePlaceAndAddReview: update place and add review
