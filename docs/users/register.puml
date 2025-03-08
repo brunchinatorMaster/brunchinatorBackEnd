@@ -1,0 +1,81 @@
+@startuml
+actor User
+participant Endpoint[
+    =usersController
+    ----
+    POST /api/v1/createUser
+]
+participant Handler.addUser[
+    =usersHandler
+    ----
+    addUser()
+]
+participant DatabaseAccess[
+    =usersDataBaseAccess
+    ----
+    getUserByUsername()
+]
+participant usersDataBaseAccess.addUser[
+    =usersDataBaseAccess
+    ----
+    addUser()
+]
+database DynamoDB
+participant UserUtils[
+    =userUtils
+    ----
+    sanitizeUser()
+]
+participant emailer[
+    =userUtils
+    ----
+    sendSignUpEmail()
+]
+
+User -> Endpoint: Sends credentials
+Endpoint -> Handler.addUser: Forward request
+Handler.addUser -> Handler.addUser: Verifies Schema
+
+alt schema is invalid
+Handler.addUser -> Endpoint: BadSchemaResponse
+Endpoint -> User: 400: Bad Schema 
+end
+
+Handler.addUser -> DatabaseAccess: Get User
+DatabaseAccess -> DynamoDB: Get User
+
+alt DynamoDB error
+DynamoDB -> DatabaseAccess: Error
+DatabaseAccess -> Handler.addUser: Error
+Handler.addUser -> Endpoint: AWSErrorResponse
+Endpoint -> User: ErrorResponse
+end
+
+alt username already exists
+DynamoDB -> DatabaseAccess: username already exists
+DatabaseAccess -> Handler.addUser: username already exists
+Handler.addUser -> Endpoint: 409: That username is already taken.
+Endpoint -> User: 409: That username is already taken.
+end
+
+DynamoDB -> DatabaseAccess: no such user
+DatabaseAccess -> Handler.addUser: no such user
+Handler.addUser -> usersDataBaseAccess.addUser: Create user
+usersDataBaseAccess.addUser -> DynamoDB: Create user
+
+alt DynamoDB error
+DynamoDB -> DatabaseAccess: Error
+DatabaseAccess -> Handler.addUser: Error
+Handler.addUser -> Endpoint: AWSErrorResponse
+Endpoint -> User: ErrorResponse
+end
+
+DynamoDB -> usersDataBaseAccess.addUser: return success
+usersDataBaseAccess.addUser -> emailer: send welcome email
+usersDataBaseAccess.addUser -> Handler.addUser: return success
+Handler.addUser -> UserUtils: sanitizeUser
+UserUtils -> Handler.addUser: returns user without password or resetCode
+Handler.addUser -> Handler.addUser: generate jwt for sanitized user
+Handler.addUser -> Endpoint: return user and token
+Endpoint -> User: return user and token
+@enduml

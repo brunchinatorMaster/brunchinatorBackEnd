@@ -1,0 +1,65 @@
+@startuml
+actor User
+participant Endpoint[
+    =usersController
+    ----
+    POST /api/v1/login
+]
+participant Handler.login[
+    =usersHandler
+    ----
+    login()
+]
+participant DatabaseAccess.getUserByUsername[
+    =usersDataBaseAccess
+    ----
+    getUserByUsername()
+]
+database DynamoDB
+participant UserUtils.sanitizeUser[
+    =userUtils
+    ----
+    sanitizeUser()
+]
+
+User -> Endpoint: Sends login request
+Endpoint -> Handler.login: Forward request
+Handler.login -> Handler.login: Verifies Schema
+
+alt schema is invalid
+Handler.login -> Endpoint: BadSchemaResponse
+Endpoint -> User: 400: Bad Schema 
+end
+
+Handler.login -> DatabaseAccess.getUserByUsername: Get User
+DatabaseAccess.getUserByUsername -> DynamoDB: Get User
+
+alt DynamoDB error
+DynamoDB -> DatabaseAccess.getUserByUsername: Error
+DatabaseAccess.getUserByUsername -> Handler.login: Error
+Handler.login -> Endpoint: AWSErrorResponse
+Endpoint -> User: ErrorResponse
+end
+
+alt no such user
+DynamoDB -> DatabaseAccess.getUserByUsername: No Such User
+DatabaseAccess.getUserByUsername -> Handler.login: No Such User
+Handler.login -> Endpoint: 401: No Such User
+Endpoint -> User: 401: No User Found
+end
+
+DynamoDB -> DatabaseAccess.getUserByUsername: returns user
+DatabaseAccess.getUserByUsername -> Handler.login: returns user
+Handler.login -> Handler.login: does password match?
+
+alt password does not match
+Handler.login -> Endpoint: 401: Wrong Password
+Endpoint -> User: 401: Wrong Password
+end
+
+Handler.login -> UserUtils.sanitizeUser: sanitizeUser
+UserUtils.sanitizeUser -> Handler.login: returns user without password or resetCode
+Handler.login -> Handler.login: generate jwt for sanitized user
+Handler.login -> Endpoint: return user and token
+Endpoint -> User: return user and token
+@enduml
