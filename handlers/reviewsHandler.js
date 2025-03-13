@@ -10,7 +10,7 @@ const {
 	getReviewsByPlaceId,
 	getReviewsByUserName,
 } = require('../databaseAccess/reviewsDatabaseAccess');
-const { getImagesCountForReview } = require('../s3Access/s3');
+const { getImagesCountForReview, createFolder, uploadReviewImages } = require('../s3Access/s3');
 const {
 	getPlaceByPlaceId,
 } = require('../databaseAccess/placesDatabaseAccess');
@@ -233,7 +233,7 @@ class ReviewsHandler {
 	 * @param {object} review 
 	 * @returns {object}
 	 */
-	async addReview(review) {
+	async addReview(review, imageFiles) {
 		const reviewSchemaResponse = validateBySchema(review, VALIDATE_CREATE_REVIEW_SCHEMA);
 		if (!reviewSchemaResponse.isValid) {
 			return new BadSchemaResponse(reviewSchemaResponse);
@@ -247,9 +247,9 @@ class ReviewsHandler {
 		
 		let response;
 		if (!placeExists) {
-			response = await this.addPlaceAndAddReview(review);
+			response = await this.addPlaceAndAddReview(review, imageFiles);
 		} else {
-			response = await this.updatePlaceAndAddReview(getPlaceByPlaceIdResponse.place, review);
+			response = await this.updatePlaceAndAddReview(getPlaceByPlaceIdResponse.place, review, imageFiles);
 		}
 		if (response.DBError) {
 			return new AWSErrorResponse(response.DBError);
@@ -269,13 +269,14 @@ class ReviewsHandler {
 	 * @param {object} review 
 	 * @returns {object}
 	 */
-	async addPlaceAndAddReview(review) {
+	async addPlaceAndAddReview(review, imageFiles) {
 		const place = createNewPlaceFromReview(review);
 		const placeSchemaResponse = validateBySchema(place, VALIDATE_CREATE_PLACE_SCHEMA);
 		if (!placeSchemaResponse.isValid) {
 			return new BadSchemaResponse(placeSchemaResponse);
 		}
 		review.reviewId = v4();
+		review.images = await this.handleImagesFiles(review.reviewId, imageFiles);
 		const response = await transactionAddPlaceAndAddReview(place, review);
 		return response;
 	}
@@ -292,7 +293,7 @@ class ReviewsHandler {
 	 * @param {object} review 
 	 * @returns {object}
 	 */
-	async updatePlaceAndAddReview(place, review) {
+	async updatePlaceAndAddReview(place, review, imageFiles) {
 		let toUpdate = recalculateRatingsForAddingReviewToPlace(review, place);
 		toUpdate.numberOfReviews++; 
 		
@@ -301,8 +302,35 @@ class ReviewsHandler {
 			return new BadSchemaResponse(placeSchemaResponse);
 		}
 		review.reviewId = v4();
+		review.images = await this.handleImagesFiles(review.reviewId, imageFiles);
 		const response = await transactionUpdatePlaceAndAddReview(toUpdate, review);
 		return response;
+	}
+
+/**
+ * Handles uploading image files for a given review and attaches the resulting image URLs.
+ *
+ * This asynchronous function checks if any image files are provided. If so, it uploads the images
+ * using `uploadReviewImages` with the review's ID and then updates the review object with the returned
+ * image URLs. In case of an error during the upload process, it returns an AWSErrorResponse.
+ *
+ * @async
+ * @param {Object} review - The review object which must include a `reviewId` property.
+ * @param {Array<File>} imageFiles - An array of image files to be uploaded.
+ * @returns {Promise<Object|AWSErrorResponse>} A promise that resolves to the updated review object with 
+ * attached image URLs, or an AWSErrorResponse if the image upload fails.
+ */
+	async handleImagesFiles(reviewId, imageFiles) {
+		let imageURLs = [];
+		if (imageFiles?.length > 0) {
+			try {
+				const images = await uploadReviewImages(imageFiles, reviewId);
+				imageURLs = [...images];
+			} catch (error) {
+				return new AWSErrorResponse(error);
+			}
+		}
+		return imageURLs;
 	}
 
 	/**
