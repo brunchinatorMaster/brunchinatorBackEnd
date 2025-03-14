@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const multer = require('multer');
 const ReviewsHandler = require('../handlers/reviewsHandler');
 const reviewsHandler = new ReviewsHandler();
 
@@ -52,10 +53,11 @@ app.delete('/api/v1/byReviewId/:reviewId', async (req, res) => {
 	}
 });
 
-app.post('/api/v1/createReview', async (req, res) => {
+app.post('/api/v1/createReview', multer().any(), async (req, res) => {
 	const review = req.body ?? null;
+	const imageFiles = req.files ?? null;
 	try {
-		const toReturn = await reviewsHandler.addReview(review);
+		const toReturn = await reviewsHandler.addReview(review, imageFiles);
 		res.status(toReturn.statusCode ?? 200).json(toReturn);
 	} catch (error) {
 		res.status(error.statusCode ?? 400).json(error);
