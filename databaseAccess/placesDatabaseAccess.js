@@ -9,13 +9,19 @@ const {
 } = require('../aws/awsClients');
 
 /**
- * gets all reviews
- * returns {
- *  success: boolean,
- *  reviews: REVIEW || null
- *  DBError: ERROR || null
- * }
- * @returns {object[]}
+ * Retrieves a list of places from the "Places" table in DynamoDB.
+ *
+ * This asynchronous function uses the AWS SDK's ScanCommand to scan the "Places" table
+ * with a projection expression for specific attributes (placeId, placeName, vicinity, bloody, burger,
+ * numberOfReviews, overallRating). If items are found, it sets the success flag to true and returns
+ * the list of places. In case of an error during the scan, the error is captured in the DBError property.
+ *
+ * @async
+ * @returns {Promise<{success: boolean, places?: Array<Object>, DBError?: Error}>} A promise that resolves
+ * to an object containing:
+ *   - success {boolean}: Indicates if the operation was successful.
+ *   - places {Array<Object>} (optional): An array of place objects if found.
+ *   - DBError {Error} (optional): The error encountered during the scan, if any.
  */
 const getPlaces = async () => {
   const scanCommand = new ScanCommand({
@@ -43,16 +49,19 @@ const getPlaces = async () => {
 }
 
 /**
- * finds place that has matching placeId
- * 
- * returns {
- *  success: boolean,
- *  place: PLACE || null,
- *  DBError: ERROR || null
- * }
- * 
- * @param {string} placeId 
- * @returns {object}
+ * Retrieves a place from the "Places" table by its unique placeId.
+ *
+ * This asynchronous function executes a QueryCommand on the "Places" table using a key condition
+ * expression to filter results by the provided placeId. It uses a consistent read to ensure the most recent data.
+ * If a place is found, the function returns the first matching item with a success flag set to true.
+ * Any error encountered during the query is captured in the DBError field.
+ *
+ * @async
+ * @param {string} placeId - The unique identifier of the place to retrieve.
+ * @returns {Promise<{success: boolean, place?: Object, DBError?: Error}>} A promise that resolves to an object containing:
+ *   - success {boolean}: True if a place was successfully retrieved.
+ *   - place {Object} (optional): The retrieved place object, if found.
+ *   - DBError {Error} (optional): The error encountered during the query, if any.
  */
 const getPlaceByPlaceId = async (placeId) => {
   const queryCommand = new QueryCommand({
@@ -85,14 +94,17 @@ const getPlaceByPlaceId = async (placeId) => {
 }
 
 /**
- * adds place to dynamo
- * 
- * returns {
- *  success: boolean,
- *  DBError: ERROR || null
- * }
- * @param {object} place 
- * @returns {object[]}
+ * Adds a new place to the "Places" table in DynamoDB.
+ *
+ * This asynchronous function uses the AWS SDK's PutCommand to insert the provided place object into the "Places" table.
+ * If the operation is successful (i.e., the response does not include a ValidationException), the function sets the success flag to true.
+ * Any errors encountered during the operation are captured in the DBError property.
+ *
+ * @async
+ * @param {Object} place - The place object to be added to the DynamoDB "Places" table.
+ * @returns {Promise<{success: boolean, DBError?: Error}>} A promise that resolves to an object containing:
+ *   - success {boolean}: True if the place was added successfully.
+ *   - DBError {Error} (optional): The error encountered during the operation, if any.
  */
 const addPlace = async (place) => {
   const toPut = new PutCommand({
@@ -118,16 +130,25 @@ const addPlace = async (place) => {
 }
 
 /**
- * updates place in dynamo
- * 
- * returns {
- *  success: boolean,
- *  place: PLACE || NULL
- *  DBError: ERROR || null
- * }
- * 
- * @param {object} place 
- * @returns {object}
+ * Updates an existing place in the "Places" table in DynamoDB.
+ *
+ * This asynchronous function uses the AWS SDK's UpdateCommand to update specific attributes of a place.
+ * It updates the attributes: bloody, burger, numberOfReviews, and overallRating for the place identified by its placeId and placeName.
+ * If the update is successful, it returns the updated place data with a success flag set to true.
+ * Any errors encountered during the update operation are captured in the DBError field.
+ *
+ * @async
+ * @param {Object} place - The place object containing the updated attributes. It must include:
+ *   - placeId {string}: The unique identifier of the place.
+ *   - placeName {string}: The name of the place.
+ *   - bloody {number|string}: The new value for the 'bloody' attribute.
+ *   - burger {number|string}: The new value for the 'burger' attribute.
+ *   - numberOfReviews {number}: The updated number of reviews.
+ *   - overallRating {number}: The updated overall rating.
+ * @returns {Promise<{success: boolean, place?: Object, DBError?: Error}>} A promise that resolves to an object containing:
+ *   - success {boolean}: True if the update was successful.
+ *   - place {Object} (optional): The updated place object returned by DynamoDB.
+ *   - DBError {Error} (optional): The error encountered during the update, if any.
  */
 const updatePlace = async (place) => {
   const toUpdate = new UpdateCommand({
@@ -167,15 +188,17 @@ const updatePlace = async (place) => {
 }
 
 /**
- * deletes place that has matching placeId
- * 
- * returns {
- *  success: boolean,
- *  DBError: ERROR || null
- * }
- * 
- * @param {string} placeId 
- * @returns {object}
+ * Deletes a place from the "Places" table in DynamoDB using its placeId.
+ *
+ * This asynchronous function uses the AWS SDK's DeleteCommand to remove a place identified by the provided placeId.
+ * It sends the deletion command using docClient. If no ValidationException occurs, the deletion is considered successful.
+ * Any errors encountered during the deletion are captured in the DBError field.
+ *
+ * @async
+ * @param {string} placeId - The unique identifier of the place to be deleted.
+ * @returns {Promise<{success: boolean, DBError?: Error}>} A promise that resolves to an object containing:
+ *   - success {boolean}: True if the deletion was successful.
+ *   - DBError {Error} (optional): The error encountered during deletion, if any.
  */
 const deletePlaceByPlaceId = async (placeId) => {
   const toDelete = new DeleteCommand({

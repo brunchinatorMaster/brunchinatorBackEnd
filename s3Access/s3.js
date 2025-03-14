@@ -6,6 +6,22 @@ const {
   REVIEW_IMAGES_BUCKET
 } = require('../aws/awsClients');
 
+/**
+ * Uploads a user's profile image to an S3 bucket.
+ *
+ * This asynchronous function creates and sends a PutObjectCommand to upload the file buffer to the S3 bucket 
+ * designated for user profile images. The S3 object key is set to the provided userName.
+ * If the S3 response indicates success with an HTTP status code of 200, the function returns success as true.
+ * Any error encountered during the upload is captured in the S3Error field.
+ *
+ * @async
+ * @param {string} userName - The username used as the key for storing the profile image in the S3 bucket.
+ * @param {Object} file - The file object containing the image to upload.
+ *   Expected to have a `buffer` property with the file's binary data.
+ * @returns {Promise<{success: boolean, S3Error?: Error}>} A promise that resolves to an object containing:
+ *   - success {boolean}: True if the upload was successful.
+ *   - S3Error {Error} (optional): The error encountered during the upload, if any.
+ */
 const uploadUserProfileImageToS3 = async (userName, file) => {
 
   const command = new PutObjectCommand({
@@ -31,6 +47,23 @@ const uploadUserProfileImageToS3 = async (userName, file) => {
   };
 }
 
+/**
+ * Retrieves the count of images stored in S3 for a specific review.
+ *
+ * This asynchronous function uses the AWS SDK's ListObjectsV2Command to list objects in the S3 bucket
+ * designated for review images. It filters the objects using a prefix that matches the reviewId followed by a slash.
+ * The command is configured to return at most one key (MaxKeys: 1) so that the returned KeyCount represents the number of images.
+ * If the S3 response indicates success (HTTP status code 200), the function sets the success flag to true
+ * and extracts the number of images from the response's KeyCount property.
+ * Any error encountered during the operation is captured in the S3Error field.
+ *
+ * @async
+ * @param {string} reviewId - The unique identifier for the review whose images are to be counted.
+ * @returns {Promise<{success: boolean, numberOfImages: number, S3Error?: Error}>} A promise that resolves to an object containing:
+ *   - success {boolean}: True if the operation was successful.
+ *   - numberOfImages {number}: The number of images associated with the review (as reported by S3).
+ *   - S3Error {Error} (optional): The error encountered during the S3 operation, if any.
+ */
 const getImagesCountForReview = async (reviewId) => {
   const command = new ListObjectsV2Command({
     Bucket: REVIEW_IMAGES_BUCKET,
@@ -58,6 +91,20 @@ const getImagesCountForReview = async (reviewId) => {
   };
 }
 
+/**
+ * Creates a folder in the review images S3 bucket.
+ *
+ * This asynchronous function uses the AWS SDK's PutObjectCommand to create a folder (object)
+ * in the designated S3 bucket (REVIEW_IMAGES_BUCKET) with the specified folderName as the key.
+ * If the S3 operation completes successfully with an HTTP status code of 200, the success flag is set to true.
+ * Any error encountered during the operation is captured in the S3Error field.
+ *
+ * @async
+ * @param {string} folderName - The name of the folder to create in the S3 bucket.
+ * @returns {Promise<{success: boolean, S3Error?: Error}>} A promise that resolves to an object containing:
+ *   - success {boolean}: True if the folder was created successfully.
+ *   - S3Error {Error} (optional): The error encountered during the operation, if any.
+ */
 const createFolder = async (folderName) => {
   const command = new PutObjectCommand({
     Bucket: REVIEW_IMAGES_BUCKET,
