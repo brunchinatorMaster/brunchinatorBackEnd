@@ -10,6 +10,8 @@ const { mockGenericDynamoError } = require('./mockDynamoResponses');
 const { deepCopy, JWT_SECRET } = require('../utils/utils');
 const { sanitizeUser } = require('../utils/usersUtils');
 const jwt = require('jsonwebtoken');
+const sinon = require('sinon');
+const nodemailer = require('nodemailer');
 
 describe('usersController', () => {
   beforeEach(() => {
@@ -17,6 +19,21 @@ describe('usersController', () => {
   });
 
   describe('POST /createUser', () => {
+    let createTransportStub;
+    let sendMailStub;
+
+    beforeEach(() => {
+      sendMailStub = sinon.stub().resolves({
+        messageId: '456'
+      });
+      createTransportStub = sinon.stub(nodemailer, 'createTransport').returns({
+        sendMail: sendMailStub
+      });
+    });
+
+    afterEach(() => {
+      createTransportStub.restore();
+    });
     it('returns error if email is missing', async () => {
       const toSend = {
         userName: 'some username',

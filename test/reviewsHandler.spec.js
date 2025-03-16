@@ -12,7 +12,8 @@ const {
   PutCommand,
   TransactWriteCommand,
   s3Client,
-  ListObjectsV2Command
+  ListObjectsV2Command,
+  PutObjectCommand
 } = require('../aws/awsClients');
 const { mockClient } = require('aws-sdk-client-mock');
 const ddbMock = mockClient(docClient);
@@ -290,70 +291,115 @@ describe('reviewsHandler', () => {
 
   describe('addReview', () => {
     describe('when adding a review for a new place', () => {
-     it('returns success message if transaction write command succeeds', async () => {
-      const review = deepCopy(mockReviews[0]);
-      delete review.reviewId;
-
-      // call for getPlaceByPlaceId
-      ddbMock.on(QueryCommand, {
-        TableName: 'Places',
-        ExpressionAttributeValues: {
-          ':placeId': review.placeId,
-        },
-        KeyConditionExpression: 'placeId = :placeId',
-        ConsistentRead: true,
-      }).resolves({
-        Items: []
-      });
-
-      // call for TransactWriteCommand
-      ddbMock.on(TransactWriteCommand).resolves({
-        $metadata: {
-          httpStatusCode: 200
-        }
-      });
-
-      const response = await reviewsHandler.addReview(review);
-
-      assert.deepEqual(response, {
-        success: true,
-        DBError: undefined,
-      });
-     });
-
-     it('returns AWSErrorResponse if transaction write command returns error', async () => {
-      const review = deepCopy(mockReviews[0]);
-      delete review.reviewId;
-
-      // call for getPlaceByPlaceId
-      ddbMock.on(QueryCommand, {
-        TableName: 'Places',
-        ExpressionAttributeValues: {
-          ':placeId': review.placeId,
-        },
-        KeyConditionExpression: 'placeId = :placeId',
-        ConsistentRead: true,
-      }).resolves({
-        Items: []
-      });
-  
-        // call for TransactWriteCommand
-        ddbMock.on(TransactWriteCommand).rejects(mockGenericDynamoError);
-  
-        const response = await reviewsHandler.addReview(review);
-        
-        expect(response).to.be.instanceof(AWSErrorResponse);
-        expect(response.success).to.be.false;
-        expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
-        expect(response.message).to.equal(mockGenericDynamoError.message);
-      });
-    });
-
-    describe('when adding a review for a preexisting place', () => {
-      it('returns success message if transaction write command succeeds', async () => {
+      it('attaches image URLs when image files are provided and returns success message if transaction write command succeeds', async () => {
+        // Prepare a review without a reviewId so that a new place is created.
         const review = deepCopy(mockReviews[0]);
         delete review.reviewId;
-        const place = deepCopy(mockPlaces[0]);
+
+        // Create a fake image file array (simulate file objects)
+        const fakeImage1 = {
+          originalname: 'image1.jpg',
+          buffer: Buffer.from('fake-image-data-1')
+        };
+        const fakeImage2 = {
+          originalname: 'image2.png',
+          buffer: Buffer.from('fake-image-data-2')
+        };
+        const imageFiles = [fakeImage1, fakeImage2];
+
+        // Simulate that the place does not exist (new place)
+        ddbMock.on(QueryCommand, {
+          TableName: 'Places',
+          ExpressionAttributeValues: {
+            ':placeId': review.placeId
+          },
+          KeyConditionExpression: 'placeId = :placeId',
+          ConsistentRead: true,
+        }).resolves({
+          Items: []
+        });
+
+        // For the transaction call to add the new place and review, simulate success.
+        ddbMock.on(TransactWriteCommand).resolves({
+          $metadata: {
+            httpStatusCode: 200
+          }
+        });
+
+        // Simulate S3 upload responses for each image file.
+        // For each PutObjectCommand, return a success response.
+        s3ClientMock.on(PutObjectCommand).resolves({
+          $metadata: {
+            httpStatusCode: 200
+          }
+        });
+
+        // Call addReview with imageFiles
+        const response = await reviewsHandler.addReview(review, imageFiles);
+
+        // Verify that the transaction succeeded.
+        assert.deepEqual(response, {
+          success: true,
+          DBError: undefined
+        });
+
+        // Verify that uploadReviewImages was called for each image file.
+        // Since addReview calls this.handleImagesFiles, which in turn calls uploadReviewImages,
+        // we expect two PutObjectCommand calls to have been made.
+        const putCommands = s3ClientMock.commandCalls(PutObjectCommand);
+        assert.equal(putCommands.length, imageFiles.length);
+
+        // Check that the command input for each call has a Key in the format "<reviewId>/<originalname>"
+        // We cannot know the generated reviewId, but we can assert that the Key includes a slash and the filename.
+        putCommands.forEach((putCommandCall, index) => {
+          const input = putCommandCall.args[0].input;
+          // Check that the key contains a slash and the original name of the image.
+          assert.isTrue(input.Key.includes('/'));
+          assert.isTrue(input.Key.endsWith(imageFiles[index].originalname));
+        });
+      });
+
+      it('does not attempt to upload images if no image files are provided and returns success message if transaction write command succeeds', async () => {
+        // Prepare a review without image files.
+        const review = deepCopy(mockReviews[0]);
+        delete review.reviewId;
+
+        // Simulate that the place does not exist (new place)
+        ddbMock.on(QueryCommand, {
+          TableName: 'Places',
+          ExpressionAttributeValues: {
+            ':placeId': review.placeId
+          },
+          KeyConditionExpression: 'placeId = :placeId',
+          ConsistentRead: true,
+        }).resolves({
+          Items: []
+        });
+
+        // For the transaction call to add the new place and review, simulate success.
+        ddbMock.on(TransactWriteCommand).resolves({
+          $metadata: {
+            httpStatusCode: 200
+          }
+        });
+
+        // Call addReview without imageFiles
+        const response = await reviewsHandler.addReview(review, []);
+
+        // Verify that the transaction succeeded.
+        assert.deepEqual(response, {
+          success: true,
+          DBError: undefined
+        });
+
+        // Verify that no PutObjectCommand was called (i.e. no image uploads occurred)
+        const putCommands = s3ClientMock.commandCalls(PutObjectCommand);
+        assert.equal(putCommands.length, 0);
+      });
+
+      it('returns AWSErrorResponse if transaction write command returns error', async () => {
+        const review = deepCopy(mockReviews[0]);
+        delete review.reviewId;
 
         // call for getPlaceByPlaceId
         ddbMock.on(QueryCommand, {
@@ -364,22 +410,132 @@ describe('reviewsHandler', () => {
           KeyConditionExpression: 'placeId = :placeId',
           ConsistentRead: true,
         }).resolves({
+          Items: []
+        });
+    
+          // call for TransactWriteCommand
+          ddbMock.on(TransactWriteCommand).rejects(mockGenericDynamoError);
+    
+          const response = await reviewsHandler.addReview(review);
+          
+          expect(response).to.be.instanceof(AWSErrorResponse);
+          expect(response.success).to.be.false;
+          expect(response.statusCode).to.equal(mockGenericDynamoError.$metadata.httpStatusCode);
+          expect(response.message).to.equal(mockGenericDynamoError.message);
+      });
+    });
+
+    describe('when adding a review for a preexisting place', () => {
+      it('attaches image URLs when image files are provided and returns success message if transaction write command succeeds', async () => {
+        // Prepare a review without a reviewId
+        const review = deepCopy(mockReviews[0]);
+        delete review.reviewId;
+
+        // Prepare a preexisting place
+        const place = deepCopy(mockPlaces[0]);
+
+        // Create a fake image file array (simulate file objects)
+        const fakeImage1 = {
+          originalname: 'image1.jpg',
+          buffer: Buffer.from('fake-image-data-1')
+        };
+        const fakeImage2 = {
+          originalname: 'image2.png',
+          buffer: Buffer.from('fake-image-data-2')
+        };
+        const imageFiles = [fakeImage1, fakeImage2];
+
+        // Simulate that the place exists (update place)
+        ddbMock.on(QueryCommand, {
+          TableName: 'Places',
+          ExpressionAttributeValues: {
+            ':placeId': review.placeId
+          },
+          KeyConditionExpression: 'placeId = :placeId',
+          ConsistentRead: true,
+        }).resolves({
           Items: [place]
         });
 
-        // call for TransactWriteCommand
+        // For the transaction call to add the new place and review, simulate success.
         ddbMock.on(TransactWriteCommand).resolves({
           $metadata: {
             httpStatusCode: 200
           }
         });
-  
-        const response = await reviewsHandler.addReview(review);
-  
+
+        // Simulate S3 upload responses for each image file.
+        // For each PutObjectCommand, return a success response.
+        s3ClientMock.on(PutObjectCommand).resolves({
+          $metadata: {
+            httpStatusCode: 200
+          }
+        });
+
+        // Call addReview with imageFiles
+        const response = await reviewsHandler.addReview(review, imageFiles);
+
+        // Verify that the transaction succeeded.
         assert.deepEqual(response, {
           success: true,
-          DBError: undefined,
+          DBError: undefined
         });
+
+        // Verify that uploadReviewImages was called for each image file.
+        // Since addReview calls this.handleImagesFiles, which in turn calls uploadReviewImages,
+        // we expect two PutObjectCommand calls to have been made.
+        const putCommands = s3ClientMock.commandCalls(PutObjectCommand);
+        assert.equal(putCommands.length, imageFiles.length);
+
+        // Check that the command input for each call has a Key in the format "<reviewId>/<originalname>"
+        // We cannot know the generated reviewId, but we can assert that the Key includes a slash and the filename.
+        putCommands.forEach((putCommandCall, index) => {
+          const input = putCommandCall.args[0].input;
+          // Check that the key contains a slash and the original name of the image.
+          assert.isTrue(input.Key.includes('/'));
+          assert.isTrue(input.Key.endsWith(imageFiles[index].originalname));
+        });
+      });
+
+      it('does not attempt to upload images if no image files are provided and returns success message if transaction write command succeeds', async () => {
+        // Prepare a review without image files.
+        const review = deepCopy(mockReviews[0]);
+        delete review.reviewId;
+
+        // Prepare a preexisting place
+        const place = deepCopy(mockPlaces[0]);
+
+        // Simulate that the place exists (update place)
+        ddbMock.on(QueryCommand, {
+          TableName: 'Places',
+          ExpressionAttributeValues: {
+            ':placeId': review.placeId
+          },
+          KeyConditionExpression: 'placeId = :placeId',
+          ConsistentRead: true,
+        }).resolves({
+          Items: [place]
+        });
+
+        // For the transaction call to add the new place and review, simulate success.
+        ddbMock.on(TransactWriteCommand).resolves({
+          $metadata: {
+            httpStatusCode: 200
+          }
+        });
+
+        // Call addReview without imageFiles
+        const response = await reviewsHandler.addReview(review, []);
+
+        // Verify that the transaction succeeded.
+        assert.deepEqual(response, {
+          success: true,
+          DBError: undefined
+        });
+
+        // Verify that no PutObjectCommand was called (i.e. no image uploads occurred)
+        const putCommands = s3ClientMock.commandCalls(PutObjectCommand);
+        assert.equal(putCommands.length, 0);
       });
 
       it('returns AWSErrorResponse if transaction write command returns error', async () => {

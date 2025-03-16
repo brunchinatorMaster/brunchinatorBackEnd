@@ -3,7 +3,7 @@ const { mockS3SuccssResponse, mockGenericS3Error, mockListObjectsVSCommandRespon
 const { s3Client, PutObjectCommand, ListObjectsV2Command } = require('../aws/awsClients');
 const { mockClient } = require('aws-sdk-client-mock');
 const s3ClientMock = mockClient(s3Client);
-const { uploadUserProfileImageToS3, getImagesCountForReview, createFolder } = require('../s3Access/s3');
+const { uploadUserProfileImageToS3, getImagesCountForReview, createFolder, uploadReviewImages } = require('../s3Access/s3');
 
 describe('s3.js', () => {
   beforeEach(() => {
@@ -86,6 +86,55 @@ describe('s3.js', () => {
         success: false,
         S3Error: mockGenericS3Error,
       });
+    });
+  });
+
+  describe('uploadReviewImages', () => {
+    it('retursn an array of S3 keys when all image uploads succeed', async () => {
+      const images = [
+        { originalname: 'img1.jpg', buffer: Buffer.from('data1') },
+        { originalname: 'img2.png', buffer: Buffer.from('data2') }
+      ];
+      const folderName = 'review123';
+
+      // Simulate success for each image upload
+      s3ClientMock.on(PutObjectCommand).resolves({
+        $metadata: {
+          httpStatusCode: 200
+        }
+      });
+
+      const result = await uploadReviewImages(images, folderName);
+
+      const expected = [
+        `${folderName}/img1.jpg`,
+        `${folderName}/img2.png`
+      ];
+      assert.deepEqual(result, expected);
+    });
+
+    it('throws an error if any image upload fails', async () => {
+      const images = [
+        { originalname: 'img1.jpg', buffer: Buffer.from('data1') },
+        { originalname: 'img2.png', buffer: Buffer.from('data2') }
+      ];
+      const folderName = 'review123';
+
+      // First image upload succeeds, second fails.
+      s3ClientMock.on(PutObjectCommand)
+        .resolvesOnce({
+          $metadata: {
+            httpStatusCode: 200
+          }
+        })
+        .rejectsOnce(mockGenericS3Error);
+
+      try {
+        await uploadReviewImages(images, folderName);
+        assert.fail('Expected error to be thrown');
+      } catch (error) {
+        assert.equal(error, mockGenericS3Error);
+      }
     });
   });
 });

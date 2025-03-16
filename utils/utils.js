@@ -35,6 +35,7 @@ const validateBySchema = (toValidate, schema) => {
  * @returns {*} A deep copy of the input value.
  */
 const deepCopy = (toCopy) => {
+  if (!toCopy) return toCopy;
   return JSON.parse(JSON.stringify(toCopy));
 };
 

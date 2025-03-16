@@ -1,5 +1,14 @@
 const { expect, assert } = require('chai');
-const { findAverageOf, recalculateRatingsForAddingReviewToPlace, removeFromAverage, recalculateRatingsForRemovingReviewFromPlace, createNewPlaceFromReview } = require('../utils/placesUtils');
+const { 
+  findAverageOf,
+  removeFromAverage,
+  addToAverage,
+  updateAverage,
+  createNewPlaceFromReview,
+  recalculateRatingsForAddingReviewToPlace,
+  recalculateRatingsForRemovingReviewFromPlace,
+  recalculateRatingsForUpdatingReviewOnPlace,
+} = require('../utils/placesUtils');
 
 describe('findAverageOf', () => {
   it('calculates average', () => {
@@ -92,5 +101,47 @@ describe('removeFromAverage', () => {
       expect(response.burger).to.equal(2.99);
       expect(response.overallRating).to.equal(2.25);
     });
+  });
+});
+
+describe('addToAverage', () => {
+  it('should calculate a new average when a new element is added', () => {
+    // ((4 * 2) + 6) / 3 = (8 + 6) / 3 = 14/3 ≈ 4.67
+    const newAvg = addToAverage(4, 2, 6);
+    assert.closeTo(newAvg, 4.67, 0.01);
+  });
+
+  it('should return the original average if any input is invalid', () => {
+    // if elementToAdd is not a number
+    const newAvg = addToAverage(4, 2, '6');
+    assert.equal(newAvg, 4);
+  });
+});
+
+describe('updateAverage', () => {
+  it('should update the average correctly when replacing a value', () => {
+    // ((5*3) - 5 + 7) / 3 = (15 - 5 + 7) / 3 = 17/3 ≈ 5.67
+    const newAvg = updateAverage(5, 3, 5, 7);
+    assert.closeTo(newAvg, 5.67, 0.01);
+  });
+
+  it('should return the original average if any input is invalid', () => {
+    const newAvg = updateAverage(5, 3, 5, '7');
+    assert.equal(newAvg, 5);
+  });
+});
+
+describe('recalculateRatingsForUpdatingReviewOnPlace', () => {
+  it('should recalculate ratings correctly when updating a review', () => {
+    const oldReview = { bloody: 5, burger: 5 };
+    const newReview = { bloody: 3, burger: 7 };
+    const toUpdate = { bloody: 5, burger: 5, numberOfReviews: 3, overallRating: 5 };
+    // newBloody = updateAverage(5,3,5,3) = ((5*3-5+3)/3)= (15-5+3)/3 = 13/3 ≈ 4.33
+    // newBurger = updateAverage(5,3,5,7) = ((5*3-5+7)/3)= (15-5+7)/3 = 17/3 ≈ 5.67
+    // overallRating = average(4.33, 5.67) = (4.33+5.67)/2 = 5.00
+    const updatedPlace = recalculateRatingsForUpdatingReviewOnPlace(oldReview, newReview, toUpdate);
+    assert.closeTo(updatedPlace.bloody, 4.33, 0.01);
+    assert.closeTo(updatedPlace.burger, 5.67, 0.01);
+    assert.closeTo(updatedPlace.overallRating, 5.00, 0.01);
   });
 });
