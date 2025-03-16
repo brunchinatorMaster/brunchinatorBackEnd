@@ -12,7 +12,8 @@ const { deepCopy, JWT_SECRET } = require('../utils/utils');
 const ddbMock = mockClient(docClient);
 const jwt = require('jsonwebtoken');
 const { sanitizeUser } = require('../utils/usersUtils');
-
+const sinon = require('sinon');
+const nodemailer = require('nodemailer');
 
 describe('usersHandler', () => {
   beforeEach(() => {
@@ -101,6 +102,22 @@ describe('usersHandler', () => {
   });
 
   describe('addUser', () => {
+    let createTransportStub;
+    let sendMailStub;
+
+    beforeEach(() => {
+      sendMailStub = sinon.stub().resolves({
+        messageId: '456'
+      });
+      createTransportStub = sinon.stub(nodemailer, 'createTransport').returns({
+        sendMail: sendMailStub
+      });
+    });
+
+    afterEach(() => {
+      createTransportStub.restore();
+    });
+
     it('returns BadSchemaResponse if email is missing', async () => {
       const toAdd = {
         userName: 'some username',

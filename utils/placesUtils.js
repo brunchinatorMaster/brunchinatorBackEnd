@@ -1,5 +1,94 @@
 
 /**
+ * Calculates the average of an array of numeric values.
+ *
+ * This function iterates over the provided array and sums up values that are truthy (ignoring falsy values such as 0, null, or undefined).
+ * It then computes the average by dividing the sum by the count of truthy values and returns the result rounded to two decimal places.
+ *
+ * @param {number[]} arrayOfValues - An array of numeric values.
+ * @returns {number} The average of the truthy numeric values, rounded to two decimal places.
+ */
+const findAverageOf = (arrayOfValues) => {
+  let numerator = 0;
+  let denominator = 0;
+  arrayOfValues.forEach((value) => {
+    if (value) {
+      numerator = numerator + value;
+      denominator++;
+    }
+  });
+  
+  return +(numerator / denominator).toFixed(2);
+}
+
+/**
+ * Calculates a new average after removing an element from an existing average.
+ *
+ * This function computes the new average by subtracting the specified element from the total sum
+ * (computed as originalAverage multiplied by originalNumberOfElements) and then dividing by the new number of elements.
+ * The result is rounded to two decimal places. If the element to remove is null or undefined, the original average is returned.
+ *
+ * @param {number} elementToRemove - The element value to remove from the average.
+ * @param {number} originalAverage - The current average value before removal.
+ * @param {number} originalNumberOfElements - The current number of elements included in the original average.
+ * @returns {number} The new average after removing the element, rounded to two decimal places.
+ */
+const removeFromAverage = (elementToRemove, originalAverage, originalNumberOfElements) => {
+  if (elementToRemove == null) {
+    return originalAverage;
+  }
+  const numerator = (originalAverage * originalNumberOfElements) - elementToRemove;
+  const denominator = originalNumberOfElements - 1;
+  return +(numerator /  denominator).toFixed(2);
+};
+
+/**
+ * Calculates a new average by adding a new element to an existing average.
+ *
+ * This function computes the new average when a new element is added to a set of numbers.
+ * It multiplies the original average by the original number of elements, adds the new element,
+ * and then divides by the new total number of elements. If any of the inputs are missing or
+ * not numbers, or if any of the values are falsy, it returns the original average without modification.
+ *
+ * @param {number} originalAverage - The current average value.
+ * @param {number} originalNumberOfElements - The count of elements included in the original average.
+ * @param {number} elementToAdd - The new element to add to the average calculation.
+ * @returns {number} The new average after adding the element.
+ */
+const addToAverage = (originalAverage, originalNumberOfElements, elementToAdd) => {
+  if (!originalAverage || !originalNumberOfElements || !elementToAdd || typeof originalAverage !== 'number'|| typeof originalNumberOfElements !== 'number'|| typeof elementToAdd !== 'number' ) {
+    return originalAverage;
+  }
+  
+  const numerator = (originalAverage * originalNumberOfElements) + elementToAdd;
+  const denominator = originalNumberOfElements + 1;
+  return numerator / denominator;
+};
+
+/**
+ * Updates an average by removing one value and adding another.
+ *
+ * This function calculates a new average by subtracting the value being removed from the total sum (computed as the original average multiplied by the number of reviews)
+ * and then adding the new value. The result is divided by the original number of reviews and rounded to two decimal places.
+ * If any of the inputs are missing, falsy, or not numbers, the original average is returned.
+ *
+ * @param {number} originalAverage - The current average value.
+ * @param {number} numberOfReviews - The number of reviews included in the original average.
+ * @param {number} valueBeingRemoved - The value to subtract from the current total.
+ * @param {number} valueBeingAdded - The value to add to the current total.
+ * @returns {number} The updated average after removing the old value and adding the new value, rounded to two decimal places.
+ */
+const updateAverage = (originalAverage, numberOfReviews, valueBeingRemoved, valueBeingAdded) => {
+  if (!originalAverage || !numberOfReviews || !valueBeingRemoved || !valueBeingAdded || typeof originalAverage !== 'number'|| typeof numberOfReviews !== 'number'|| typeof valueBeingRemoved !== 'number' || typeof valueBeingAdded !== 'number' ) {
+    return originalAverage;
+  }
+
+  const numerator = (originalAverage * numberOfReviews) - valueBeingRemoved + valueBeingAdded;
+  const denominator = numberOfReviews;
+  return +(numerator /  denominator).toFixed(2);
+}
+
+/**
  * Creates and returns a new place object from the provided review.
  *
  * This function extracts place-related properties from the review object to construct a new place.
@@ -32,28 +121,6 @@ const createNewPlaceFromReview = (review) => {
   place.overallRating = findAverageOf([place.burger, place.bloody]);
   return place;
 };
-
-/**
- * Calculates the average of an array of numeric values.
- *
- * This function iterates over the provided array and sums up values that are truthy (ignoring falsy values such as 0, null, or undefined).
- * It then computes the average by dividing the sum by the count of truthy values and returns the result rounded to two decimal places.
- *
- * @param {number[]} arrayOfValues - An array of numeric values.
- * @returns {number} The average of the truthy numeric values, rounded to two decimal places.
- */
-const findAverageOf = (arrayOfValues) => {
-  let numerator = 0;
-  let denominator = 0;
-  arrayOfValues.forEach((value) => {
-    if (value) {
-      numerator = numerator + value;
-      denominator++;
-    }
-  });
-  
-  return +(numerator / denominator).toFixed(2);
-}
 
 /**
  * Recalculates the ratings for a place when a new review is added.
@@ -91,29 +158,6 @@ const recalculateRatingsForAddingReviewToPlace = (review, toUpdate) => {
 };
 
 /**
- * Calculates a new average by adding a new element to an existing average.
- *
- * This function computes the new average when a new element is added to a set of numbers.
- * It multiplies the original average by the original number of elements, adds the new element,
- * and then divides by the new total number of elements. If any of the inputs are missing or
- * not numbers, or if any of the values are falsy, it returns the original average without modification.
- *
- * @param {number} originalAverage - The current average value.
- * @param {number} originalNumberOfElements - The count of elements included in the original average.
- * @param {number} elementToAdd - The new element to add to the average calculation.
- * @returns {number} The new average after adding the element.
- */
-const addToAverage = (originalAverage, originalNumberOfElements, elementToAdd) => {
-  if (!originalAverage || !originalNumberOfElements || !elementToAdd || typeof originalAverage !== 'number'|| typeof originalNumberOfElements !== 'number'|| typeof elementToAdd !== 'number' ) {
-    return originalAverage;
-  }
-  
-  const numerator = (originalAverage * originalNumberOfElements) + elementToAdd;
-  const denominator = originalNumberOfElements + 1;
-  return numerator / denominator;
-};
-
-/**
  * Recalculates the ratings for a place when a review is removed.
  *
  * This function updates the place's rating values by removing the contribution of the specified review.
@@ -146,50 +190,6 @@ const recalculateRatingsForRemovingReviewFromPlace = (review, toUpdate) => {
   toUpdate.overallRating = newOverallRating;
   
   return toUpdate;
-}
-
-/**
- * Calculates a new average after removing an element from an existing average.
- *
- * This function computes the new average by subtracting the specified element from the total sum
- * (computed as originalAverage multiplied by originalNumberOfElements) and then dividing by the new number of elements.
- * The result is rounded to two decimal places. If the element to remove is null or undefined, the original average is returned.
- *
- * @param {number} elementToRemove - The element value to remove from the average.
- * @param {number} originalAverage - The current average value before removal.
- * @param {number} originalNumberOfElements - The current number of elements included in the original average.
- * @returns {number} The new average after removing the element, rounded to two decimal places.
- */
-const removeFromAverage = (elementToRemove, originalAverage, originalNumberOfElements) => {
-  if (elementToRemove == null) {
-    return originalAverage;
-  }
-  const numerator = (originalAverage * originalNumberOfElements) - elementToRemove;
-  const denominator = originalNumberOfElements - 1;
-  return +(numerator /  denominator).toFixed(2);
-};
-
-/**
- * Updates an average by removing one value and adding another.
- *
- * This function calculates a new average by subtracting the value being removed from the total sum (computed as the original average multiplied by the number of reviews)
- * and then adding the new value. The result is divided by the original number of reviews and rounded to two decimal places.
- * If any of the inputs are missing, falsy, or not numbers, the original average is returned.
- *
- * @param {number} originalAverage - The current average value.
- * @param {number} numberOfReviews - The number of reviews included in the original average.
- * @param {number} valueBeingRemoved - The value to subtract from the current total.
- * @param {number} valueBeingAdded - The value to add to the current total.
- * @returns {number} The updated average after removing the old value and adding the new value, rounded to two decimal places.
- */
-const updateAverage = (originalAverage, numberOfReviews, valueBeingRemoved, valueBeingAdded) => {
-  if (!originalAverage || !numberOfReviews || !valueBeingRemoved || !valueBeingAdded || typeof originalAverage !== 'number'|| typeof numberOfReviews !== 'number'|| typeof valueBeingRemoved !== 'number' || typeof valueBeingAdded !== 'number' ) {
-    return originalAverage;
-  }
-
-  const numerator = (originalAverage * numberOfReviews) - valueBeingRemoved + valueBeingAdded;
-  const denominator = numberOfReviews;
-  return +(numerator /  denominator).toFixed(2);
 }
 
 /**
@@ -232,9 +232,11 @@ const recalculateRatingsForUpdatingReviewOnPlace = (oldReview, newReview, toUpda
 
 module.exports = {
   findAverageOf,
+  removeFromAverage,
+  addToAverage,
+  updateAverage,
   createNewPlaceFromReview,
   recalculateRatingsForAddingReviewToPlace,
   recalculateRatingsForRemovingReviewFromPlace,
   recalculateRatingsForUpdatingReviewOnPlace,
-  removeFromAverage
 }
