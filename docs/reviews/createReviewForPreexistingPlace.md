@@ -1,5 +1,5 @@
-# Create Review for New Place
-This document explains the workflow that occurs when a front-end user creates a review for a new place.
+# Create Review for Existing Place
+This document explains the workflow that occurs when a front-end user creates a review for a place that already exists in the system.
 
 ## Overview
 When a user submits a review, the front-end sends a POST request to the endpoint:
@@ -35,23 +35,24 @@ The request is forwarded to the `reviewsHandler.addReview()` method, which handl
 The handler calls `getPlaceByPlaceId()` to check if a place with the provided `placeId` already exists in DynamoDB.
 
 - Error Handling:
-  * If there is an error fetching the place, an AWSErrorResponse is returned.
+  * If there is an error fetching the place, an `AWSErrorResponse` is returned.
 
-- Assumption for New Review:
-  * In this scenario, no matching place is found, meaning the user is reviewing this place for the first time.
-### 3. Add Review for a New Place
-Since the place does not exist, `reviewsHandler.addReview()` calls `reviewsHandler.addPlaceAndAddReview()`.
+- Existing Place Found:
+  * In this scenario, the place exists, and the review will be added to update its ratings.
 
-### 4. Create a New Place
-Inside `addPlaceAndAddReview()`, the method calls `placesUtils.createNewPlaceFromReview(review)`-.
+### 3. Update Place and Add Review 
+Since the place exists, `reviewsHandler.addReview()` calls `reviewsHandler.updatePlaceAndAddReview()`.
 
-- Functionality:
-  * This function extracts relevant properties from the review and creates a new place object.
-  * The new place is initialized with one review.
-  * The overall rating is calculated using the `findAverageOf` helper.
+### 4. Recalculate Ratings
+Inside `updatePlaceAndAddReview()`, the following steps occur:
 
-### 5. Validate New Place
-The newly created place object is validated against `VALIDATE_CREATE_PLACE_SCHEMA` (from `placesSchemas.js`).
+- The function calls `recalculateRatingsForAddingReviewToPlace(review, place)`, which:
+  * Computes new values for the place's bloody and burger ratings using the helper function `addToAverage`.
+  * Calculates the new overall rating using `findAverageOf`
+- The `numberOfReviews` property of the place is incremented by one to reflect the addition of the new review.
+
+### 5. Validate Updated Place
+The updated place object is validated against `VALIDATE_UPDATE_PLACE_SCHEMA` (from `placesSchemas.js`).
 
 - Outcome:
   * If validation fails, a BadSchemaResponse is returned.
@@ -63,7 +64,7 @@ The newly created place object is validated against `VALIDATE_CREATE_PLACE_SCHEM
   * Note: The image uploading functionality is handled separately via S3 operations.
 
 ### 7. Database Transaction
-The handler calls `transactDatabaseAccess.transactionAddPlaceAndAddReview(place, review)` to insert the new place and review into DynamoDB.
+The handler calls `transactDatabaseAccess.transactionUpdatePlaceAndAddReview(toUpdate, review)` to update the place in DynamoDB with the new ratings and add the review.
 
 - Response Structure:
 
@@ -86,8 +87,9 @@ When a new review for a place is created:
 
 - The review is first validated.
 - The system checks for an existing place using placeId.
-- If no place exists, a new place is created from the review.
-- The new place is validated, and a unique review ID is assigned.
+- Finding an existing place, the system recalculates the place’s ratings to include the new review.
+- The place's review count is incremented
+- The updated place is validated, and a unique review ID is assigned.
 - Image files (if provided) are processed and uploaded.
-- A database transaction adds both the new place and the review to DynamoDB.
+- A database transaction updates the place and adds the review to DynamoDB.
 - The final response is returned to the endpoint, either confirming success or returning an appropriate error response.
