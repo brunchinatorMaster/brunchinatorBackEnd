@@ -3,7 +3,7 @@
 ## Overview
 
 Brunchinator BackEnd is the server-side component of the Brunchinator application, responsible for managing data operations, business logic, and integration with external services. 
-This repository complements the [Brunchinator FrontEnd](https://github.com/brunchinatorMaster/brunchinatorAngular) to deliver a seamless user experience.
+This repository complements the [Brunchinator FrontEnd](https://github.com/georgeoster/brunchinatorAngular) to deliver a seamless user experience.
 
 ## Features
 
